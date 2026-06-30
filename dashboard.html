@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사고관리 대시보드 - 비즈프로</title>
+  <meta name="description" content="비즈프로 사고관리 시스템의 대시보드 및 실시간 접수 모듈입니다.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body class="dashboard-body">
+
+  <div class="db-container">
+    
+    <!-- Left Sidebar Menu -->
+    <aside class="db-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">B</div>
+          <div class="logo-text">Biz<span>Pro</span></div>
+        </a>
+        <span class="system-badge">EHS 시스템</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-tab="classify">
+          <span class="nav-icon">📊</span>
+          <span>마스터 관리</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="report">
+          <span class="nav-icon">📝</span>
+          <span>사고 및 장비 등록</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="countermeasure">
+          <span class="nav-icon">🛡️</span>
+          <span>감소대책 및 이행</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="inspection">
+          <span class="nav-icon">📋</span>
+          <span>일일 안전점검 등록</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="inspectionList">
+          <span class="nav-icon">📂</span>
+          <span>안전점검현황</span>
+        </a>
+        <div class="sidebar-divider"></div>
+        <a href="index.html" class="nav-item logout-nav-item" id="sidebarLogout">
+          <span class="nav-icon">🚪</span>
+          <span>로그아웃 (종료)</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="manager-profile">
+          <div class="avatar">👷</div>
+          <div class="profile-info">
+            <h4 id="dbManagerName">김안전 관리자</h4>
+            <p id="dbCompanyName">(주)무사제조업체</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="db-main">
+      
+      <!-- Top Header -->
+      <header class="db-header">
+        <div class="header-left">
+          <h2 id="currentTabTitle">사고 데이터 분류 및 마스터 관리</h2>
+          <p class="today-date" id="currentDateText">2026년 6월 18일 목요일</p>
+        </div>
+        <div class="header-right">
+          <button class="btn btn-secondary btn-sm" id="headerLogoutBtn">로그아웃</button>
+        </div>
+      </header>
+
+      <div class="db-content">
+        
+        <!-- ==========================================
+           [화면 2] 사고 데이터 분류 및 마스터 관리 (Default Active Tab)
+           ========================================== -->
+        <div id="tab-content-classify" class="tab-content active">
+          
+          <!-- Search Filter Card -->
+          <div class="search-filter-card">
+            <div class="filter-item">
+              <span class="filter-label">조회기간</span>
+              <input type="date" id="filterStartDate" class="filter-input-date">
+              <span class="filter-label">~</span>
+              <input type="date" id="filterEndDate" class="filter-input-date">
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">검색어</span>
+              <input type="text" id="filterKeyword" class="filter-input-text" placeholder="기계명, 사고명 등 입력">
+            </div>
+            <button class="btn-filter-search" id="btnFilterSearch">
+              <span>🔍</span> 검색
+            </button>
+          </div>
+
+          <!-- Summary Stats Badges -->
+          <div class="summary-badges-container">
+            <div class="summary-badge-item active" id="badgeAll">전체 0건</div>
+            <div class="summary-badge-item" id="badgeInternal">내부공상 0건</div>
+            <div class="summary-badge-item" id="badgeExternal">산재신청 중 0건</div>
+            <div class="summary-badge-item" id="badgeMoel">노동청 미보고 <span class="badge-warning-text" id="moelWarningCount">0건 (★지연주의)</span></div>
+          </div>
+
+          <div class="db-grid-layout">
+            <!-- Left: Dual Classification Table -->
+            <div class="db-card-panel" style="padding: 20px;">
+              <div class="panel-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+                <h3 style="font-size: 15px;">■ 노동부 표준 및 산재 이원화 분류 테이블</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="db-table compact-table" id="classificationTable">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">NO</th>
+                      <th>발생일자</th>
+                      <th>대상기계</th>
+                      <th>재해형태</th>
+                      <th style="width: 140px;">내부 산재구분</th>
+                      <th style="width: 140px;">외부 보고구분</th>
+                      <th style="width: 90px;">상태</th>
+                    </tr>
+                  </thead>
+                  <tbody id="classificationTableBody">
+                    <!-- Dynamic Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right: Details / Compliance Card -->
+            <div class="db-card-panel" style="padding: 20px;">
+              <div class="panel-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+                <h3 style="font-size: 15px;">■ 선택 사고 상세 및 대관 정보</h3>
+              </div>
+              
+              <div id="complianceEmptyState" class="cm-empty-state" style="min-height: 250px; padding: 24px; font-size: 13px;">
+                <span>👈 왼쪽 테이블에서 사고 기록을 선택하시면 세부 대관 정보 및 분류를 구성할 수 있습니다.</span>
+              </div>
+
+              <div id="complianceFormPanel" style="display: none;">
+                <div class="linked-accident-card" style="padding: 12px 16px; margin-bottom: 12px; border-radius: 8px;">
+                  <span class="linked-tag">선택됨</span>
+                  <span id="compSelectedTitle" style="font-size: 13px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 250px;">사고 정보</span>
+                </div>
+
+                <div class="compliance-detail-card" style="padding: 16px; margin-top: 8px;">
+                  <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: #1e293b;">※ 산재 및 대관 상세 정보</h4>
+                  
+                  <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label-desc">재해형태 입력</label>
+                    <input type="text" id="compAccidentTypeCode" class="form-input-custom" placeholder="예: 끼임·감김, 부딪힘, 넘어짐">
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="form-label-desc">내부 처리 상태 상세</label>
+                    <div class="form-radio-group">
+                      <label class="form-radio-label">
+                        <input type="radio" name="compInternalDtlStatus" value="일반공상" checked> 일반공상
+                      </label>
+                      <label class="form-radio-label">
+                        <input type="radio" name="compInternalDtlStatus" value="특별공상"> 특별공상
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="compliance-grid-2col">
+                    <div class="form-group">
+                      <label class="form-label-desc">내부 보상 금액 (원)</label>
+                      <input type="number" id="compInternalAmount" class="form-input-custom" value="0" min="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label-desc">실제 휴업 일수</label>
+                      <input type="number" id="compAbsenceDays" class="form-input-custom" value="0" min="0">
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="margin-top: 12px;">
+                    <label class="form-label-desc">근로복지공단 접수번호</label>
+                    <input type="text" id="compComWelNo" class="form-input-custom" placeholder="예: 2026-A01">
+                  </div>
+
+                  <div class="form-group" style="margin-top: 12px;">
+                    <label class="form-label-desc">노동청 조사표 제출일</label>
+                    <input type="date" id="compLaborMinistryDate" class="form-input-custom">
+                  </div>
+
+                  <button class="btn-compliance-save" id="btnSaveClassification">
+                    분류 마스터 저장
+                  </button>
+                </div>
+
+                <!-- AI Gemini Assistant Q&A Card -->
+                <div class="compliance-detail-card" style="padding: 16px; margin-top: 16px; border: 1px dashed #c084fc; background: linear-gradient(to bottom right, #faf5ff, #ffffff);">
+                  <div style="display: flex; align-items: center; justify-content: justify; justify-content: space-between; margin-bottom: 12px;">
+                    <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #6b21a8; display: flex; align-items: center; gap: 6px;">
+                      <span>✨</span> AI 안전 조언자 제미나이
+                    </h4>
+                    <span class="status-badge" style="background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; font-size: 11px; margin: 0; padding: 2px 8px;">Gemini 2.5 Flash</span>
+                  </div>
+                  
+                  <p style="font-size: 11px; color: #6b7280; margin: 0 0 12px 0;">
+                    선택한 사고의 세부 정보(장비, 상황 설명, 재해 유형 등)를 바탕으로 AI에게 예방대책, 관계 법령, 유사 사례에 대해 질문할 수 있습니다.
+                  </p>
+
+                  <!-- Chat Response Window -->
+                  <div id="geminiResponseBox" style="min-height: 80px; max-height: 250px; overflow-y: auto; background-color: #fdfbf7; border: 1px solid #ebd9fc; border-radius: 6px; padding: 12px; font-size: 12px; color: #374151; margin-bottom: 12px; line-height: 1.5; white-space: pre-wrap;">
+                    <span style="color: #9ca3af; font-style: italic;">질문을 입력하시면 제미나이의 안전 대책 및 법적 조언 분석 결과가 이곳에 출력됩니다.</span>
+                  </div>
+
+                  <!-- Question Input -->
+                  <div class="form-group" style="margin-bottom: 10px;">
+                    <textarea id="geminiQuestionInput" class="form-textarea-custom" style="height: 60px; min-height: 60px; font-size: 12px; resize: none;" placeholder="예: 이 사고의 재발을 방지하기 위한 안전 대책과 안전보건공단 표준 가이드를 알려주세요."></textarea>
+                  </div>
+
+                  <div style="display: flex; justify-content: flex-end;">
+                    <button type="button" class="btn" id="btnAskGemini" style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; padding: 8px 16px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);">
+                      <span>✨</span> 제미나이에게 물어보기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+           [화면 1] 사고 및 대상 장비 정보등록
+           ========================================== -->
+        <div id="tab-content-report" class="tab-content">
+          <div class="db-card-panel" style="max-width: 800px; margin: 0 auto;">
+            <div class="panel-header">
+              <h3>■ 사고 및 대상 장비 정보 등록</h3>
+              <p class="panel-subtitle">현장의 사고 상황과 연계된 기계 장비의 정보를 등록하여 보고합니다.</p>
+            </div>
+
+            <form id="incidentRegistrationForm" class="db-report-form modern-form" style="background-color: #fff; padding: 0; box-shadow: none;">
+              
+              <div class="form-card" style="grid-template-columns: 1fr 1fr; border: none; padding: 0;">
+                
+                <div class="form-group">
+                  <label class="form-label-desc">* 사업장</label>
+                  <div class="select-wrapper">
+                    <select id="regCompanyBranch" class="form-select-custom" required>
+                      <option value="(주)무사제조업체" selected>(주)무사제조업체</option>
+                      <option value="(주)비즈안전 서울본사">(주)비즈안전 서울본사</option>
+                      <option value="(주)비즈안전 부산지사">(주)비즈안전 부산지사</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-desc">* 사고유형</label>
+                  <div class="form-radio-group">
+                    <label class="form-radio-label">
+                      <input type="radio" name="regIncidentType" value="INJURY" checked> 부상재해
+                    </label>
+                    <label class="form-radio-label">
+                      <input type="radio" name="regIncidentType" value="DEATH"> 사망재해
+                    </label>
+                    <label class="form-radio-label">
+                      <input type="radio" name="regIncidentType" value="NEAR_MISS"> 아차사고
+                    </label>
+                    <label class="form-radio-label">
+                      <input type="radio" name="regIncidentType" value="PROPERTY"> 물적피해
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-desc">* 사고발생일시</label>
+                  <div class="datetime-input-row">
+                    <input type="date" id="regOccurrenceDate" class="datetime-date" required>
+                    <input type="number" id="regOccurrenceHour" class="datetime-num" min="0" max="23" value="12" required>
+                    <span class="datetime-label">시</span>
+                    <input type="number" id="regOccurrenceMin" class="datetime-num" min="0" max="59" value="0" required>
+                    <span class="datetime-label">분</span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-desc">* 발생장소</label>
+                  <input type="text" id="regLocation" class="form-input-custom" placeholder="예: PC여의도현대백화점 식당가" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-desc">* 대상 기계명</label>
+                  <input type="text" id="regEquipmentName" class="form-input-custom" placeholder="예: 식빵절단기" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-desc">* 사고명</label>
+                  <input type="text" id="regIncidentTitle" class="form-input-custom" placeholder="사고명을 입력하세요" required>
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label-desc">* 사고내용</label>
+                  <textarea id="regIncidentContent" class="form-textarea-custom" placeholder="사고 발생 경위 및 피해 상황을 기입하세요" required></textarea>
+                </div>
+
+                <!-- Attachment Files Slot -->
+                <div class="evidence-grid">
+                  <div class="photo-upload-box" id="btnUploadPhoto">
+                    <div class="evidence-icon">📷</div>
+                    <span class="photo-upload-label" id="photoUploadLabel">↑ 현장 사진 업로드</span>
+                    <input type="file" id="photoFileInput" accept="image/*" style="display:none">
+                    <div id="photoPreview" class="media-preview-container"></div>
+                  </div>
+                  
+                  <div class="photo-upload-box" id="btnUploadDoc">
+                    <div class="evidence-icon">📄</div>
+                    <span class="photo-upload-label" id="docUploadLabel">↑ 재해조사서 첨부</span>
+                    <input type="file" id="docFileInput" accept=".pdf,.doc,.docx,.hwp,.txt" style="display:none">
+                    <div id="docPreview" class="voice-preview-container"></div>
+                  </div>
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label-desc">비고사항</label>
+                  <textarea id="regRemarks" class="form-textarea-custom" placeholder="추가적인 점검 필요 사항이나 비고 기재" style="min-height: 60px;"></textarea>
+                </div>
+
+              </div>
+
+              <button type="submit" class="btn-submit-report" style="margin-top: 24px;">
+                사고 정보 등록 완료
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- ==========================================
+           [화면 3] 감소대책 수립 및 현장 이행 관리
+           ========================================== -->
+        <div id="tab-content-countermeasure" class="tab-content">
+          <div class="db-card-panel" style="max-width: 900px; margin: 0 auto; padding: 24px;">
+            <div class="panel-header">
+              <h3>■ 안전 대책 수립 및 개선 이행 관리</h3>
+              <p class="panel-subtitle">접수된 사고에 대한 유해 요인을 차단할 수 있는 감소 대책을 수립하고 현장 이행을 완료합니다.</p>
+            </div>
+
+            <div id="measureEmptyState" class="cm-empty-state" style="min-height: 250px; padding: 48px;">
+              <span>📊 '마스터 관리' 화면에서 특정 사고 행을 클릭하여 선택한 후 대책 탭으로 이동해 주세요.</span>
+            </div>
+
+            <div id="measureContentPanel" style="display: none;">
+              <!-- Selected Incident Header -->
+              <div class="linked-accident-card" id="measureLinkedHeader">
+                <span class="linked-tag">연계사고</span>
+                <span id="measureSelectedTitle">식빵절단기 측면 커버 개방으로 인한 손가락 끼임 사고 (2026-06-18 등록)</span>
+              </div>
+
+              <form id="measureForm">
+                <div class="db-grid-layout" style="grid-template-columns: 1fr 1fr; gap: 24px;">
+                  
+                  <!-- Left side: Risk Assessment & Mitigation Setup -->
+                  <div class="form-card" style="display: flex; flex-direction: column; gap: 16px; border: none; padding: 0; background: none; box-shadow: none;">
+                    <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">■ 위험성 평가 및 대책 수립</h4>
+                    
+                    <div class="form-group">
+                      <label class="form-label-desc">* 유해위험요인</label>
+                      <textarea id="msHazardFactors" class="form-textarea-custom" placeholder="발생한 유해 요인을 기입하세요" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label-desc">현재 조치 사항</label>
+                      <textarea id="msCurrentMeasure" class="form-textarea-custom" placeholder="임시 조치 사항 등 입력" style="min-height: 60px;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label-desc">* 근본 감소대책</label>
+                      <textarea id="msProposedMeasure" class="form-textarea-custom" placeholder="구체적인 설비적/시스템적 대책을 기술하세요" required></textarea>
+                    </div>
+
+                    <div class="assignee-row">
+                      <div class="form-group">
+                        <label class="form-label-desc">* 조치 담당자</label>
+                        <div class="select-wrapper">
+                          <select id="msManagerID" class="form-select-custom" required>
+                            <option value="이무사 (공정관리팀)" selected>이무사 (공정관리팀)</option>
+                            <option value="김안전 (안전관리부)">김안전 (안전관리부)</option>
+                            <option value="박대비 (생산팀)">박대비 (생산팀)</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label-desc">* 조치 기한</label>
+                        <input type="date" id="msDueDate" class="form-input-custom" required>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right side: Field Action Completion -->
+                  <div class="form-card" style="display: flex; flex-direction: column; gap: 16px; border: none; padding: 0; background: none; box-shadow: none;">
+                    <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">■ 현장 조치 결과 기록 (담당자 입력 영역)</h4>
+                    
+                    <div class="form-group">
+                      <label class="form-label-desc">조치 완료일</label>
+                      <input type="date" id="msCompletionDate" class="form-input-custom">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label-desc">이행 결과 내용</label>
+                      <textarea id="msActionContent" class="form-textarea-custom" placeholder="이행 결과 완료 사항 기입"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label-desc">조치 전/후 사진</label>
+                      <div class="before-after-grid">
+                        <div class="photo-upload-box" id="btnUploadBeforePhoto" style="min-height: 100px;">
+                          <div class="evidence-icon" style="font-size: 18px;">📷</div>
+                          <span class="photo-upload-label" id="beforePhotoLabel">개선전 사진 등록</span>
+                          <input type="file" id="beforePhotoFileInput" accept="image/*" style="display:none">
+                          <div id="beforePhotoPreview" class="media-preview-container"></div>
+                        </div>
+                        <div class="photo-upload-box" id="btnUploadAfterPhoto" style="min-height: 100px;">
+                          <div class="evidence-icon" style="font-size: 18px;">📷</div>
+                          <span class="photo-upload-label" id="afterPhotoLabel">개선후 사진 등록</span>
+                          <input type="file" id="afterPhotoFileInput" accept="image/*" style="display:none">
+                          <div id="afterPhotoPreview" class="media-preview-container"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <button type="submit" class="btn-submit-measure" id="btnSubmitMeasure">
+                  개선 조치 완료 등록
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+           [화면 4] 일일 안전점검 등록
+           ========================================== -->
+        <div id="tab-content-inspection" class="tab-content">
+          <div class="db-card-panel" style="max-width: 900px; margin: 0 auto; padding: 24px;">
+            <div class="panel-header">
+              <h3>■ 일일 안전점검 등록</h3>
+              <p class="panel-subtitle">현장 위험 방지를 위해 일일 안전점검을 수행하고 일지를 등록합니다.</p>
+            </div>
+
+            <form id="dailyInspectionForm" class="db-report-form modern-form" style="background-color: #fff; padding: 0; box-shadow: none;">
+              <!-- 1. 점검 기본 정보 -->
+              <h4 style="margin: 20px 0 10px 0; font-size: 15px; font-weight: 700; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">
+                1. 점검 기본 정보
+              </h4>
+              <div class="db-grid-layout" style="grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div class="form-group">
+                  <label class="form-label-desc">* 소속 사업장</label>
+                  <div class="select-wrapper">
+                    <select id="inspCompanyBranch" class="form-select-custom" required>
+                      <option value="서울 본사 공장" selected>서울 본사 공장</option>
+                      <option value="부산 지사 공장">부산 지사 공장</option>
+                      <option value="인천 물류 센터">인천 물류 센터</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-desc">* 점검 유형</label>
+                  <div class="form-radio-group" style="display: flex; gap: 15px; align-items: center; height: 42px;">
+                    <label class="form-radio-label" style="display: inline-flex; align-items: center; margin: 0;">
+                      <input type="radio" name="inspType" value="SITE" checked style="margin-right: 6px;"> 일일 현장 점검
+                    </label>
+                    <label class="form-radio-label" style="display: inline-flex; align-items: center; margin: 0;">
+                      <input type="radio" name="inspType" value="EQUIPMENT" style="margin-right: 6px;"> 일일 장비 점검
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-desc">점검 대상 장비 선택 (※ 장비 점검 시 활성)</label>
+                  <div class="select-wrapper">
+                    <select id="inspEquipmentName" class="form-select-custom" disabled>
+                      <option value="" disabled selected>장비를 선택하세요</option>
+                      <option value="지게차A (No.12)">지게차A (No.12)</option>
+                      <option value="크레인B (No.05)">크레인B (No.05)</option>
+                      <option value="식빵절단기 (No.03)">식빵절단기 (No.03)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-desc">* 점검 일자</label>
+                  <input type="date" id="inspDate" class="form-input-custom" required>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-desc">* 점검자</label>
+                  <input type="text" id="inspInspector" class="form-input-custom" placeholder="홍길동 과장 (안전관리팀)" required>
+                </div>
+              </div>
+
+              <!-- 2. 스마트 체크리스트 -->
+              <h4 style="margin: 20px 0 10px 0; font-size: 15px; font-weight: 700; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">
+                2. 스마트 체크리스트 (산업안전보건법 및 내부 관리규정 기준)
+              </h4>
+              <div class="table-responsive" style="margin-bottom: 20px;">
+                <table class="db-table compact-table" style="width: 100%;">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px; text-align: center;">NO</th>
+                      <th>법정 및 현장 표준 점검 항목</th>
+                      <th style="width: 250px; text-align: center;">점검 결과</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="text-align: center; font-weight: 600;">1</td>
+                      <td style="font-size: 13px;">기계·설비의 방호장치(비상정지장치 등) 작동 상태가 정상인가?</td>
+                      <td>
+                        <div style="display: flex; justify-content: space-around; align-items: center;">
+                          <label style="font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; margin: 0;"><input type="radio" name="chkResult1" value="GOOD" checked style="margin-right: 4px;">양호</label>
+                          <label style="font-size: 12px; font-weight: 500; cursor: pointer; color: #dc2626; display: inline-flex; align-items: center; margin: 0;"><input type="radio" name="chkResult1" value="ACTION_REQUIRED" style="margin-right: 4px;">조치필요</label>
+                          <label style="font-size: 12px; font-weight: 500; cursor: pointer; color: #64748b; display: inline-flex; align-items: center; margin: 0;"><input type="radio" name="chkResult1" value="NA" style="margin-right: 4px;">N/A</label>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="text-align: center; font-weight: 600;">2</td>
+                      <td style="font-size: 13px;">전기 분전함 전면에 적재물이 없고 외함 접지가 양호한가?</td>
+                      <td>
+                        <div style="display: flex; justify-content: space-around; align-items: center;">
+                          <label style="font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; margin: 0;"><input type="radio" name="chkResult2" value="GOOD" checked style="margin-right: 4px;">양호</label>
+                          <label style="font-size: 12px; font-weight: 500; cursor: pointer; color: #dc2626; display: inline-flex; align-items: center; margin: 0;"><input type="radio" name="chkResult2" value="ACTION_REQUIRED" style="margin-right: 4px;">조치필요</label>
+                          <label style="font-size: 12px; font-weight: 500; cursor: pointer; color: #64748b; display: inline-flex; align-items: center; margin: 0;"><input type="radio" name="chkResult2" value="NA" style="margin-right: 4px;">N/A</label>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="text-align: center; font-weight: 600;">3</td>
+                      <td style="font-size: 13px; font-weight: 600; color: #1e3a8a;">현장 내 통로가 확보되어 있고 비상구 주위 유해요인이 없는가?</td>
+                      <td>
+                        <div style="display: flex; justify-content: space-around; align-items: center;">
+                          <label style="font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; margin: 0;"><input type="radio" name="chkResult3" value="GOOD" checked style="margin-right: 4px;">양호</label>
+                          <label style="font-size: 12px; font-weight: 600; cursor: pointer; color: #dc2626; display: inline-flex; align-items: center; margin: 0;" id="lblChkResult3Action"><input type="radio" name="chkResult3" id="chkResult3Action" value="ACTION_REQUIRED" style="margin-right: 4px;">조치필요</label>
+                          <label style="font-size: 12px; font-weight: 500; cursor: pointer; color: #64748b; display: inline-flex; align-items: center; margin: 0;"><input type="radio" name="chkResult3" value="NA" style="margin-right: 4px;">N/A</label>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- 3. 부적합 사항 및 안전조치 지정 -->
+              <div id="nonComplianceSection" style="opacity: 0.5; pointer-events: none; transition: all 0.3s ease; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px; background-color: #f8fafc;">
+                <h4 style="margin: 0 0 12px 0; font-size: 15px; font-weight: 700; color: #dc2626;">
+                  🚨 3. 부적합 사항 및 안전조치 지정 (위 3번 항목 '조치필요' 시 연동 활성)
+                </h4>
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label class="form-label-desc">* 위험 요인 기술 (Issue Description)</label>
+                  <textarea id="inspIssueDesc" class="form-textarea-custom" placeholder="2층 자재창고 앞 통로 유압유 누유로 인하여 근로자 전도 위험 발생" disabled></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label class="form-label-desc">* 개선 조치 요구 (Action Required)</label>
+                  <textarea id="inspActionReq" class="form-textarea-custom" placeholder="흡착포 이용 즉시 제거 및 상부 배관 미세 누수 지점 점검 요망" disabled></textarea>
+                </div>
+
+                <div class="db-grid-layout" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+                  <div class="form-group">
+                    <label class="form-label-desc">현장 사진 등록 (Before)</label>
+                    <div class="photo-upload-box" id="btnUploadInspPhoto" style="min-height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px dashed #cbd5e1; border-radius: 6px; cursor: pointer; background: #fff;">
+                      <div class="evidence-icon" style="font-size: 20px;">📷</div>
+                      <span class="photo-upload-label" id="inspPhotoUploadLabel">현장 사진 업로드</span>
+                      <input type="file" id="inspPhotoFileInput" accept="image/*" style="display:none" disabled>
+                      <div id="inspPhotoPreview" class="media-preview-container" style="margin-top: 5px;"></div>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div class="form-group">
+                      <label class="form-label-desc">* 조치 담당자 지정 (Manager)</label>
+                      <div class="select-wrapper">
+                        <select id="inspManagerID" class="form-select-custom" disabled>
+                          <option value="김철수 대리 (생산2팀)" selected>김철수 대리 (생산2팀)</option>
+                          <option value="박영희 과장 (설비공정팀)">박영희 과장 (설비공정팀)</option>
+                          <option value="이민우 사원 (안전관리부)">이민우 사원 (안전관리부)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label-desc">* 완료 요청 기한 (Due Date)</label>
+                      <input type="date" id="inspDueDate" class="form-input-custom" disabled>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. 전자서명 및 최종 제출 -->
+              <h4 style="margin: 20px 0 10px 0; font-size: 15px; font-weight: 700; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">
+                4. 전자서명 및 최종 제출
+              </h4>
+              <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label-desc">* 점검자 확인 서명</label>
+                <div style="position: relative; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #fff; height: 150px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                  <canvas id="signatureCanvas" style="width: 100%; height: 100%; display: block; cursor: crosshair;"></canvas>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnClearSignature" style="position: absolute; right: 10px; bottom: 10px; z-index: 10; font-size: 11px; padding: 4px 8px;">
+                    지우기
+                  </button>
+                  <div id="signaturePlaceholder" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #94a3b8; font-size: 13px; pointer-events: none; user-select: none;">
+                    여기에 전자서명을 해주세요
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Buttons -->
+              <div style="display: flex; justify-content: center; gap: 15px; margin-top: 30px;">
+                <button type="button" class="btn btn-secondary" id="btnSaveInspDraft" style="padding: 10px 24px; min-width: 120px;">
+                  💾 임시 저장
+                </button>
+                <button type="submit" class="btn btn-primary" id="btnSubmitInsp" style="padding: 10px 24px; min-width: 120px;">
+                  🚀 점검 일지 등록
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- ==========================================
+           [화면 5] 안전점검현황
+           ========================================== -->
+        <div id="tab-content-inspectionList" class="tab-content">
+          <!-- Search Filter Card -->
+          <div class="search-filter-card" style="margin-bottom: 20px;">
+            <div class="filter-item">
+              <span class="filter-label">조회기간</span>
+              <input type="date" id="filterInspStartDate" class="filter-input-date">
+              <span class="filter-label">~</span>
+              <input type="date" id="filterInspEndDate" class="filter-input-date">
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">점검구분</span>
+              <select id="filterInspType" class="form-select-custom" style="padding: 6px 12px; height: 38px; min-width: 120px;">
+                <option value="ALL">전체</option>
+                <option value="SITE">일일 현장 점검</option>
+                <option value="EQUIPMENT">일일 장비 점검</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">상태</span>
+              <select id="filterInspStatus" class="form-select-custom" style="padding: 6px 12px; height: 38px; min-width: 120px;">
+                <option value="ALL">전체</option>
+                <option value="SUBMITTED">제출완료</option>
+                <option value="DRAFT">임시저장</option>
+              </select>
+            </div>
+            <button class="btn-filter-search" id="btnFilterInspSearch">
+              <span>🔍</span> 검색
+            </button>
+          </div>
+
+          <div class="db-grid-layout" style="grid-template-columns: 1.2fr 1fr; gap: 20px;">
+            <!-- Left Side: Inspection Table -->
+            <div class="db-card-panel" style="padding: 20px;">
+              <div class="panel-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+                <h3 style="font-size: 15px;">■ 안전점검 이력 목록</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="db-table compact-table" id="inspectionListTable">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">NO</th>
+                      <th>점검일자</th>
+                      <th>점검구분</th>
+                      <th>점검대상장비</th>
+                      <th>점검자</th>
+                      <th>결과(1/2/3)</th>
+                      <th style="width: 90px; text-align: center;">상태</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inspectionListTableBody">
+                    <!-- Dynamic Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right Side: Inspection Detail Card -->
+            <div class="db-card-panel" style="padding: 20px;">
+              <div class="panel-header" style="margin-bottom: 12px; padding-bottom: 8px;">
+                <h3 style="font-size: 15px;">■ 점검 일지 상세 정보</h3>
+              </div>
+
+              <div id="inspectionDetailEmptyState" class="cm-empty-state" style="min-height: 250px; padding: 24px; font-size: 13px;">
+                <span>👈 왼쪽 목록에서 안전점검 기록을 선택하시면 전체 상세 점검 일지가 이곳에 렌더링됩니다.</span>
+              </div>
+
+              <div id="inspectionDetailPanel" style="display: none; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 16px; border: 1px solid #e2e8f0;">
+                <div class="linked-accident-card" style="padding: 12px 16px; margin-bottom: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                  <span id="detailInspTitle" style="font-weight: 700; font-size: 14px; color: #1e3a8a;">일일 안전점검 일지</span>
+                  <span class="status-badge" id="detailInspStatusBadge" style="margin: 0;">제출완료</span>
+                </div>
+
+                <!-- Info Table -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; font-size: 12px;">
+                  <div><strong style="color: #64748b;">사업장:</strong> <span id="detailBranch" style="color: #1e293b; font-weight: 600;">-</span></div>
+                  <div><strong style="color: #64748b;">점검유형:</strong> <span id="detailType" style="color: #1e293b; font-weight: 600;">-</span></div>
+                  <div><strong style="color: #64748b;">점검장비:</strong> <span id="detailEquipment" style="color: #1e293b; font-weight: 600;">-</span></div>
+                  <div><strong style="color: #64748b;">점검일자:</strong> <span id="detailDate" style="color: #1e293b; font-weight: 600;">-</span></div>
+                  <div style="grid-column: span 2;"><strong style="color: #64748b;">점검자:</strong> <span id="detailInspector" style="color: #1e293b; font-weight: 600;">-</span></div>
+                </div>
+
+                <!-- Checklist results -->
+                <div style="margin-bottom: 16px; border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                  <h4 style="margin: 0 0 8px 0; font-size: 13px; font-weight: 700; color: #334155;">■ 체크리스트 세부 결과</h4>
+                  <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
+                      <span>1. 방호장치 정상 작동 여부</span>
+                      <span id="detailChk1Badge" class="status-badge" style="margin: 0; padding: 2px 6px;">양호</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
+                      <span>2. 전기 분전함 전면에 적재물이 없고 외함 접지가 양호한가?</span>
+                      <span id="detailChk2Badge" class="status-badge" style="margin: 0; padding: 2px 6px;">양호</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
+                      <span style="font-weight: 600;">3. 현장 내 통로 및 비상구 주위</span>
+                      <span id="detailChk3Badge" class="status-badge" style="margin: 0; padding: 2px 6px;">양호</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Non-compliance section (Conditional) -->
+                <div id="detailNonComplianceSection" style="display: none; border: 1px solid #fee2e2; background-color: #fef2f2; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+                  <h4 style="margin: 0 0 8px 0; font-size: 13px; font-weight: 700; color: #dc2626;">🚨 부적합 조치사항</h4>
+                  <div style="font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    <div><strong style="color: #991b1b;">위험 요인:</strong> <div id="detailIssueDesc" style="margin-top: 2px; padding: 6px; background: #fff; border-radius: 4px; border: 1px solid #fecaca; color: #374151;">-</div></div>
+                    <div><strong style="color: #991b1b;">조치 요구:</strong> <div id="detailActionReq" style="margin-top: 2px; padding: 6px; background: #fff; border-radius: 4px; border: 1px solid #fecaca; color: #374151;">-</div></div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                      <div><strong style="color: #991b1b;">담당자:</strong> <span id="detailManager" style="color: #374151; font-weight: 600;">-</span></div>
+                      <div><strong style="color: #991b1b;">조치기한:</strong> <span id="detailDueDate" style="color: #374151; font-weight: 600;">-</span></div>
+                    </div>
+                    <div id="detailPhotoContainer" style="display: none; margin-top: 6px;">
+                      <strong style="color: #991b1b; display: block; margin-bottom: 4px;">현장 사진:</strong>
+                      <img id="detailPhotoImg" src="" style="max-width: 100%; max-height: 120px; border-radius: 4px; border: 1px solid #fecaca;">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Signature -->
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                  <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; color: #334155;">■ 점검자 확인 서명</h4>
+                  <div style="border: 1px solid #cbd5e1; border-radius: 6px; background-color: #fafafa; height: 80px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    <img id="detailSignatureImg" src="" style="max-height: 100%; max-width: 100%; display: block;" alt="서명 이미지 없음">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Simulated Success Alert Modal -->
+  <div class="modal-overlay" id="dbModalOverlay">
+    <div class="modal-box">
+      <div class="modal-icon">✓</div>
+      <h3 class="modal-title" id="modalAlertTitle">성공</h3>
+      <p class="modal-desc" id="modalAlertDesc">
+        정상적으로 처리되었습니다.
+      </p>
+      <button class="btn btn-primary" id="dbModalClose" style="width: 100%;">확인</button>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+      // 1. Session context info
+      const managerName = sessionStorage.getItem('bizpro_manager_name') || '김안전 관리자';
+      const companyName = sessionStorage.getItem('bizpro_company_name') || '(주)무사제조업체';
+      
+      document.getElementById('dbManagerName').textContent = managerName;
+      document.getElementById('dbCompanyName').textContent = companyName;
+
+      // Set Date Text
+      const dateText = document.getElementById('currentDateText');
+      const now = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+      dateText.textContent = now.toLocaleDateString('ko-KR', options);
+
+      // Pre-fill filter dates in Screen 2
+      const yearStart = new Date(now.getFullYear(), 0, 1);
+      document.getElementById('filterStartDate').value = yearStart.toISOString().split('T')[0];
+      document.getElementById('filterEndDate').value = now.toISOString().split('T')[0];
+
+      // Pre-fill registration date in Screen 1
+      document.getElementById('regOccurrenceDate').value = now.toISOString().split('T')[0];
+      document.getElementById('regOccurrenceHour').value = now.getHours();
+      document.getElementById('regOccurrenceMin').value = now.getMinutes();
+
+      // State variables
+      let loadedIncidents = [];
+      let selectedIncident = null;
+
+      // Attachment paths for Screen 1 Form
+      let regPhotoUrl = null;
+      let regDocUrl = null;
+
+      // Before/After photo paths for Screen 3 Form
+      let msBeforePhotoUrl = null;
+      let msAfterPhotoUrl = null;
+
+      // 2. Alert Modal Trigger Helper
+      const dbModalOverlay = document.getElementById('dbModalOverlay');
+      const dbModalClose = document.getElementById('dbModalClose');
+      const modalAlertTitle = document.getElementById('modalAlertTitle');
+      const modalAlertDesc = document.getElementById('modalAlertDesc');
+
+      const showAlert = (title, desc, callback) => {
+        modalAlertTitle.textContent = title;
+        modalAlertDesc.innerHTML = desc;
+        dbModalOverlay.classList.add('active');
+        dbModalClose.onclick = () => {
+          dbModalOverlay.classList.remove('active');
+          if (callback) callback();
+        };
+      };
+
+      // 3. Tab Switcher Logic
+      const navItems = document.querySelectorAll('.sidebar-nav .nav-item[data-tab]');
+      const currentTabTitle = document.getElementById('currentTabTitle');
+
+      const tabTitles = {
+        classify: '사고 데이터 분류 및 마스터 관리',
+        report: '사고 및 대상 장비 정보 등록',
+        countermeasure: '안전 대책 수립 및 개선 이행 관리',
+        inspection: '일일 안전점검 등록',
+        inspectionList: '안전점검현황'
+      };
+
+      navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetTab = item.getAttribute('data-tab');
+
+          // Highlight menu
+          navItems.forEach(nav => nav.classList.remove('active'));
+          item.classList.add('active');
+
+          // Toggle tab visibility
+          document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+          });
+          document.getElementById(`tab-content-${targetTab}`).classList.add('active');
+          currentTabTitle.textContent = tabTitles[targetTab] || '사고 대응 현황판';
+
+          // Call load hooks
+          if (targetTab === 'classify') {
+            loadIncidents();
+          } else if (targetTab === 'countermeasure') {
+            renderMeasurePanel();
+          } else if (targetTab === 'inspection') {
+            initSignatureCanvas();
+          } else if (targetTab === 'inspectionList') {
+            loadInspectionsList();
+          }
+        });
+      });
+
+      // 4. File Upload Handler Utility
+      const setupFileUpload = (clickTargetId, fileInputId, labelId, previewContainerId, onUploadSuccess) => {
+        const target = document.getElementById(clickTargetId);
+        const input = document.getElementById(fileInputId);
+        const label = document.getElementById(labelId);
+        const preview = document.getElementById(previewContainerId);
+
+        target.addEventListener('click', (e) => {
+          if (e.target.tagName !== 'IMG') {
+            input.click();
+          }
+        });
+
+        input.addEventListener('change', () => {
+          const file = input.files[0];
+          if (!file) return;
+
+          label.textContent = "업로드 중...";
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            const fileData = e.target.result;
+            const uniqueName = `${Date.now()}_${file.name}`;
+
+            try {
+              const response = await fetch(API_BASE + '/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fileName: uniqueName, fileData })
+              });
+              const result = await response.json();
+              if (result.success) {
+                label.textContent = `등록 완료 (${file.name.substring(0, 10)}...)`;
+                preview.innerHTML = '';
+                
+                if (file.type.startsWith('image/')) {
+                  const img = document.createElement('img');
+                  img.src = result.fileUrl;
+                  img.className = 'preview-thumb';
+                  img.style.width = '60px';
+                  img.style.height = '60px';
+                  preview.appendChild(img);
+                } else {
+                  const docIndicator = document.createElement('span');
+                  docIndicator.className = 'voice-badge';
+                  docIndicator.textContent = '📎 문서 파일';
+                  preview.appendChild(docIndicator);
+                }
+                
+                onUploadSuccess(result.fileUrl);
+              } else {
+                label.textContent = "업로드 실패";
+              }
+            } catch (err) {
+              console.error(err);
+              label.textContent = "통신 실패";
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      };
+
+      // Set up upload listeners
+      setupFileUpload('btnUploadPhoto', 'photoFileInput', 'photoUploadLabel', 'photoPreview', (url) => { regPhotoUrl = url; });
+      setupFileUpload('btnUploadDoc', 'docFileInput', 'docUploadLabel', 'docPreview', (url) => { regDocUrl = url; });
+      setupFileUpload('btnUploadBeforePhoto', 'beforePhotoFileInput', 'beforePhotoLabel', 'beforePhotoPreview', (url) => { msBeforePhotoUrl = url; });
+      setupFileUpload('btnUploadAfterPhoto', 'afterPhotoFileInput', 'afterPhotoLabel', 'afterPhotoPreview', (url) => { msAfterPhotoUrl = url; });
+
+      // 5. Load and query API from server
+      const classificationTableBody = document.getElementById('classificationTableBody');
+
+      const loadIncidents = async () => {
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
+        const keyword = document.getElementById('filterKeyword').value.trim();
+
+        try {
+          const response = await fetch(API_BASE + `/api/incidents?startDate=${startDate}&endDate=${endDate}&keyword=${encodeURIComponent(keyword)}`);
+          const result = await response.json();
+
+          if (result.success) {
+            loadedIncidents = result.data;
+            renderClassificationTable(loadedIncidents);
+            updateSummaryStats(loadedIncidents);
+          }
+        } catch (err) {
+          console.error("사고 정보를 가져오는 데 실패했습니다:", err);
+        }
+      };
+
+      const renderClassificationTable = (incidents) => {
+        classificationTableBody.innerHTML = '';
+
+        if (incidents.length === 0) {
+          classificationTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
+                조회된 기간 내에 등록된 사고 데이터가 없습니다.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        incidents.forEach((inc, index) => {
+          const dateObj = new Date(inc.OccurrenceDateTime);
+          const formattedDate = `${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}`;
+
+          // Translation maps
+          const disasterTypes = {
+            DEATH: '사망재해',
+            INJURY: '부상재해',
+            NEAR_MISS: '아차사고',
+            PROPERTY: '물적피해'
+          };
+          const statusText = inc.ClassificationStatus === 'COMPLETED' ? '분류완료' : '미분류';
+          const statusColor = inc.ClassificationStatus === 'COMPLETED' ? 'status-resolved' : 'status-pending';
+
+          const tr = document.createElement('tr');
+          if (selectedIncident && selectedIncident.IncidentID === inc.IncidentID) {
+            tr.className = 'selected-row';
+          }
+
+          tr.innerHTML = `
+            <td>${inc.IncidentID}</td>
+            <td class="td-date">${formattedDate}</td>
+            <td style="font-weight:600;">${inc.EquipmentName}</td>
+            <td><span class="tag-type type-etc">${disasterTypes[inc.IncidentType] || inc.IncidentType}</span></td>
+            <td>
+              <select class="table-select-custom internal-accident-select" data-id="${inc.IncidentID}">
+                <option value="NOT_APPLIED" ${inc.InternalAccidentType === 'NOT_APPLIED' ? 'selected' : ''}>미조치</option>
+                <option value="COMP_COMPANY" ${inc.InternalAccidentType === 'COMP_COMPANY' ? 'selected' : ''}>내부공상</option>
+                <option value="COMP_SPECIAL" ${inc.InternalAccidentType === 'COMP_SPECIAL' ? 'selected' : ''}>특별공상</option>
+                <option value="INT_LEAVE" ${inc.InternalAccidentType === 'INT_LEAVE' ? 'selected' : ''}>산재처리</option>
+                <option value="NEAR_MISS" ${inc.InternalAccidentType === 'NEAR_MISS' ? 'selected' : ''}>아차사고</option>
+              </select>
+            </td>
+            <td>
+              <select class="table-select-custom external-report-select" data-id="${inc.IncidentID}">
+                <option value="NOT_REQUIRED" ${inc.ExternalReportType === 'NOT_REQUIRED' ? 'selected' : ''}>대상 아님</option>
+                <option value="CO_REPORT" ${inc.ExternalReportType === 'CO_REPORT' ? 'selected' : ''}>공단보고</option>
+                <option value="MOEL_REPORT" ${inc.ExternalReportType === 'MOEL_REPORT' ? 'selected' : ''}>노동청보고</option>
+                <option value="BOTH_REPORT" ${inc.ExternalReportType === 'BOTH_REPORT' ? 'selected' : ''}>공단+노동청</option>
+              </select>
+            </td>
+            <td><span class="status-badge ${statusColor}">${statusText}</span></td>
+          `;
+
+          // Handle click on cells except select inputs
+          tr.addEventListener('click', (e) => {
+            if (e.target.tagName === 'SELECT' || e.target.tagName === 'OPTION') return;
+
+            document.querySelectorAll('#classificationTableBody tr').forEach(row => row.classList.remove('selected-row'));
+            tr.classList.add('selected-row');
+
+            selectedIncident = inc;
+            renderComplianceForm(inc);
+          });
+
+          // Sync select changes directly into row data object to prepare save
+          tr.querySelector('.internal-accident-select').addEventListener('change', (e) => {
+            inc.InternalAccidentType = e.target.value;
+          });
+          tr.querySelector('.external-report-select').addEventListener('change', (e) => {
+            inc.ExternalReportType = e.target.value;
+          });
+
+          classificationTableBody.appendChild(tr);
+        });
+      };
+
+      const updateSummaryStats = (incidents) => {
+        const total = incidents.length;
+        const internal = incidents.filter(inc => inc.InternalAccidentType === 'COMP_COMPANY' || inc.InternalAccidentType === 'COMP_SPECIAL').length;
+        const external = incidents.filter(inc => inc.InternalAccidentType === 'INT_LEAVE').length;
+        // 노동청 미보고 건수 (ExternalReportType이 MOEL_REPORT/BOTH_REPORT이고 LaborMinistryStatus가 REPORTED가 아닌 건수)
+        const moelUnreported = incidents.filter(inc => 
+          (inc.ExternalReportType === 'MOEL_REPORT' || inc.ExternalReportType === 'BOTH_REPORT') && 
+          inc.LaborMinistryStatus !== 'REPORTED'
+        ).length;
+
+        document.getElementById('badgeAll').textContent = `전체 ${total}건`;
+        document.getElementById('badgeInternal').textContent = `내부공상 ${internal}건`;
+        document.getElementById('badgeExternal').textContent = `산재신청 중 ${external}건`;
+        document.getElementById('moelWarningCount').textContent = `${moelUnreported}건 (★지연주의)`;
+      };
+
+      // Render Selected Row Compliance Info Card
+      const complianceEmptyState = document.getElementById('complianceEmptyState');
+      const complianceFormPanel = document.getElementById('complianceFormPanel');
+      const compSelectedTitle = document.getElementById('compSelectedTitle');
+
+      const renderComplianceForm = (inc) => {
+        complianceEmptyState.style.display = 'none';
+        complianceFormPanel.style.display = 'block';
+
+        compSelectedTitle.textContent = `${inc.EquipmentName} - ${inc.IncidentTitle}`;
+
+        // Populate fields
+        document.getElementById('compAccidentTypeCode').value = inc.AccidentTypeCode || '';
+        document.getElementById('compInternalAmount').value = inc.InternalCompAmount || 0;
+        document.getElementById('compAbsenceDays').value = inc.ActualAbsenceDays || 0;
+        document.getElementById('compComWelNo').value = inc.ComWelAccidentNo || '';
+        document.getElementById('compLaborMinistryDate').value = inc.LaborMinistryReportDate ? inc.LaborMinistryReportDate.split('T')[0] : '';
+
+        // Radio Checked
+        const internalDtlRadios = document.getElementsByName('compInternalDtlStatus');
+        internalDtlRadios.forEach(radio => {
+          if (radio.value === inc.InternalDtlStatus || (inc.InternalDtlStatus === undefined && radio.value === '일반공상')) {
+            radio.checked = true;
+          }
+        });
+
+        // Reset Gemini panel for the newly selected accident
+        document.getElementById('geminiQuestionInput').value = '';
+        document.getElementById('geminiResponseBox').innerHTML = `
+          <span style="color: #9ca3af; font-style: italic;">질문을 입력하시면 제미나이의 안전 대책 및 법적 조언 분석 결과가 이곳에 출력됩니다.</span>
+        `;
+      };
+
+      // Save Classification Master details (Screen 2)
+      document.getElementById('btnSaveClassification').addEventListener('click', async () => {
+        if (!selectedIncident) return;
+
+        const accidentTypeCode = document.getElementById('compAccidentTypeCode').value.trim();
+        const internalCompAmount = parseFloat(document.getElementById('compInternalAmount').value);
+        const actualAbsenceDays = parseInt(document.getElementById('compAbsenceDays').value, 10);
+        const comWelAccidentNo = document.getElementById('compComWelNo').value.trim();
+        const laborMinistryReportDate = document.getElementById('compLaborMinistryDate').value;
+        const internalDtlStatus = document.querySelector('input[name="compInternalDtlStatus"]:checked').value;
+
+        // Determine labor ministry reported state
+        const laborMinistryStatus = laborMinistryReportDate ? 'REPORTED' : 'NOT_REPORTED';
+        const comWelApprovalStatus = comWelAccidentNo ? 'APPROVED' : 'NOT_SUBMITTED';
+
+        const payload = {
+          incidentId: selectedIncident.IncidentID,
+          causalFactorCode: selectedIncident.CausalFactorCode || '',
+          accidentTypeCode: accidentTypeCode || selectedIncident.IncidentType, // 재해형태
+          internalAccidentType: selectedIncident.InternalAccidentType || 'NOT_APPLIED',
+          internalCompAmount,
+          actualAbsenceDays,
+          externalReportType: selectedIncident.ExternalReportType || 'NOT_REQUIRED',
+          comWelAccidentNo,
+          comWelApprovalStatus,
+          comWelApprovalDate: comWelAccidentNo ? now.toISOString().split('T')[0] : null,
+          laborMinistryStatus,
+          laborMinistryReportDate,
+          userId: managerName
+        };
+
+        try {
+          const response = await fetch(API_BASE + '/api/classifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            showAlert("분류 마스터 저장 성공", "이원화 분류 및 대관 상세 정보가 정상 등록되었습니다.", () => {
+              loadIncidents();
+            });
+          } else {
+            alert("저장 실패: " + result.message);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("저장 중 서버와의 통신 에러가 발생했습니다.");
+        }
+      });
+
+      // Gemini Q&A Submit Listener
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `;
+      document.head.appendChild(style);
+
+      document.getElementById('btnAskGemini').addEventListener('click', async () => {
+        if (!selectedIncident) return;
+
+        const question = document.getElementById('geminiQuestionInput').value.trim();
+        if (!question) {
+          alert("질문 내용을 입력해 주세요.");
+          return;
+        }
+
+        const responseBox = document.getElementById('geminiResponseBox');
+        const askButton = document.getElementById('btnAskGemini');
+
+        // Show loading state
+        responseBox.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px; color: #7c3aed; font-weight: 600;">
+            <span style="display: inline-block; animation: spin 1s linear-infinite; font-size: 14px;">⌛</span>
+            제미나이가 사고 정보를 분석하고 답변을 작성 중입니다...
+          </div>
+        `;
+        askButton.disabled = true;
+
+        try {
+          const response = await fetch(API_BASE + '/api/gemini/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              incidentId: selectedIncident.IncidentID,
+              question: question
+            })
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            let answerHtml = result.answer
+              .replace(/### (.*)/g, '<h4 style="margin: 12px 0 6px 0; color: #1e1b4b; font-size: 13px; font-weight: 700;">$1</h4>')
+              .replace(/#### (.*)/g, '<h5 style="margin: 8px 0 4px 0; color: #312e81; font-size: 12px; font-weight: 700;">$1</h5>')
+              .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+              .replace(/`([^`]+)`/g, '<code style="background-color: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>')
+              .replace(/> (.*)/g, '<blockquote style="border-left: 3px solid #7c3aed; padding-left: 8px; color: #6b21a8; margin: 8px 0; font-style: italic;">$1</blockquote>')
+              .replace(/- (.*)/g, '<li style="margin-left: 12px; list-style-type: disc;">$1</li>');
+            
+            responseBox.innerHTML = answerHtml;
+          } else {
+            responseBox.innerHTML = `<span style="color: #ef4444;">에러가 발생했습니다: \${result.message}</span>`;
+          }
+        } catch (err) {
+          console.error(err);
+          responseBox.innerHTML = `<span style="color: #ef4444;">서버 통신 중 에러가 발생했습니다.</span>`;
+        } finally {
+          askButton.disabled = false;
+        }
+      });
+
+      // Bind search filter button
+      document.getElementById('btnFilterSearch').addEventListener('click', loadIncidents);
+
+      // 6. [화면 1] Incident Registration Form Submit
+      const incidentRegistrationForm = document.getElementById('incidentRegistrationForm');
+      incidentRegistrationForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const companyBranch = document.getElementById('regCompanyBranch').value;
+        const incidentType = document.querySelector('input[name="regIncidentType"]:checked').value;
+        const dateVal = document.getElementById('regOccurrenceDate').value;
+        const hourVal = String(document.getElementById('regOccurrenceHour').value).padStart(2, '0');
+        const minVal = String(document.getElementById('regOccurrenceMin').value).padStart(2, '0');
+        const occurrenceDateTime = `${dateVal} ${hourVal}:${minVal}:00`;
+
+        const location = document.getElementById('regLocation').value.trim();
+        const equipmentName = document.getElementById('regEquipmentName').value.trim();
+        const incidentTitle = document.getElementById('regIncidentTitle').value.trim();
+        const incidentContent = document.getElementById('regIncidentContent').value.trim();
+        const remarks = document.getElementById('regRemarks').value.trim();
+
+        const payload = {
+          companyBranch,
+          incidentType,
+          occurrenceDateTime,
+          location,
+          equipmentName,
+          incidentTitle,
+          incidentContent,
+          attachmentPath1: regPhotoUrl,
+          attachmentPath2: regDocUrl,
+          remarks,
+          regUserID: managerName
+        };
+
+        try {
+          const response = await fetch(API_BASE + '/api/incidents', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            showAlert("사고 등록 완료", "사고 및 대상 장비 정보가 마스터 데이터베이스에 안전하게 등록되었습니다.", () => {
+              incidentRegistrationForm.reset();
+              regPhotoUrl = null;
+              regDocUrl = null;
+              document.getElementById('photoPreview').innerHTML = '';
+              document.getElementById('docPreview').innerHTML = '';
+              document.getElementById('photoUploadLabel').textContent = "↑ 현장 사진 업로드";
+              document.getElementById('docUploadLabel').textContent = "↑ 재해조사서 첨부";
+
+              // Navigate back to master list tab
+              const masterTab = document.querySelector('.sidebar-nav .nav-item[data-tab="classify"]');
+              if (masterTab) masterTab.click();
+            });
+          } else {
+            alert("사고 등록 실패: " + result.message);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("사고를 등록하는 중 서버 오류가 발생했습니다.");
+        }
+      });
+
+      // 7. [화면 3] Safety Measures Panel rendering and Action Submit
+      const measureEmptyState = document.getElementById('measureEmptyState');
+      const measureContentPanel = document.getElementById('measureContentPanel');
+      const measureSelectedTitle = document.getElementById('measureSelectedTitle');
+
+      const renderMeasurePanel = () => {
+        if (!selectedIncident) {
+          measureEmptyState.style.display = 'flex';
+          measureContentPanel.style.display = 'none';
+          return;
+        }
+
+        measureEmptyState.style.display = 'none';
+        measureContentPanel.style.display = 'block';
+
+        const dateObj = new Date(selectedIncident.OccurrenceDateTime);
+        const formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+        measureSelectedTitle.textContent = `[연계사고] ${selectedIncident.EquipmentName} - ${selectedIncident.IncidentTitle} (${formattedDate} 등록)`;
+
+        // Reset inputs or pre-populate if existing measure exists
+        document.getElementById('msHazardFactors').value = selectedIncident.HazardFactors || '';
+        document.getElementById('msCurrentMeasure').value = selectedIncident.CurrentMeasure || '';
+        document.getElementById('msProposedMeasure').value = selectedIncident.ProposedMeasure || '';
+        document.getElementById('msManagerID').value = selectedIncident.ManagerID || '이무사 (공정관리팀)';
+        document.getElementById('msDueDate').value = selectedIncident.DueDate ? selectedIncident.DueDate.split('T')[0] : '';
+
+        // Completion items
+        document.getElementById('msCompletionDate').value = selectedIncident.CompletionDate ? selectedIncident.CompletionDate.split('T')[0] : '';
+        document.getElementById('msActionContent').value = selectedIncident.ActionContent || '';
+
+        // Preview images if available
+        const beforePreview = document.getElementById('beforePhotoPreview');
+        const afterPreview = document.getElementById('afterPhotoPreview');
+        beforePreview.innerHTML = '';
+        afterPreview.innerHTML = '';
+        document.getElementById('beforePhotoLabel').textContent = "개선전 사진 등록";
+        document.getElementById('afterPhotoLabel').textContent = "개선후 사진 등록";
+        
+        msBeforePhotoUrl = selectedIncident.BeforePhotoPath || null;
+        msAfterPhotoUrl = selectedIncident.AfterPhotoPath || null;
+
+        if (msBeforePhotoUrl) {
+          const img = document.createElement('img');
+          img.src = msBeforePhotoUrl;
+          img.className = 'preview-thumb';
+          img.style.width = '50px';
+          img.style.height = '50px';
+          beforePreview.appendChild(img);
+          document.getElementById('beforePhotoLabel').textContent = "등록 완료";
+        }
+        if (msAfterPhotoUrl) {
+          const img = document.createElement('img');
+          img.src = msAfterPhotoUrl;
+          img.className = 'preview-thumb';
+          img.style.width = '50px';
+          img.style.height = '50px';
+          afterPreview.appendChild(img);
+          document.getElementById('afterPhotoLabel').textContent = "등록 완료";
+        }
+      };
+
+      // Measure submit handler (Screen 3)
+      const measureForm = document.getElementById('measureForm');
+      measureForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!selectedIncident) return;
+
+        const hazardFactors = document.getElementById('msHazardFactors').value.trim();
+        const currentMeasure = document.getElementById('msCurrentMeasure').value.trim();
+        const proposedMeasure = document.getElementById('msProposedMeasure').value.trim();
+        const managerId = document.getElementById('msManagerID').value;
+        const dueDate = document.getElementById('msDueDate').value;
+
+        // Completion details
+        const completionDate = document.getElementById('msCompletionDate').value;
+        const actionContent = document.getElementById('msActionContent').value.trim();
+
+        // Immediately COMPLETED if completionDate is set, otherwise PROGRESS
+        const measureStatus = completionDate ? 'COMPLETED' : 'PROGRESS';
+
+        const payload = {
+          incidentId: selectedIncident.IncidentID,
+          hazardFactors,
+          currentMeasure,
+          proposedMeasure,
+          managerId,
+          dueDate,
+          completionDate: completionDate || null,
+          actionContent: actionContent || null,
+          beforePhotoPath: msBeforePhotoUrl,
+          afterPhotoPath: msAfterPhotoUrl,
+          measureStatus,
+          userId: managerName
+        };
+
+        try {
+          const response = await fetch(API_BASE + '/api/measures', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            showAlert("대책 및 개선 등록 완료", `안전 대책 수립 상태가 성공적으로 <strong>${measureStatus === 'COMPLETED' ? '조치완료(COMPLETED) 상태로 종결' : '진행중(PROGRESS) 상태로 등록'}</strong> 처리되었습니다.`, () => {
+              loadIncidents();
+              // Back to master list
+              const masterTab = document.querySelector('.sidebar-nav .nav-item[data-tab="classify"]');
+              if (masterTab) masterTab.click();
+            });
+          } else {
+            alert("대책 등록 실패: " + result.message);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("서버 연결에 실패했습니다.");
+        }
+      });
+
+      // 7.5. [화면 4] 일일 안전점검 등록 스크립트
+      document.getElementById('inspDate').value = now.toISOString().split('T')[0];
+      document.getElementById('inspInspector').value = managerName;
+
+      // 7.5.1. 점검 유형 선택에 따른 장비 선택 활성화
+      const inspTypeRadios = document.getElementsByName('inspType');
+      const inspEquipmentNameSelect = document.getElementById('inspEquipmentName');
+
+      inspTypeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          if (e.target.value === 'EQUIPMENT') {
+            inspEquipmentNameSelect.disabled = false;
+            inspEquipmentNameSelect.required = true;
+          } else {
+            inspEquipmentNameSelect.disabled = true;
+            inspEquipmentNameSelect.required = false;
+            inspEquipmentNameSelect.value = '';
+          }
+        });
+      });
+
+      // 7.5.2. 체크리스트 3번 '조치필요'에 따른 부적합 안전조치 섹션 활성화
+      const chkResult3Radios = document.getElementsByName('chkResult3');
+      const nonComplianceSection = document.getElementById('nonComplianceSection');
+      const nonComplianceInputs = [
+        document.getElementById('inspIssueDesc'),
+        document.getElementById('inspActionReq'),
+        document.getElementById('inspManagerID'),
+        document.getElementById('inspDueDate')
+      ];
+
+      chkResult3Radios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          if (e.target.value === 'ACTION_REQUIRED') {
+            nonComplianceSection.style.opacity = '1';
+            nonComplianceSection.style.pointerEvents = 'auto';
+            nonComplianceInputs.forEach(input => {
+              input.disabled = false;
+              input.required = true;
+            });
+            document.getElementById('inspPhotoFileInput').disabled = false;
+            
+            // Set due date to today + 2 days if empty
+            if (!document.getElementById('inspDueDate').value) {
+              const dueLimit = new Date();
+              dueLimit.setDate(dueLimit.getDate() + 2);
+              document.getElementById('inspDueDate').value = dueLimit.toISOString().split('T')[0];
+            }
+          } else {
+            nonComplianceSection.style.opacity = '0.5';
+            nonComplianceSection.style.pointerEvents = 'none';
+            nonComplianceInputs.forEach(input => {
+              input.disabled = true;
+              input.required = false;
+              input.value = input.tagName === 'SELECT' ? input.options[0].value : '';
+            });
+            document.getElementById('inspPhotoFileInput').disabled = true;
+            document.getElementById('inspPhotoPreview').innerHTML = '';
+            document.getElementById('inspPhotoUploadLabel').textContent = "현장 사진 업로드";
+            inspPhotoUrl = null;
+          }
+        });
+      });
+
+      // 7.5.3. 안전점검 사진 업로드 등록
+      let inspPhotoUrl = null;
+      setupFileUpload('btnUploadInspPhoto', 'inspPhotoFileInput', 'inspPhotoUploadLabel', 'inspPhotoPreview', (url) => { inspPhotoUrl = url; });
+
+      // 7.5.4. 전자서명 패드 기능
+      let sigCanvas, sigCtx;
+      let sigDrawing = false;
+
+      const initSignatureCanvas = () => {
+        sigCanvas = document.getElementById('signatureCanvas');
+        if (!sigCanvas) return;
+
+        // Resize to match actual CSS dimensions
+        const rect = sigCanvas.getBoundingClientRect();
+        sigCanvas.width = rect.width;
+        sigCanvas.height = rect.height;
+
+        sigCtx = sigCanvas.getContext('2d');
+        sigCtx.strokeStyle = '#0f172a';
+        sigCtx.lineWidth = 2.5;
+        sigCtx.lineCap = 'round';
+        sigCtx.lineJoin = 'round';
+
+        const getMousePos = (e) => {
+          const rect = sigCanvas.getBoundingClientRect();
+          return {
+            x: (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left,
+            y: (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top
+          };
+        };
+
+        const startDrawing = (e) => {
+          sigDrawing = true;
+          const pos = getMousePos(e);
+          sigCtx.beginPath();
+          sigCtx.moveTo(pos.x, pos.y);
+          document.getElementById('signaturePlaceholder').style.display = 'none';
+        };
+
+        const draw = (e) => {
+          if (!sigDrawing) return;
+          e.preventDefault();
+          const pos = getMousePos(e);
+          sigCtx.lineTo(pos.x, pos.y);
+          sigCtx.stroke();
+        };
+
+        const stopDrawing = () => {
+          sigDrawing = false;
+        };
+
+        sigCanvas.addEventListener('mousedown', startDrawing);
+        sigCanvas.addEventListener('mousemove', draw);
+        sigCanvas.addEventListener('mouseup', stopDrawing);
+        sigCanvas.addEventListener('mouseleave', stopDrawing);
+
+        sigCanvas.addEventListener('touchstart', (e) => {
+          if (e.target === sigCanvas) e.preventDefault();
+          startDrawing(e);
+        });
+        sigCanvas.addEventListener('touchmove', (e) => {
+          if (e.target === sigCanvas) e.preventDefault();
+          draw(e);
+        });
+        sigCanvas.addEventListener('touchend', stopDrawing);
+      };
+
+      document.getElementById('btnClearSignature').addEventListener('click', () => {
+        if (sigCtx && sigCanvas) {
+          sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+          document.getElementById('signaturePlaceholder').style.display = 'block';
+        }
+      });
+
+      // 7.5.5. 임시 저장 및 최종 제출 통신
+      let lastSubmitStatus = 'SUBMITTED';
+
+      document.getElementById('btnSaveInspDraft').addEventListener('click', () => {
+        lastSubmitStatus = 'DRAFT';
+        // Minimum validation for DRAFT
+        if (!document.getElementById('inspCompanyBranch').value || !document.getElementById('inspDate').value || !document.getElementById('inspInspector').value) {
+          alert("사업장, 점검일자, 점검자는 필수입니다.");
+          return;
+        }
+        submitInspection();
+      });
+
+      document.getElementById('dailyInspectionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        lastSubmitStatus = 'SUBMITTED';
+
+        // Check signature
+        const placeholder = document.getElementById('signaturePlaceholder');
+        if (placeholder.style.display !== 'none') {
+          alert("점검자 서명을 해주세요.");
+          return;
+        }
+        submitInspection();
+      });
+
+      const submitInspection = async () => {
+        const signatureData = sigCanvas ? sigCanvas.toDataURL() : null;
+
+        const payload = {
+          companyBranch: document.getElementById('inspCompanyBranch').value,
+          inspectionType: document.querySelector('input[name="inspType"]:checked').value,
+          equipmentName: document.getElementById('inspEquipmentName').value || null,
+          inspectionDate: document.getElementById('inspDate').value,
+          inspector: document.getElementById('inspInspector').value.trim(),
+          check1Result: document.querySelector('input[name="chkResult1"]:checked').value,
+          check2Result: document.querySelector('input[name="chkResult2"]:checked').value,
+          check3Result: document.querySelector('input[name="chkResult3"]:checked').value,
+          issueDescription: document.getElementById('inspIssueDesc').value.trim(),
+          actionRequired: document.getElementById('inspActionReq').value.trim(),
+          beforePhotoPath: inspPhotoUrl,
+          managerId: document.getElementById('inspManagerID').value,
+          dueDate: document.getElementById('inspDueDate').value,
+          signatureData: signatureData,
+          status: lastSubmitStatus
+        };
+
+        try {
+          const response = await fetch(API_BASE + '/api/inspections', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            const msg = lastSubmitStatus === 'DRAFT' 
+              ? "안전점검 일지가 임시 저장되었습니다." 
+              : "안전점검 일지가 성공적으로 등록되었습니다.";
+            showAlert("점검 일지 등록 완료", msg, () => {
+              // Reset form
+              document.getElementById('dailyInspectionForm').reset();
+              if (sigCtx && sigCanvas) {
+                sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+                document.getElementById('signaturePlaceholder').style.display = 'block';
+              }
+              document.getElementById('inspPhotoPreview').innerHTML = '';
+              document.getElementById('inspPhotoUploadLabel').textContent = "현장 사진 업로드";
+              inspPhotoUrl = null;
+
+              inspEquipmentNameSelect.disabled = true;
+
+              nonComplianceSection.style.opacity = '0.5';
+              nonComplianceSection.style.pointerEvents = 'none';
+              nonComplianceInputs.forEach(input => {
+                input.disabled = true;
+              });
+              document.getElementById('inspPhotoFileInput').disabled = true;
+
+              // Back to master list
+              const masterTab = document.querySelector('.sidebar-nav .nav-item[data-tab="classify"]');
+              if (masterTab) masterTab.click();
+            });
+          } else {
+            alert("저장 실패: " + result.message);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("서버 통신 실패");
+        }
+      };
+
+      // 7.6. [화면 5] 안전점검현황 스크립트
+      // 필터 날짜 기본값 세팅
+      document.getElementById('filterInspStartDate').value = yearStart.toISOString().split('T')[0];
+      document.getElementById('filterInspEndDate').value = now.toISOString().split('T')[0];
+
+      let loadedInspections = [];
+      let selectedInspection = null;
+
+      const inspectionListTableBody = document.getElementById('inspectionListTableBody');
+      const inspectionDetailEmptyState = document.getElementById('inspectionDetailEmptyState');
+      const inspectionDetailPanel = document.getElementById('inspectionDetailPanel');
+
+      const loadInspectionsList = async () => {
+        try {
+          const response = await fetch(API_BASE + '/api/inspections');
+          const result = await response.json();
+
+          if (result.success) {
+            loadedInspections = result.data;
+            filterAndRenderInspections();
+          }
+        } catch (err) {
+          console.error("안전점검 목록 로딩 실패:", err);
+        }
+      };
+
+      const filterAndRenderInspections = () => {
+        const startDate = document.getElementById('filterInspStartDate').value;
+        const endDate = document.getElementById('filterInspEndDate').value;
+        const typeFilter = document.getElementById('filterInspType').value;
+        const statusFilter = document.getElementById('filterInspStatus').value;
+
+        const filtered = loadedInspections.filter(item => {
+          if (startDate && item.InspectionDate < startDate) return false;
+          if (endDate && item.InspectionDate > endDate) return false;
+          if (typeFilter !== 'ALL' && item.InspectionType !== typeFilter) return false;
+          if (statusFilter !== 'ALL' && item.Status !== statusFilter) return false;
+          return true;
+        });
+
+        renderInspectionsTable(filtered);
+      };
+
+      const renderInspectionsTable = (inspections) => {
+        inspectionListTableBody.innerHTML = '';
+
+        if (inspections.length === 0) {
+          inspectionListTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
+                조회할 안전점검 내역이 없습니다.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        inspections.forEach((insp) => {
+          const tr = document.createElement('tr');
+          if (selectedInspection && selectedInspection.InspectionID === insp.InspectionID) {
+            tr.className = 'selected-row';
+          }
+
+          const typeLabels = {
+            SITE: '일일 현장',
+            EQUIPMENT: '일일 장비'
+          };
+
+          const statusLabels = {
+            DRAFT: '임시저장',
+            SUBMITTED: '제출완료'
+          };
+
+          const statusColor = insp.Status === 'SUBMITTED' ? 'status-resolved' : 'status-pending';
+
+          const score1 = insp.Check1Result === 'GOOD' ? 'O' : (insp.Check1Result === 'ACTION_REQUIRED' ? 'X' : '-');
+          const score2 = insp.Check2Result === 'GOOD' ? 'O' : (insp.Check2Result === 'ACTION_REQUIRED' ? 'X' : '-');
+          const score3 = insp.Check3Result === 'GOOD' ? 'O' : (insp.Check3Result === 'ACTION_REQUIRED' ? 'X' : '-');
+
+          tr.innerHTML = `
+            <td>${insp.InspectionID}</td>
+            <td class="td-date">${insp.InspectionDate}</td>
+            <td><span class="tag-type type-etc" style="font-size: 11px;">${typeLabels[insp.InspectionType] || insp.InspectionType}</span></td>
+            <td style="font-weight:600;">${insp.EquipmentName || '-'}</td>
+            <td>${insp.Inspector}</td>
+            <td style="text-align: center; font-weight: bold; font-size: 12px;">${score1}/${score2}/${score3}</td>
+            <td style="text-align: center;"><span class="status-badge ${statusColor}" style="margin: 0; font-size: 11px; padding: 2px 6px;">${statusLabels[insp.Status] || insp.Status}</span></td>
+          `;
+
+          tr.addEventListener('click', () => {
+            document.querySelectorAll('#inspectionListTableBody tr').forEach(row => row.classList.remove('selected-row'));
+            tr.classList.add('selected-row');
+
+            selectedInspection = insp;
+            renderInspectionDetail(insp);
+          });
+
+          inspectionListTableBody.appendChild(tr);
+        });
+      };
+
+      const renderInspectionDetail = (insp) => {
+        inspectionDetailEmptyState.style.display = 'none';
+        inspectionDetailPanel.style.display = 'block';
+
+        const typeLabels = {
+          SITE: '일일 현장 점검',
+          EQUIPMENT: '일일 장비 점검'
+        };
+
+        const statusLabels = {
+          DRAFT: '임시저장',
+          SUBMITTED: '제출완료'
+        };
+
+        document.getElementById('detailInspTitle').textContent = `일일 안전점검 일지 (No.${insp.InspectionID})`;
+        const statusBadge = document.getElementById('detailInspStatusBadge');
+        statusBadge.textContent = statusLabels[insp.Status] || insp.Status;
+        statusBadge.className = insp.Status === 'SUBMITTED' ? 'status-badge status-resolved' : 'status-badge status-pending';
+
+        document.getElementById('detailBranch').textContent = insp.CompanyBranch;
+        document.getElementById('detailType').textContent = typeLabels[insp.InspectionType] || insp.InspectionType;
+        document.getElementById('detailEquipment').textContent = insp.EquipmentName || '-';
+        document.getElementById('detailDate').textContent = insp.InspectionDate;
+        document.getElementById('detailInspector').textContent = insp.Inspector;
+
+        const setChkBadge = (elementId, value) => {
+          const el = document.getElementById(elementId);
+          if (value === 'GOOD') {
+            el.textContent = '양호';
+            el.className = 'status-badge status-resolved';
+            el.style.backgroundColor = '';
+            el.style.color = '';
+          } else if (value === 'ACTION_REQUIRED') {
+            el.textContent = '조치필요';
+            el.className = 'status-badge status-pending';
+            el.style.backgroundColor = '';
+            el.style.color = '';
+          } else {
+            el.textContent = 'N/A';
+            el.className = 'status-badge';
+            el.style.backgroundColor = '#e2e8f0';
+            el.style.color = '#475569';
+          }
+        };
+
+        setChkBadge('detailChk1Badge', insp.Check1Result);
+        setChkBadge('detailChk2Badge', insp.Check2Result);
+        setChkBadge('detailChk3Badge', insp.Check3Result);
+
+        const ncSection = document.getElementById('detailNonComplianceSection');
+        if (insp.Check3Result === 'ACTION_REQUIRED') {
+          ncSection.style.display = 'block';
+          document.getElementById('detailIssueDesc').textContent = insp.IssueDescription || '';
+          document.getElementById('detailActionReq').textContent = insp.ActionRequired || '';
+          document.getElementById('detailManager').textContent = insp.ManagerID || '-';
+          document.getElementById('detailDueDate').textContent = insp.DueDate || '-';
+
+          const photoContainer = document.getElementById('detailPhotoContainer');
+          if (insp.BeforePhotoPath) {
+            photoContainer.style.display = 'block';
+            document.getElementById('detailPhotoImg').src = insp.BeforePhotoPath;
+          } else {
+            photoContainer.style.display = 'none';
+          }
+        } else {
+          ncSection.style.display = 'none';
+        }
+
+        const sigImg = document.getElementById('detailSignatureImg');
+        if (insp.SignatureData) {
+          sigImg.src = insp.SignatureData;
+          sigImg.style.display = 'block';
+        } else {
+          sigImg.style.display = 'none';
+        }
+      };
+
+      document.getElementById('btnFilterInspSearch').addEventListener('click', filterAndRenderInspections);
+
+      // 8. Logout logic
+      const logoutAction = (e) => {
+        e.preventDefault();
+        if (confirm('로그아웃 하시겠습니까?')) {
+          sessionStorage.removeItem('bizpro_manager_name');
+          sessionStorage.removeItem('bizpro_company_name');
+          window.location.href = 'index.html';
+        }
+      };
+
+      const sidebarLogout = document.getElementById('sidebarLogout');
+      const headerLogoutBtn = document.getElementById('headerLogoutBtn');
+      if (sidebarLogout) sidebarLogout.addEventListener('click', logoutAction);
+      if (headerLogoutBtn) headerLogoutBtn.addEventListener('click', logoutAction);
+
+      // Initial load
+      loadIncidents();
+    });
+  </script>
+</body>
+
+</html>
