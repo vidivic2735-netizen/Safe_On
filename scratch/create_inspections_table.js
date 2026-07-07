@@ -17,7 +17,7 @@ async function createTable() {
         console.log("Connecting to database...");
         let pool = await sql.connect(dbConfig);
         console.log("Connected. Creating DailyInspections table if not exists...");
-        
+
         await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='DailyInspections' AND xtype='U')
             BEGIN
@@ -47,7 +47,7 @@ async function createTable() {
                 PRINT 'Table DailyInspections already exists.';
             END
         `);
-        
+
         await sql.close();
         console.log("Done!");
     } catch (err) {
