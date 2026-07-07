@@ -25,9 +25,17 @@
       </div>
 
       <nav class="sidebar-nav">
+        <a href="#" class="nav-item" data-tab="inspection">
+          <span class="nav-icon">📋</span>
+          <span>일일 안전점검 등록</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="inspectionList">
+          <span class="nav-icon">📂</span>
+          <span>안전점검현황</span>
+        </a>
         <a href="#" class="nav-item active" data-tab="classify">
           <span class="nav-icon">📊</span>
-          <span>마스터 관리</span>
+          <span>사고현황</span>
         </a>
         <a href="#" class="nav-item" data-tab="report">
           <span class="nav-icon">📝</span>
@@ -36,14 +44,6 @@
         <a href="#" class="nav-item" data-tab="countermeasure">
           <span class="nav-icon">🛡️</span>
           <span>감소대책 및 이행</span>
-        </a>
-        <a href="#" class="nav-item" data-tab="inspection">
-          <span class="nav-icon">📋</span>
-          <span>일일 안전점검 등록</span>
-        </a>
-        <a href="#" class="nav-item" data-tab="inspectionList">
-          <span class="nav-icon">📂</span>
-          <span>안전점검현황</span>
         </a>
         <div class="sidebar-divider"></div>
         <a href="index.html" class="nav-item logout-nav-item" id="sidebarLogout">
@@ -69,7 +69,7 @@
       <!-- Top Header -->
       <header class="db-header">
         <div class="header-left">
-          <h2 id="currentTabTitle">사고 데이터 분류 및 마스터 관리</h2>
+          <h2 id="currentTabTitle">사고 데이터 분류 및 사고현황</h2>
           <p class="today-date" id="currentDateText">2026년 6월 18일 목요일</p>
         </div>
         <div class="header-right">
@@ -835,7 +835,7 @@
       const currentTabTitle = document.getElementById('currentTabTitle');
 
       const tabTitles = {
-        classify: '사고 데이터 분류 및 마스터 관리',
+        classify: '사고 데이터 분류 및 사고현황',
         report: '사고 및 대상 장비 정보 등록',
         countermeasure: '안전 대책 수립 및 개선 이행 관리',
         inspection: '일일 안전점검 등록',
