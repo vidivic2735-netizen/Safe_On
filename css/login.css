@@ -167,13 +167,15 @@
 .forms-slider {
   display: flex;
   transition: transform var(--transition-normal);
-  width: 200%; /* Two forms side-by-side */
+  width: 200%;
+  /* Two forms side-by-side */
 }
 
 .form-slide {
   width: 50%;
   flex-shrink: 0;
-  padding: 0 4px; /* Tiny buffer to avoid shadows getting clipped */
+  padding: 0 4px;
+  /* Tiny buffer to avoid shadows getting clipped */
   transition: opacity var(--transition-normal);
 }
 
@@ -219,7 +221,8 @@
 }
 
 .form-label span {
-  color: #ef4444; /* Required mark red */
+  color: #ef4444;
+  /* Required mark red */
 }
 
 .input-wrap {
@@ -247,7 +250,8 @@
 }
 
 .input-wrap .form-input {
-  padding-left: 44px; /* Spacing for the icon */
+  padding-left: 44px;
+  /* Spacing for the icon */
 }
 
 .form-input:focus {
@@ -445,7 +449,8 @@
   }
 
   .login-info-panel {
-    display: none; /* Hide panels on mobile for better usability */
+    display: none;
+    /* Hide panels on mobile for better usability */
   }
 
   .login-card {

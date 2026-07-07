@@ -449,6 +449,128 @@ ${question}
     }
 });
 
+// API: Analyze Safety Inspection Details with BizPro AI
+app.post('/api/gemini/analyze-inspection', async (req, res) => {
+    const { inspectionId } = req.body;
+
+    if (!inspectionId) {
+        return res.status(400).json({ success: false, message: '점검 ID는 필수 항목입니다.' });
+    }
+
+    try {
+        let inspection = null;
+        try {
+            const pool = await getPool();
+            const result = await pool.request()
+                .input('inspectionId', sql.Int, inspectionId)
+                .query('SELECT * FROM DailyInspections WHERE InspectionID = @inspectionId');
+            if (result.recordset.length > 0) {
+                inspection = result.recordset[0];
+            }
+        } catch (dbErr) {
+            console.error('Gemini Inspection DB query failed, checking fallback data:', dbErr.message);
+        }
+
+        // Fallback mock inspection if DB is offline or not found
+        if (!inspection) {
+            inspection = {
+                InspectionID: inspectionId,
+                CompanyBranch: '제1공장',
+                InspectionType: 'SITE',
+                EquipmentName: '조립 라인 B',
+                InspectionDate: new Date().toISOString().split('T')[0],
+                Inspector: '김안전',
+                Check1Result: 'GOOD',
+                Check2Result: 'ACTION_REQUIRED',
+                Check3Result: 'GOOD',
+                IssueDescription: '분전함 주변에 이동식 적재 대차가 배치되어 있어 비상시 접근이 차단됨.',
+                ActionRequired: '이동식 대차를 적치 구역으로 이동시키고 분전함 전면 1m 내 황색 구획선 도색 조치.',
+                ManagerID: '이조치 주임',
+                DueDate: new Date().toISOString().split('T')[0]
+            };
+        }
+
+        const prompt = `당신은 대한민국 안전보건공단(KOSHA) 가이드 및 산업안전보건법을 숙지한 전문 안전 관리 AI인 "비즈프로 AI"입니다.
+다음 안전 점검 내역을 분석하여, 안전 관점에서 [위험한 내용], [부족한 부분], [잘 된 부분]을 분류하고 각각 간략하게 정리해 주세요.
+
+[안전 점검 정보]
+- 점검 ID: ${inspection.InspectionID}
+- 사업장: ${inspection.CompanyBranch}
+- 점검 유형: ${inspection.InspectionType} (SITE: 현장 점검, EQUIPMENT: 장비 점검)
+- 점검 장비: ${inspection.EquipmentName || '없음'}
+- 점검 일자: ${inspection.InspectionDate}
+- 점검자: ${inspection.Inspector}
+
+[체크리스트 결과]
+1. 방호장치 정상 작동 여부: ${inspection.Check1Result === 'GOOD' ? '양호' : '조치필요'}
+2. 전기 분전함 전면 적재물 및 외함 접지 상태: ${inspection.Check2Result === 'GOOD' ? '양호' : '조치필요'}
+3. 현장 내 통로 및 비상구 주위 상태: ${inspection.Check3Result === 'GOOD' ? '양호' : '조치필요'}
+
+${inspection.Check1Result === 'ACTION_REQUIRED' || inspection.Check2Result === 'ACTION_REQUIRED' || inspection.Check3Result === 'ACTION_REQUIRED' ? `
+[부적합 조치사항]
+- 위험 요인 설명: ${inspection.IssueDescription || '없음'}
+- 조치 요구사항: ${inspection.ActionRequired || '없음'}
+- 조치 담당자: ${inspection.ManagerID || '없음'}
+- 조치 기한: ${inspection.DueDate || '없음'}
+` : ''}
+
+[답변 형식 가이드]
+- 다음 세 가지 항목을 명확히 구분하여 작성해 주세요. 한국어로 마크다운 스타일을 사용해 간결하게 응답해 주세요.
+- **[위험한 내용]**:
+- **[부족한 부분]**:
+- **[잘 된 부분]**:`;
+
+        // Check if API key is configured
+        if (process.env.GEMINI_API_KEY) {
+            try {
+                const { GoogleGenAI } = require('@google/genai');
+                const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+                const response = await ai.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: prompt
+                });
+                return res.json({ success: true, answer: response.text });
+            } catch (geminiErr) {
+                console.error('Gemini API call failed, falling back to simulated response:', geminiErr.message);
+            }
+        }
+
+        // Rich Simulated Fallback Response (if key not set or failed)
+        let simulatedAnswer = `### ✨ 비즈프로 AI 안전 점검 분석 보고서
+
+> 💡 **알림**: 환경변수에 \`GEMINI_API_KEY\`가 설정되지 않아 시뮬레이션 데이터로 안전 분석 결과를 제시합니다.
+
+**점검 일지 (No.${inspection.InspectionID})**에 대한 비즈프로 AI 분석 의견입니다:
+
+#### 1. 🚨 **위험한 내용**
+${inspection.Check1Result === 'ACTION_REQUIRED' || inspection.Check2Result === 'ACTION_REQUIRED' || inspection.Check3Result === 'ACTION_REQUIRED' ? `
+- **부적합 사항 감지**: 일부 점검 항목에서 조치필요 판정이 확인되었습니다.
+- **위험 요인**: ${inspection.IssueDescription || '구체적인 위험 요인이 등록되지 않았으나 안전 확인이 요구됩니다.'}
+- **위험 요약**: 방호장치 결함 시 설비 말림 위험, 분전함 적재물 적치 시 과열로 인한 화재 및 누전/감전 위험, 통로 적치물 시 긴급 대피 차단 및 전도 리스크가 존재합니다.
+` : `
+- **직접적인 물리 위험 없음**: 주요 3대 위험 요소(방호장치, 분전함, 대피로)가 모두 '양호'로 판정되어 직접적이고 시급한 위험 요인은 관찰되지 않습니다.
+`}
+
+#### 2. ⚠️ **부족한 부분**
+${inspection.Check1Result === 'ACTION_REQUIRED' || inspection.Check2Result === 'ACTION_REQUIRED' || inspection.Check3Result === 'ACTION_REQUIRED' ? `
+- **이행 지연 리스크**: 담당자(${inspection.ManagerID || '미정'}) 및 조치 기한(${inspection.DueDate || '미정'}) 내에 실질적인 작업 및 이동 조치(${inspection.ActionRequired || '미입력'})가 완료되는지 지속적 팔로우업이 필요합니다.
+- **안전 표지 부재**: 임시 차단 구역이나 경고 표지가 누락되었을 수 있어 신속히 보완해야 합니다.
+` : `
+- **장기적인 잠재 위해 관리**: 정기적인 법적 안전 보건 교육의 적정성 검토 및 작업자 개개인의 안전 보호구 착용 실태 점검 등 무형적 안전 활동에 대한 보완이 권장됩니다.
+`}
+
+#### 3. ✅ **잘 된 부분**
+- **체크리스트 양호 요인**:
+${inspection.Check1Result === 'GOOD' ? '  - **방호장치 정상**: 기계 설비의 위험 부분에 방호막/방호장치가 완전하게 설치되어 작동하고 있습니다.\n' : ''}${inspection.Check2Result === 'GOOD' ? '  - **전기 안전 수칙 준수**: 전기 판넬 및 분전함 전면 공간이 상시 개방되어 양호하게 통제되고 있습니다.\n' : ''}${inspection.Check3Result === 'GOOD' ? '  - **비상 통로 확보**: 통행 및 대피 통로에 장애물이 없고 정리가 잘 되어 있습니다.\n' : ''}- **예방 점검 수행**: 점검자 **${inspection.Inspector}**님이 점검일자 **${inspection.InspectionDate}**에 점검 활동을 성실히 이행 및 기록 관리하였습니다.
+`;
+        return res.json({ success: true, answer: simulatedAnswer });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: 'AI 점검 분석 중 서버 오류가 발생했습니다.' });
+    }
+});
+
 // API: Save/Update Incident Classification (Screen 2)
 app.post('/api/classifications', async (req, res) => {
     const {

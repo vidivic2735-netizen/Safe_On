@@ -201,9 +201,9 @@
                 <div class="compliance-detail-card" style="padding: 16px; margin-top: 16px; border: 1px dashed #c084fc; background: linear-gradient(to bottom right, #faf5ff, #ffffff);">
                   <div style="display: flex; align-items: center; justify-content: justify; justify-content: space-between; margin-bottom: 12px;">
                     <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #6b21a8; display: flex; align-items: center; gap: 6px;">
-                      <span>✨</span> AI 안전 조언자 제미나이
+                      <span>✨</span> AI 안전 조언자 비즈프로 AI
                     </h4>
-                    <span class="status-badge" style="background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; font-size: 11px; margin: 0; padding: 2px 8px;">Gemini 2.5 Flash</span>
+                    <span class="status-badge" style="background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; font-size: 11px; margin: 0; padding: 2px 8px;">BizPro AI</span>
                   </div>
                   
                   <p style="font-size: 11px; color: #6b7280; margin: 0 0 12px 0;">
@@ -212,7 +212,7 @@
 
                   <!-- Chat Response Window -->
                   <div id="geminiResponseBox" style="min-height: 80px; max-height: 250px; overflow-y: auto; background-color: #fdfbf7; border: 1px solid #ebd9fc; border-radius: 6px; padding: 12px; font-size: 12px; color: #374151; margin-bottom: 12px; line-height: 1.5; white-space: pre-wrap;">
-                    <span style="color: #9ca3af; font-style: italic;">질문을 입력하시면 제미나이의 안전 대책 및 법적 조언 분석 결과가 이곳에 출력됩니다.</span>
+                    <span style="color: #9ca3af; font-style: italic;">질문을 입력하시면 비즈프로 AI의 안전 대책 및 법적 조언 분석 결과가 이곳에 출력됩니다.</span>
                   </div>
 
                   <!-- Question Input -->
@@ -222,7 +222,7 @@
 
                   <div style="display: flex; justify-content: flex-end;">
                     <button type="button" class="btn" id="btnAskGemini" style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; padding: 8px 16px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);">
-                      <span>✨</span> 제미나이에게 물어보기
+                      <span>✨</span> 비즈프로 AI에게 물어보기
                     </button>
                   </div>
                 </div>
@@ -748,10 +748,20 @@
                 </div>
 
                 <!-- Signature -->
-                <div style="border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 12px; margin-bottom: 12px;">
                   <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 700; color: #334155;">■ 점검자 확인 서명</h4>
                   <div style="border: 1px solid #cbd5e1; border-radius: 6px; background-color: #fafafa; height: 80px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                     <img id="detailSignatureImg" src="" style="max-height: 100%; max-width: 100%; display: block;" alt="서명 이미지 없음">
+                  </div>
+                </div>
+
+                <!-- AI Safety Inspection Analysis Card -->
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                  <button type="button" class="btn" id="btnAnalyzeInspection" style="background: linear-gradient(135deg, #0284c7, #0ea5e9); color: #fff; width: 100%; padding: 10px; font-size: 13px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);">
+                    <span>✨</span> 비즈프로 AI 점검내역 분석
+                  </button>
+                  
+                  <div id="inspectionAnalysisResultBox" style="display: none; margin-top: 12px; background-color: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 12px; font-size: 12.5px; color: #0f172a; line-height: 1.5; white-space: pre-wrap;">
                   </div>
                 </div>
               </div>
@@ -1086,7 +1096,7 @@
         // Reset Gemini panel for the newly selected accident
         document.getElementById('geminiQuestionInput').value = '';
         document.getElementById('geminiResponseBox').innerHTML = `
-          <span style="color: #9ca3af; font-style: italic;">질문을 입력하시면 제미나이의 안전 대책 및 법적 조언 분석 결과가 이곳에 출력됩니다.</span>
+          <span style="color: #9ca3af; font-style: italic;">질문을 입력하시면 비즈프로 AI의 안전 대책 및 법적 조언 분석 결과가 이곳에 출력됩니다.</span>
         `;
       };
 
@@ -1168,7 +1178,7 @@
         responseBox.innerHTML = `
           <div style="display: flex; align-items: center; gap: 8px; color: #7c3aed; font-weight: 600;">
             <span style="display: inline-block; animation: spin 1s linear-infinite; font-size: 14px;">⌛</span>
-            제미나이가 사고 정보를 분석하고 답변을 작성 중입니다...
+            비즈프로 AI가 사고 정보를 분석하고 답변을 작성 중입니다...
           </div>
         `;
         askButton.disabled = true;
@@ -1726,6 +1736,10 @@
         inspectionDetailEmptyState.style.display = 'none';
         inspectionDetailPanel.style.display = 'block';
 
+        // Reset AI analysis box
+        document.getElementById('inspectionAnalysisResultBox').style.display = 'none';
+        document.getElementById('inspectionAnalysisResultBox').innerHTML = '';
+
         const typeLabels = {
           SITE: '일일 현장 점검',
           EQUIPMENT: '일일 장비 점검'
@@ -1800,6 +1814,50 @@
       };
 
       document.getElementById('btnFilterInspSearch').addEventListener('click', filterAndRenderInspections);
+
+      // AI Safety Inspection Analysis Listener
+      document.getElementById('btnAnalyzeInspection').addEventListener('click', async () => {
+        if (!selectedInspection) return;
+
+        const resultBox = document.getElementById('inspectionAnalysisResultBox');
+        const analyzeBtn = document.getElementById('btnAnalyzeInspection');
+
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px; color: #0284c7; font-weight: 600;">
+            <span style="display: inline-block; animation: spin 1s linear-infinite; font-size: 14px;">⌛</span>
+            비즈프로 AI가 점검 내역을 분석 중입니다...
+          </div>
+        `;
+        analyzeBtn.disabled = true;
+
+        try {
+          const response = await fetch(API_BASE + '/api/gemini/analyze-inspection', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ inspectionId: selectedInspection.InspectionID })
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            let answerHtml = result.answer
+              .replace(/### (.*)/g, '<h4 style="margin: 12px 0 6px 0; color: #0f172a; font-size: 13px; font-weight: 700;">$1</h4>')
+              .replace(/#### (.*)/g, '<h5 style="margin: 8px 0 4px 0; color: #1e293b; font-size: 12px; font-weight: 700;">$1</h5>')
+              .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+              .replace(/`([^`]+)`/g, '<code style="background-color: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>')
+              .replace(/> (.*)/g, '<blockquote style="border-left: 3px solid #0284c7; padding-left: 8px; color: #0369a1; margin: 8px 0; font-style: italic;">$1</blockquote>')
+              .replace(/- (.*)/g, '<li style="margin-left: 12px; list-style-type: disc;">$1</li>');
+            resultBox.innerHTML = answerHtml;
+          } else {
+            resultBox.innerHTML = `<span style="color: #dc2626;">분석 실패: ${result.message}</span>`;
+          }
+        } catch (err) {
+          console.error(err);
+          resultBox.innerHTML = `<span style="color: #dc2626;">분석 중 오류가 발생했습니다.</span>`;
+        } finally {
+          analyzeBtn.disabled = false;
+        }
+      });
 
       // 8. Logout logic
       const logoutAction = (e) => {
