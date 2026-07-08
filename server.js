@@ -3,6 +3,7 @@ const cors = require('cors');
 const sql = require('mssql');
 const crypto = require('crypto');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -74,6 +75,27 @@ getPool()
 // Helper: MD5 Hashing (Uppercase 32 chars)
 function md5Hash(text) {
     return crypto.createHash('md5').update(text).digest('hex').toUpperCase();
+}
+
+// Helper: Save Base64 Image to File
+function saveBase64Image(fileData, prefix) {
+    if (!fileData) return null;
+    try {
+        const uploadsDir = path.join(__dirname, 'uploads');
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir);
+        }
+
+        const base64Data = fileData.replace(/^data:.*?;base64,/, "");
+        const uniqueName = `${prefix}_${Date.now()}_${crypto.randomUUID().substring(0, 8)}.png`;
+        const filePath = path.join(uploadsDir, uniqueName);
+
+        fs.writeFileSync(filePath, base64Data, 'base64');
+        return `/uploads/${uniqueName}`;
+    } catch (err) {
+        console.error('Error saving base64 image:', err);
+        return null;
+    }
 }
 
 // Redirect root to index.html
@@ -462,8 +484,57 @@ app.post('/api/gemini/analyze-inspection', async (req, res) => {
         try {
             const pool = await getPool();
             const result = await pool.request()
-                .input('inspectionId', sql.Int, inspectionId)
-                .query('SELECT * FROM DailyInspections WHERE InspectionID = @inspectionId');
+                .input('inspectionId', sql.VarChar(36), inspectionId)
+                .query(`
+                    SELECT 
+                        m.inspection_id AS InspectionID,
+                        CASE m.site_id 
+                            WHEN 'SEOUL' THEN '서울 본사 공장'
+                            WHEN 'BUSAN' THEN '부산 지사 공장'
+                            WHEN 'INCHEON' THEN '인천 물류 센터'
+                            ELSE m.site_id
+                        END AS CompanyBranch,
+                        CASE m.inspection_type
+                            WHEN 'FIELD' THEN 'SITE'
+                            WHEN 'EQUIP' THEN 'EQUIPMENT'
+                            ELSE m.inspection_type
+                        END AS InspectionType,
+                        m.equipment_id AS EquipmentName,
+                        CONVERT(varchar(10), m.inspection_date, 120) AS InspectionDate,
+                        m.inspector_id AS Inspector,
+                        CASE d1.result_status
+                            WHEN 'PASS' THEN 'GOOD'
+                            WHEN 'FAIL' THEN 'ACTION_REQUIRED'
+                            ELSE d1.result_status
+                        END AS Check1Result,
+                        CASE d2.result_status
+                            WHEN 'PASS' THEN 'GOOD'
+                            WHEN 'FAIL' THEN 'ACTION_REQUIRED'
+                            ELSE d2.result_status
+                        END AS Check2Result,
+                        CASE d3.result_status
+                            WHEN 'PASS' THEN 'GOOD'
+                            WHEN 'FAIL' THEN 'ACTION_REQUIRED'
+                            ELSE d3.result_status
+                        END AS Check3Result,
+                        nc.issue_description AS IssueDescription,
+                        nc.action_required AS ActionRequired,
+                        nc.before_img_path AS BeforePhotoPath,
+                        nc.manager_id AS ManagerID,
+                        CONVERT(varchar(10), nc.due_date, 120) AS DueDate,
+                        m.signature_path AS SignatureData,
+                        CASE m.has_signature
+                            WHEN 1 THEN 'SUBMITTED'
+                            ELSE 'DRAFT'
+                        END AS Status,
+                        m.created_at AS RegDateTime
+                    FROM Safety_Inspection_Master m
+                    LEFT JOIN Safety_Inspection_Details d1 ON m.inspection_id = d1.inspection_id AND d1.item_code = 'ITEM_01'
+                    LEFT JOIN Safety_Inspection_Details d2 ON m.inspection_id = d2.inspection_id AND d2.item_code = 'ITEM_02'
+                    LEFT JOIN Safety_Inspection_Details d3 ON m.inspection_id = d3.inspection_id AND d3.item_code = 'ITEM_03'
+                    LEFT JOIN Safety_Non_Compliance nc ON m.inspection_id = nc.inspection_id AND nc.detail_id = d3.detail_id
+                    WHERE m.inspection_id = @inspectionId
+                `);
             if (result.recordset.length > 0) {
                 inspection = result.recordset[0];
             }
@@ -760,35 +831,134 @@ app.post('/api/inspections', async (req, res) => {
 
     try {
         const pool = await getPool();
-        await pool.request()
-            .input('companyBranch', sql.NVarChar(100), companyBranch)
-            .input('inspectionType', sql.VarChar(50), inspectionType)
-            .input('equipmentName', sql.NVarChar(150), equipmentName || null)
-            .input('inspectionDate', sql.VarChar(10), inspectionDate)
-            .input('inspector', sql.NVarChar(100), inspector)
-            .input('check1Result', sql.VarChar(20), check1Result)
-            .input('check2Result', sql.VarChar(20), check2Result)
-            .input('check3Result', sql.VarChar(20), check3Result)
-            .input('issueDescription', sql.NVarChar(sql.MAX), issueDescription || null)
-            .input('actionRequired', sql.NVarChar(sql.MAX), actionRequired || null)
-            .input('beforePhotoPath', sql.NVarChar(500), beforePhotoPath || null)
-            .input('managerId', sql.NVarChar(100), managerId || null)
-            .input('dueDate', sql.VarChar(10), dueDate || null)
-            .input('signatureData', sql.NVarChar(sql.MAX), signatureData || null)
-            .input('status', sql.VarChar(20), status)
-            .query(`
-                INSERT INTO DailyInspections (
-                    CompanyBranch, InspectionType, EquipmentName, InspectionDate, Inspector,
-                    Check1Result, Check2Result, Check3Result, IssueDescription, ActionRequired,
-                    BeforePhotoPath, ManagerID, DueDate, SignatureData, Status, RegDateTime
-                ) VALUES (
-                    @companyBranch, @inspectionType, @equipmentName, @inspectionDate, @inspector,
-                    @check1Result, @check2Result, @check3Result, @issueDescription, @actionRequired,
-                    @beforePhotoPath, @managerId, @dueDate, @signatureData, @status, GETDATE()
-                )
-            `);
 
-        return res.status(201).json({ success: true, message: '안전점검 일지가 성공적으로 등록되었습니다.' });
+        // 1. Process signature base64 -> save as file if present
+        let sigPath = null;
+        let hasSig = 0;
+        if (signatureData) {
+            sigPath = saveBase64Image(signatureData, 'sig');
+            if (sigPath) {
+                hasSig = 1;
+            }
+        }
+
+        // 2. Map branch to site_id
+        let siteId = 'SEOUL';
+        if (companyBranch === '서울 본사 공장') siteId = 'SEOUL';
+        else if (companyBranch === '부산 지사 공장') siteId = 'BUSAN';
+        else if (companyBranch === '인천 물류 센터') siteId = 'INCHEON';
+        else siteId = companyBranch.substring(0, 20); // fallback
+
+        // Map inspectionType to MASTER constraint: 'FIELD' or 'EQUIP'
+        let mappedType = 'FIELD';
+        if (inspectionType === 'EQUIPMENT') mappedType = 'EQUIP';
+        else if (inspectionType === 'SITE') mappedType = 'FIELD';
+        else mappedType = inspectionType.substring(0, 20);
+
+        // Truncate other inputs to match database lengths safely (preventing multi-byte truncation errors)
+        const inspectorId = inspector ? inspector.split(/[\s\(]/)[0].substring(0, 6) : 'System';
+        const equipId = equipmentName ? equipmentName.substring(0, 12) : null;
+
+        // Generate UUID
+        const inspectionId = crypto.randomUUID();
+        const parsedInspDate = inspectionDate ? new Date(inspectionDate) : new Date();
+
+        // 3. Database Transaction
+        const transaction = new sql.Transaction(pool);
+        await transaction.begin();
+
+        try {
+            // A. Insert into Safety_Inspection_Master
+            const masterRequest = new sql.Request(transaction);
+            await masterRequest
+                .input('inspectionId', sql.VarChar(36), inspectionId)
+                .input('siteId', sql.VarChar(20), siteId)
+                .input('inspectionDate', sql.Date, parsedInspDate)
+                .input('inspectorId', sql.NVarChar(20), inspectorId)
+                .input('inspectionType', sql.VarChar(20), mappedType)
+                .input('equipmentId', sql.NVarChar(36), equipId)
+                .input('hasSignature', sql.Bit, hasSig)
+                .input('signaturePath', sql.VarChar(255), sigPath)
+                .query(`
+                    INSERT INTO Safety_Inspection_Master (
+                        inspection_id, site_id, inspection_date, inspector_id, inspection_type,
+                        equipment_id, has_signature, signature_path, created_at
+                    ) VALUES (
+                        @inspectionId, @siteId, @inspectionDate, @inspectorId, @inspectionType,
+                        @equipmentId, @hasSignature, @signaturePath, GETDATE()
+                    )
+                `);
+
+            // B. Insert into Safety_Inspection_Details for each item
+            // Map check results to DETAILS constraint: 'PASS', 'FAIL', or 'NA'
+            const mapResultStatus = (res) => {
+                if (res === 'GOOD') return 'PASS';
+                if (res === 'ACTION_REQUIRED') return 'FAIL';
+                return 'NA';
+            };
+
+            const results = [
+                { itemCode: 'ITEM_01', resultStatus: mapResultStatus(check1Result) },
+                { itemCode: 'ITEM_02', resultStatus: mapResultStatus(check2Result) },
+                { itemCode: 'ITEM_03', resultStatus: mapResultStatus(check3Result) }
+            ];
+
+            let item3DetailId = null;
+
+            for (const r of results) {
+                const detailRequest = new sql.Request(transaction);
+                const detailResult = await detailRequest
+                    .input('inspectionId', sql.VarChar(36), inspectionId)
+                    .input('itemCode', sql.VarChar(10), r.itemCode)
+                    .input('resultStatus', sql.VarChar(10), r.resultStatus)
+                    .query(`
+                        INSERT INTO Safety_Inspection_Details (inspection_id, item_code, result_status)
+                        OUTPUT INSERTED.detail_id
+                        VALUES (@inspectionId, @itemCode, @resultStatus)
+                    `);
+                
+                if (r.itemCode === 'ITEM_03') {
+                    item3DetailId = detailResult.recordset[0].detail_id;
+                }
+            }
+
+            // C. Insert into Safety_Non_Compliance if item 3 requires action
+            if (check3Result === 'ACTION_REQUIRED') {
+                const ncId = crypto.randomUUID();
+                const mId = managerId ? managerId.split(/[\s\(]/)[0].substring(0, 6) : 'System';
+                const beforeImg = beforePhotoPath ? beforePhotoPath.substring(0, 255) : null;
+                const parsedDueDate = dueDate ? new Date(dueDate) : new Date();
+                const ncRequest = new sql.Request(transaction);
+
+                await ncRequest
+                    .input('ncId', sql.VarChar(36), ncId)
+                    .input('inspectionId', sql.VarChar(36), inspectionId)
+                    .input('detailId', sql.BigInt, item3DetailId)
+                    .input('issueDescription', sql.NVarChar(sql.MAX), issueDescription || '')
+                    .input('actionRequired', sql.NVarChar(sql.MAX), actionRequired || '')
+                    .input('managerId', sql.NVarChar(20), mId)
+                    .input('dueDate', sql.Date, parsedDueDate)
+                    .input('actionStatus', sql.VarChar(10), 'OPEN')
+                    .input('beforeImgPath', sql.VarChar(255), beforeImg)
+                    .query(`
+                        INSERT INTO Safety_Non_Compliance (
+                            nc_id, inspection_id, detail_id, issue_description, action_required,
+                            manager_id, due_date, action_status, before_img_path, after_img_path, closed_at
+                        ) VALUES (
+                            @ncId, @inspectionId, @detailId, @issueDescription, @actionRequired,
+                            @managerId, @dueDate, @actionStatus, @beforeImgPath, NULL, NULL
+                        )
+                    `);
+            }
+
+            await transaction.commit();
+            return res.status(201).json({ success: true, message: '안전점검 일지가 성공적으로 등록되었습니다.' });
+
+        } catch (txErr) {
+            await transaction.rollback();
+            throw txErr;
+        }
+
     } catch (err) {
         console.error('Inspection save error:', err);
         return res.status(500).json({ success: false, message: '안전점검 일지 저장 중 서버 오류가 발생했습니다.' });
@@ -800,7 +970,54 @@ app.get('/api/inspections', async (req, res) => {
     try {
         const pool = await getPool();
         const result = await pool.request().query(`
-            SELECT * FROM DailyInspections ORDER BY InspectionID DESC
+            SELECT 
+                m.inspection_id AS InspectionID,
+                CASE m.site_id 
+                    WHEN 'SEOUL' THEN '서울 본사 공장'
+                    WHEN 'BUSAN' THEN '부산 지사 공장'
+                    WHEN 'INCHEON' THEN '인천 물류 센터'
+                    ELSE m.site_id
+                END AS CompanyBranch,
+                CASE m.inspection_type
+                    WHEN 'FIELD' THEN 'SITE'
+                    WHEN 'EQUIP' THEN 'EQUIPMENT'
+                    ELSE m.inspection_type
+                END AS InspectionType,
+                m.equipment_id AS EquipmentName,
+                CONVERT(varchar(10), m.inspection_date, 120) AS InspectionDate,
+                m.inspector_id AS Inspector,
+                CASE d1.result_status
+                    WHEN 'PASS' THEN 'GOOD'
+                    WHEN 'FAIL' THEN 'ACTION_REQUIRED'
+                    ELSE d1.result_status
+                END AS Check1Result,
+                CASE d2.result_status
+                    WHEN 'PASS' THEN 'GOOD'
+                    WHEN 'FAIL' THEN 'ACTION_REQUIRED'
+                    ELSE d2.result_status
+                END AS Check2Result,
+                CASE d3.result_status
+                    WHEN 'PASS' THEN 'GOOD'
+                    WHEN 'FAIL' THEN 'ACTION_REQUIRED'
+                    ELSE d3.result_status
+                END AS Check3Result,
+                nc.issue_description AS IssueDescription,
+                nc.action_required AS ActionRequired,
+                nc.before_img_path AS BeforePhotoPath,
+                nc.manager_id AS ManagerID,
+                CONVERT(varchar(10), nc.due_date, 120) AS DueDate,
+                m.signature_path AS SignatureData,
+                CASE m.has_signature
+                    WHEN 1 THEN 'SUBMITTED'
+                    ELSE 'DRAFT'
+                END AS Status,
+                m.created_at AS RegDateTime
+            FROM Safety_Inspection_Master m
+            LEFT JOIN Safety_Inspection_Details d1 ON m.inspection_id = d1.inspection_id AND d1.item_code = 'ITEM_01'
+            LEFT JOIN Safety_Inspection_Details d2 ON m.inspection_id = d2.inspection_id AND d2.item_code = 'ITEM_02'
+            LEFT JOIN Safety_Inspection_Details d3 ON m.inspection_id = d3.inspection_id AND d3.item_code = 'ITEM_03'
+            LEFT JOIN Safety_Non_Compliance nc ON m.inspection_id = nc.inspection_id AND nc.detail_id = d3.detail_id
+            ORDER BY m.created_at DESC
         `);
         return res.json({ success: true, data: result.recordset });
     } catch (err) {
@@ -811,7 +1028,6 @@ app.get('/api/inspections', async (req, res) => {
 
 
 // API: Base64 File Upload
-const fs = require('fs');
 app.post('/api/upload', (req, res) => {
     const { fileName, fileData } = req.body;
 
