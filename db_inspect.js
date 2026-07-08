@@ -18,7 +18,7 @@ async function inspectSchema() {
         let pool = await sql.connect(config);
         console.log("Connected!");
 
-        const tables = ['IncidentReports', 'IncidentClassifications', 'AccidentMeasures'];
+        const tables = ['IncidentReports', 'IncidentClassifications', 'AccidentMeasures', 'DailyInspections'];
         for (const tableName of tables) {
             console.log(`\nChecking structure of ${tableName}:`);
             try {

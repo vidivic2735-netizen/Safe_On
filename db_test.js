@@ -41,6 +41,14 @@ async function checkInsertedData() {
             ORDER BY MeasureID DESC
         `);
         console.table(measures.recordset);
+
+        console.log("\n--- DailyInspections (Latest 3) ---");
+        let inspections = await pool.request().query(`
+            SELECT TOP 3 InspectionID, CompanyBranch, InspectionType, EquipmentName, InspectionDate, Inspector, Check3Result, IssueDescription, Status
+            FROM DailyInspections
+            ORDER BY InspectionID DESC
+        `);
+        console.table(inspections.recordset);
         
         await sql.close();
     } catch (err) {
