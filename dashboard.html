@@ -45,6 +45,10 @@
           <span class="nav-icon">🛡️</span>
           <span>감소대책 및 이행</span>
         </a>
+        <a href="#" class="nav-item" data-tab="settings">
+          <span class="nav-icon">⚙️</span>
+          <span>장비 및 점검지 설정</span>
+        </a>
         <div class="sidebar-divider"></div>
         <a href="index.html" class="nav-item logout-nav-item" id="sidebarLogout">
           <span class="nav-icon">🚪</span>
@@ -714,19 +718,8 @@
                 <!-- Checklist results -->
                 <div style="margin-bottom: 16px; border-top: 1px solid #f1f5f9; padding-top: 12px;">
                   <h4 style="margin: 0 0 8px 0; font-size: 13px; font-weight: 700; color: #334155;">■ 체크리스트 세부 결과</h4>
-                  <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
-                      <span>1. 방호장치 정상 작동 여부</span>
-                      <span id="detailChk1Badge" class="status-badge" style="margin: 0; padding: 2px 6px;">양호</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
-                      <span>2. 전기 분전함 전면에 적재물이 없고 외함 접지가 양호한가?</span>
-                      <span id="detailChk2Badge" class="status-badge" style="margin: 0; padding: 2px 6px;">양호</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 4px;">
-                      <span style="font-weight: 600;">3. 현장 내 통로 및 비상구 주위</span>
-                      <span id="detailChk3Badge" class="status-badge" style="margin: 0; padding: 2px 6px;">양호</span>
-                    </div>
+                  <div id="detailChecklistContainer" style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                    <!-- Will be dynamically populated -->
                   </div>
                 </div>
 
@@ -767,6 +760,90 @@
               </div>
             </div>
           </div>
+
+      </div>
+
+        <!-- ==========================================
+             [화면 6] 장비 및 점검지 설정 탭 (Settings)
+             ========================================== -->
+        <div id="tab-content-settings" class="tab-content">
+          <div class="db-card-panel" style="max-width: 900px; margin: 0 auto; padding: 24px;">
+            <div class="panel-header">
+              <h3>■ 장비 및 점검지 설정</h3>
+              <p class="panel-subtitle">현재 소속 사업장의 점검 장비 및 점검 표(체크리스트) 항목을 관리합니다.</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+              <!-- Left side: Equipment Management -->
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+                <h4 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px;">
+                  🚛 장비 마스터 관리
+                </h4>
+                
+                <!-- Add equipment form -->
+                <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                  <input type="text" id="newEquipName" class="form-input-custom" placeholder="신규 장비명 (예: 크레인C)" style="flex: 1; height: 38px; padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                  <select id="newEquipType" class="form-select-custom" style="width: 100px; height: 38px; padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    <option value="FORKLIFT">지게차</option>
+                    <option value="CRANE">크레인</option>
+                    <option value="CUTTER">절단기</option>
+                    <option value="MIXER">반죽기</option>
+                    <option value="OTHER">기타</option>
+                  </select>
+                  <button type="button" class="btn btn-primary" id="btnSaveEquip" style="padding: 0 16px; height: 38px;">등록</button>
+                </div>
+                
+                <!-- Equip list table -->
+                <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                  <table class="db-table compact-table" style="width: 100%;">
+                    <thead>
+                      <tr>
+                        <th>장비명</th>
+                        <th>구분</th>
+                        <th style="width: 60px; text-align: center;">작업</th>
+                      </tr>
+                    </thead>
+                    <tbody id="settingsEquipTableBody">
+                      <!-- Dynamically filled -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Right side: Checklist Item Management -->
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
+                <h4 style="margin: 0 0 16px 0; font-size: 15px; font-weight: 700; color: #1e3a8a; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px;">
+                  📋 체크리스트 항목 관리
+                </h4>
+                
+                <!-- Add checklist item form -->
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                  <div style="display: flex; gap: 10px;">
+                    <input type="text" id="newCheckItemCode" class="form-input-custom" placeholder="항목코드 (예: ITEM_04)" style="width: 120px; height: 38px; padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    <input type="text" id="newCheckItemText" class="form-input-custom" placeholder="점검 항목 내용 기입" style="flex: 1; height: 38px; padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                  </div>
+                  <button type="button" class="btn btn-primary" id="btnSaveCheckItem" style="width: 100%; height: 38px;">새 점검 항목 등록</button>
+                </div>
+                
+                <!-- Checklist items list table -->
+                <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                  <table class="db-table compact-table" style="width: 100%;">
+                    <thead>
+                      <tr>
+                        <th style="width: 70px;">코드</th>
+                        <th>점검 항목 내용</th>
+                        <th style="width: 60px; text-align: center;">작업</th>
+                      </tr>
+                    </thead>
+                    <tbody id="settingsChecklistTableBody">
+                      <!-- Dynamically filled -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
       </div>
     </main>
@@ -849,7 +926,8 @@
         report: '사고 및 대상 장비 정보 등록',
         countermeasure: '안전 대책 수립 및 개선 이행 관리',
         inspection: '일일 안전점검 등록',
-        inspectionList: '안전점검현황'
+        inspectionList: '안전점검현황',
+        settings: '장비 및 점검지 설정'
       };
 
       navItems.forEach(item => {
@@ -877,6 +955,8 @@
             initSignatureCanvas();
           } else if (targetTab === 'inspectionList') {
             loadInspectionsList();
+          } else if (targetTab === 'settings') {
+            loadSettingsPanel();
           }
         });
       });
@@ -888,6 +968,8 @@
         const label = document.getElementById(labelId);
         const preview = document.getElementById(previewContainerId);
 
+        if (!target || !input) return;
+
         target.addEventListener('click', (e) => {
           if (e.target.tagName !== 'IMG') {
             input.click();
@@ -898,356 +980,55 @@
           const file = input.files[0];
           if (!file) return;
 
-          label.textContent = "업로드 중...";
           const reader = new FileReader();
           reader.onload = async (e) => {
             const fileData = e.target.result;
-            const uniqueName = `${Date.now()}_${file.name}`;
+            const fileName = `${clickTargetId}_${Date.now()}_${file.name}`;
 
+            // Display preview immediately
+            preview.innerHTML = `<img src="${fileData}" style="max-width: 100%; max-height: 120px; border-radius: 4px; border: 1px solid #cbd5e1;" />`;
+            label.textContent = "업로드 완료 (변경하려면 클릭)";
+
+            // Send base64 to server
             try {
               const response = await fetch(API_BASE + '/api/upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fileName: uniqueName, fileData })
+                body: JSON.stringify({ fileName, fileData })
               });
-              const result = await response.json();
-              if (result.success) {
-                label.textContent = `등록 완료 (${file.name.substring(0, 10)}...)`;
-                preview.innerHTML = '';
-                
-                if (file.type.startsWith('image/')) {
-                  const img = document.createElement('img');
-                  img.src = result.fileUrl;
-                  img.className = 'preview-thumb';
-                  img.style.width = '60px';
-                  img.style.height = '60px';
-                  preview.appendChild(img);
-                } else {
-                  const docIndicator = document.createElement('span');
-                  docIndicator.className = 'voice-badge';
-                  docIndicator.textContent = '📎 문서 파일';
-                  preview.appendChild(docIndicator);
-                }
-                
-                onUploadSuccess(result.fileUrl);
+              const data = await response.json();
+              if (data.success) {
+                onUploadSuccess(data.fileUrl);
               } else {
-                label.textContent = "업로드 실패";
+                alert("업로드 실패: " + data.message);
               }
             } catch (err) {
               console.error(err);
-              label.textContent = "통신 실패";
+              alert("업로드 중 서버 통신 실패");
             }
           };
           reader.readAsDataURL(file);
         });
       };
 
-      // Set up upload listeners
+      // 7.1. [화면 1] 사고 보고서 파일 업로드 연동
       setupFileUpload('btnUploadPhoto', 'photoFileInput', 'photoUploadLabel', 'photoPreview', (url) => { regPhotoUrl = url; });
       setupFileUpload('btnUploadDoc', 'docFileInput', 'docUploadLabel', 'docPreview', (url) => { regDocUrl = url; });
-      setupFileUpload('btnUploadBeforePhoto', 'beforePhotoFileInput', 'beforePhotoLabel', 'beforePhotoPreview', (url) => { msBeforePhotoUrl = url; });
-      setupFileUpload('btnUploadAfterPhoto', 'afterPhotoFileInput', 'afterPhotoLabel', 'afterPhotoPreview', (url) => { msAfterPhotoUrl = url; });
 
-      // 5. Load and query API from server
-      const classificationTableBody = document.getElementById('classificationTableBody');
-
-      const loadIncidents = async () => {
-        const startDate = document.getElementById('filterStartDate').value;
-        const endDate = document.getElementById('filterEndDate').value;
-        const keyword = document.getElementById('filterKeyword').value.trim();
-
-        try {
-          const response = await fetch(API_BASE + `/api/incidents?startDate=${startDate}&endDate=${endDate}&keyword=${encodeURIComponent(keyword)}`);
-          const result = await response.json();
-
-          if (result.success) {
-            loadedIncidents = result.data;
-            renderClassificationTable(loadedIncidents);
-            updateSummaryStats(loadedIncidents);
-          }
-        } catch (err) {
-          console.error("사고 정보를 가져오는 데 실패했습니다:", err);
-        }
-      };
-
-      const renderClassificationTable = (incidents) => {
-        classificationTableBody.innerHTML = '';
-
-        if (incidents.length === 0) {
-          classificationTableBody.innerHTML = `
-            <tr>
-              <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
-                조회된 기간 내에 등록된 사고 데이터가 없습니다.
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        incidents.forEach((inc, index) => {
-          const dateObj = new Date(inc.OccurrenceDateTime);
-          const formattedDate = `${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}`;
-
-          // Translation maps
-          const disasterTypes = {
-            DEATH: '사망재해',
-            INJURY: '부상재해',
-            NEAR_MISS: '아차사고',
-            PROPERTY: '물적피해'
-          };
-          const statusText = inc.ClassificationStatus === 'COMPLETED' ? '분류완료' : '미분류';
-          const statusColor = inc.ClassificationStatus === 'COMPLETED' ? 'status-resolved' : 'status-pending';
-
-          const tr = document.createElement('tr');
-          if (selectedIncident && selectedIncident.IncidentID === inc.IncidentID) {
-            tr.className = 'selected-row';
-          }
-
-          tr.innerHTML = `
-            <td>${inc.IncidentID}</td>
-            <td class="td-date">${formattedDate}</td>
-            <td style="font-weight:600;">${inc.EquipmentName}</td>
-            <td><span class="tag-type type-etc">${disasterTypes[inc.IncidentType] || inc.IncidentType}</span></td>
-            <td>
-              <select class="table-select-custom internal-accident-select" data-id="${inc.IncidentID}">
-                <option value="NOT_APPLIED" ${inc.InternalAccidentType === 'NOT_APPLIED' ? 'selected' : ''}>미조치</option>
-                <option value="COMP_COMPANY" ${inc.InternalAccidentType === 'COMP_COMPANY' ? 'selected' : ''}>내부공상</option>
-                <option value="COMP_SPECIAL" ${inc.InternalAccidentType === 'COMP_SPECIAL' ? 'selected' : ''}>특별공상</option>
-                <option value="INT_LEAVE" ${inc.InternalAccidentType === 'INT_LEAVE' ? 'selected' : ''}>산재처리</option>
-                <option value="NEAR_MISS" ${inc.InternalAccidentType === 'NEAR_MISS' ? 'selected' : ''}>아차사고</option>
-              </select>
-            </td>
-            <td>
-              <select class="table-select-custom external-report-select" data-id="${inc.IncidentID}">
-                <option value="NOT_REQUIRED" ${inc.ExternalReportType === 'NOT_REQUIRED' ? 'selected' : ''}>대상 아님</option>
-                <option value="CO_REPORT" ${inc.ExternalReportType === 'CO_REPORT' ? 'selected' : ''}>공단보고</option>
-                <option value="MOEL_REPORT" ${inc.ExternalReportType === 'MOEL_REPORT' ? 'selected' : ''}>노동청보고</option>
-                <option value="BOTH_REPORT" ${inc.ExternalReportType === 'BOTH_REPORT' ? 'selected' : ''}>공단+노동청</option>
-              </select>
-            </td>
-            <td><span class="status-badge ${statusColor}">${statusText}</span></td>
-          `;
-
-          // Handle click on cells except select inputs
-          tr.addEventListener('click', (e) => {
-            if (e.target.tagName === 'SELECT' || e.target.tagName === 'OPTION') return;
-
-            document.querySelectorAll('#classificationTableBody tr').forEach(row => row.classList.remove('selected-row'));
-            tr.classList.add('selected-row');
-
-            selectedIncident = inc;
-            renderComplianceForm(inc);
-          });
-
-          // Sync select changes directly into row data object to prepare save
-          tr.querySelector('.internal-accident-select').addEventListener('change', (e) => {
-            inc.InternalAccidentType = e.target.value;
-          });
-          tr.querySelector('.external-report-select').addEventListener('change', (e) => {
-            inc.ExternalReportType = e.target.value;
-          });
-
-          classificationTableBody.appendChild(tr);
-        });
-      };
-
-      const updateSummaryStats = (incidents) => {
-        const total = incidents.length;
-        const internal = incidents.filter(inc => inc.InternalAccidentType === 'COMP_COMPANY' || inc.InternalAccidentType === 'COMP_SPECIAL').length;
-        const external = incidents.filter(inc => inc.InternalAccidentType === 'INT_LEAVE').length;
-        // 노동청 미보고 건수 (ExternalReportType이 MOEL_REPORT/BOTH_REPORT이고 LaborMinistryStatus가 REPORTED가 아닌 건수)
-        const moelUnreported = incidents.filter(inc => 
-          (inc.ExternalReportType === 'MOEL_REPORT' || inc.ExternalReportType === 'BOTH_REPORT') && 
-          inc.LaborMinistryStatus !== 'REPORTED'
-        ).length;
-
-        document.getElementById('badgeAll').textContent = `전체 ${total}건`;
-        document.getElementById('badgeInternal').textContent = `내부공상 ${internal}건`;
-        document.getElementById('badgeExternal').textContent = `산재신청 중 ${external}건`;
-        document.getElementById('moelWarningCount').textContent = `${moelUnreported}건 (★지연주의)`;
-      };
-
-      // Render Selected Row Compliance Info Card
-      const complianceEmptyState = document.getElementById('complianceEmptyState');
-      const complianceFormPanel = document.getElementById('complianceFormPanel');
-      const compSelectedTitle = document.getElementById('compSelectedTitle');
-
-      const renderComplianceForm = (inc) => {
-        complianceEmptyState.style.display = 'none';
-        complianceFormPanel.style.display = 'block';
-
-        compSelectedTitle.textContent = `${inc.EquipmentName} - ${inc.IncidentTitle}`;
-
-        // Populate fields
-        document.getElementById('compAccidentTypeCode').value = inc.AccidentTypeCode || '';
-        document.getElementById('compInternalAmount').value = inc.InternalCompAmount || 0;
-        document.getElementById('compAbsenceDays').value = inc.ActualAbsenceDays || 0;
-        document.getElementById('compComWelNo').value = inc.ComWelAccidentNo || '';
-        document.getElementById('compLaborMinistryDate').value = inc.LaborMinistryReportDate ? inc.LaborMinistryReportDate.split('T')[0] : '';
-
-        // Radio Checked
-        const internalDtlRadios = document.getElementsByName('compInternalDtlStatus');
-        internalDtlRadios.forEach(radio => {
-          if (radio.value === inc.InternalDtlStatus || (inc.InternalDtlStatus === undefined && radio.value === '일반공상')) {
-            radio.checked = true;
-          }
-        });
-
-        // Reset Gemini panel for the newly selected accident
-        document.getElementById('geminiQuestionInput').value = '';
-        document.getElementById('geminiResponseBox').innerHTML = `
-          <span style="color: #9ca3af; font-style: italic;">질문을 입력하시면 비즈프로 AI의 안전 대책 및 법적 조언 분석 결과가 이곳에 출력됩니다.</span>
-        `;
-      };
-
-      // Save Classification Master details (Screen 2)
-      document.getElementById('btnSaveClassification').addEventListener('click', async () => {
-        if (!selectedIncident) return;
-
-        const accidentTypeCode = document.getElementById('compAccidentTypeCode').value.trim();
-        const internalCompAmount = parseFloat(document.getElementById('compInternalAmount').value);
-        const actualAbsenceDays = parseInt(document.getElementById('compAbsenceDays').value, 10);
-        const comWelAccidentNo = document.getElementById('compComWelNo').value.trim();
-        const laborMinistryReportDate = document.getElementById('compLaborMinistryDate').value;
-        const internalDtlStatus = document.querySelector('input[name="compInternalDtlStatus"]:checked').value;
-
-        // Determine labor ministry reported state
-        const laborMinistryStatus = laborMinistryReportDate ? 'REPORTED' : 'NOT_REPORTED';
-        const comWelApprovalStatus = comWelAccidentNo ? 'APPROVED' : 'NOT_SUBMITTED';
-
-        const payload = {
-          incidentId: selectedIncident.IncidentID,
-          causalFactorCode: selectedIncident.CausalFactorCode || '',
-          accidentTypeCode: accidentTypeCode || selectedIncident.IncidentType, // 재해형태
-          internalAccidentType: selectedIncident.InternalAccidentType || 'NOT_APPLIED',
-          internalCompAmount,
-          actualAbsenceDays,
-          externalReportType: selectedIncident.ExternalReportType || 'NOT_REQUIRED',
-          comWelAccidentNo,
-          comWelApprovalStatus,
-          comWelApprovalDate: comWelAccidentNo ? now.toISOString().split('T')[0] : null,
-          laborMinistryStatus,
-          laborMinistryReportDate,
-          userId: managerName
-        };
-
-        try {
-          const response = await fetch(API_BASE + '/api/classifications', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const result = await response.json();
-
-          if (result.success) {
-            showAlert("분류 마스터 저장 성공", "이원화 분류 및 대관 상세 정보가 정상 등록되었습니다.", () => {
-              loadIncidents();
-            });
-          } else {
-            alert("저장 실패: " + result.message);
-          }
-        } catch (err) {
-          console.error(err);
-          alert("저장 중 서버와의 통신 에러가 발생했습니다.");
-        }
-      });
-
-      // Gemini Q&A Submit Listener
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `;
-      document.head.appendChild(style);
-
-      document.getElementById('btnAskGemini').addEventListener('click', async () => {
-        if (!selectedIncident) return;
-
-        const question = document.getElementById('geminiQuestionInput').value.trim();
-        if (!question) {
-          alert("질문 내용을 입력해 주세요.");
-          return;
-        }
-
-        const responseBox = document.getElementById('geminiResponseBox');
-        const askButton = document.getElementById('btnAskGemini');
-
-        // Show loading state
-        responseBox.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 8px; color: #7c3aed; font-weight: 600;">
-            <span style="display: inline-block; animation: spin 1s linear-infinite; font-size: 14px;">⌛</span>
-            비즈프로 AI가 사고 정보를 분석하고 답변을 작성 중입니다...
-          </div>
-        `;
-        askButton.disabled = true;
-
-        try {
-          const response = await fetch(API_BASE + '/api/gemini/ask', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              incidentId: selectedIncident.IncidentID,
-              question: question
-            })
-          });
-          const result = await response.json();
-
-          if (result.success) {
-            let answerHtml = result.answer
-              .replace(/### (.*)/g, '<h4 style="margin: 12px 0 6px 0; color: #1e1b4b; font-size: 13px; font-weight: 700;">$1</h4>')
-              .replace(/#### (.*)/g, '<h5 style="margin: 8px 0 4px 0; color: #312e81; font-size: 12px; font-weight: 700;">$1</h5>')
-              .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-              .replace(/`([^`]+)`/g, '<code style="background-color: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>')
-              .replace(/> (.*)/g, '<blockquote style="border-left: 3px solid #7c3aed; padding-left: 8px; color: #6b21a8; margin: 8px 0; font-style: italic;">$1</blockquote>')
-              .replace(/- (.*)/g, '<li style="margin-left: 12px; list-style-type: disc;">$1</li>');
-            
-            responseBox.innerHTML = answerHtml;
-          } else {
-            responseBox.innerHTML = `<span style="color: #ef4444;">에러가 발생했습니다: \${result.message}</span>`;
-          }
-        } catch (err) {
-          console.error(err);
-          responseBox.innerHTML = `<span style="color: #ef4444;">서버 통신 중 에러가 발생했습니다.</span>`;
-        } finally {
-          askButton.disabled = false;
-        }
-      });
-
-      // Bind search filter button
-      document.getElementById('btnFilterSearch').addEventListener('click', loadIncidents);
-
-      // 6. [화면 1] Incident Registration Form Submit
-      const incidentRegistrationForm = document.getElementById('incidentRegistrationForm');
-      incidentRegistrationForm.addEventListener('submit', async (e) => {
+      // 7.2. [화면 1] 사고 접수 양식 등록 핸들러
+      document.getElementById('incidentRegistrationForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const companyBranch = document.getElementById('regCompanyBranch').value;
-        const incidentType = document.querySelector('input[name="regIncidentType"]:checked').value;
-        const dateVal = document.getElementById('regOccurrenceDate').value;
-        const hourVal = String(document.getElementById('regOccurrenceHour').value).padStart(2, '0');
-        const minVal = String(document.getElementById('regOccurrenceMin').value).padStart(2, '0');
-        const occurrenceDateTime = `${dateVal} ${hourVal}:${minVal}:00`;
-
-        const location = document.getElementById('regLocation').value.trim();
-        const equipmentName = document.getElementById('regEquipmentName').value.trim();
-        const incidentTitle = document.getElementById('regIncidentTitle').value.trim();
-        const incidentContent = document.getElementById('regIncidentContent').value.trim();
-        const remarks = document.getElementById('regRemarks').value.trim();
-
         const payload = {
-          companyBranch,
-          incidentType,
-          occurrenceDateTime,
-          location,
-          equipmentName,
-          incidentTitle,
-          incidentContent,
-          attachmentPath1: regPhotoUrl,
-          attachmentPath2: regDocUrl,
-          remarks,
-          regUserID: managerName
+          companyBranch: document.getElementById('regCompanyBranch').value,
+          incidentType: document.querySelector('input[name="regIncidentType"]:checked').value,
+          occurrenceDateTime: `${document.getElementById('regOccurrenceDate').value} ${document.getElementById('regOccurrenceHour').value.padStart(2, '0')}:${document.getElementById('regOccurrenceMin').value.padStart(2, '0')}:00`,
+          location: document.getElementById('regLocation').value.trim(),
+          equipmentName: document.getElementById('regEquipmentName').value.trim(),
+          incidentTitle: document.getElementById('regIncidentTitle').value.trim(),
+          incidentContent: document.getElementById('regIncidentContent').value.trim(),
+          photoPath: regPhotoUrl,
+          docPath: regDocUrl
         };
 
         try {
@@ -1259,156 +1040,651 @@
           const result = await response.json();
 
           if (result.success) {
-            showAlert("사고 등록 완료", "사고 및 대상 장비 정보가 마스터 데이터베이스에 안전하게 등록되었습니다.", () => {
-              incidentRegistrationForm.reset();
-              regPhotoUrl = null;
-              regDocUrl = null;
+            showAlert("등록 성공", "사고 보고가 정상적으로 접수되었습니다.", () => {
+              // Reset form & states
+              document.getElementById('incidentRegistrationForm').reset();
               document.getElementById('photoPreview').innerHTML = '';
               document.getElementById('docPreview').innerHTML = '';
-              document.getElementById('photoUploadLabel').textContent = "↑ 현장 사진 업로드";
-              document.getElementById('docUploadLabel').textContent = "↑ 재해조사서 첨부";
+              document.getElementById('photoUploadLabel').textContent = "현장 증빙 사진 파일 선택";
+              document.getElementById('docUploadLabel').textContent = "기타 참고 서류 파일 선택";
+              regPhotoUrl = null;
+              regDocUrl = null;
 
-              // Navigate back to master list tab
-              const masterTab = document.querySelector('.sidebar-nav .nav-item[data-tab="classify"]');
-              if (masterTab) masterTab.click();
+              // Move to Dashboard classify tab
+              const classifyTab = document.querySelector('.sidebar-nav .nav-item[data-tab="classify"]');
+              if (classifyTab) classifyTab.click();
             });
           } else {
             alert("사고 등록 실패: " + result.message);
           }
         } catch (err) {
           console.error(err);
-          alert("사고를 등록하는 중 서버 오류가 발생했습니다.");
+          alert("서버 전송 중 오류가 발생했습니다.");
         }
       });
 
-      // 7. [화면 3] Safety Measures Panel rendering and Action Submit
-      const measureEmptyState = document.getElementById('measureEmptyState');
-      const measureContentPanel = document.getElementById('measureContentPanel');
-      const measureSelectedTitle = document.getElementById('measureSelectedTitle');
-
-      const renderMeasurePanel = () => {
-        if (!selectedIncident) {
-          measureEmptyState.style.display = 'flex';
-          measureContentPanel.style.display = 'none';
-          return;
-        }
-
-        measureEmptyState.style.display = 'none';
-        measureContentPanel.style.display = 'block';
-
-        const dateObj = new Date(selectedIncident.OccurrenceDateTime);
-        const formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
-        measureSelectedTitle.textContent = `[연계사고] ${selectedIncident.EquipmentName} - ${selectedIncident.IncidentTitle} (${formattedDate} 등록)`;
-
-        // Reset inputs or pre-populate if existing measure exists
-        document.getElementById('msHazardFactors').value = selectedIncident.HazardFactors || '';
-        document.getElementById('msCurrentMeasure').value = selectedIncident.CurrentMeasure || '';
-        document.getElementById('msProposedMeasure').value = selectedIncident.ProposedMeasure || '';
-        document.getElementById('msManagerID').value = selectedIncident.ManagerID || '이무사 (공정관리팀)';
-        document.getElementById('msDueDate').value = selectedIncident.DueDate ? selectedIncident.DueDate.split('T')[0] : '';
-
-        // Completion items
-        document.getElementById('msCompletionDate').value = selectedIncident.CompletionDate ? selectedIncident.CompletionDate.split('T')[0] : '';
-        document.getElementById('msActionContent').value = selectedIncident.ActionContent || '';
-
-        // Preview images if available
-        const beforePreview = document.getElementById('beforePhotoPreview');
-        const afterPreview = document.getElementById('afterPhotoPreview');
-        beforePreview.innerHTML = '';
-        afterPreview.innerHTML = '';
-        document.getElementById('beforePhotoLabel').textContent = "개선전 사진 등록";
-        document.getElementById('afterPhotoLabel').textContent = "개선후 사진 등록";
-        
-        msBeforePhotoUrl = selectedIncident.BeforePhotoPath || null;
-        msAfterPhotoUrl = selectedIncident.AfterPhotoPath || null;
-
-        if (msBeforePhotoUrl) {
-          const img = document.createElement('img');
-          img.src = msBeforePhotoUrl;
-          img.className = 'preview-thumb';
-          img.style.width = '50px';
-          img.style.height = '50px';
-          beforePreview.appendChild(img);
-          document.getElementById('beforePhotoLabel').textContent = "등록 완료";
-        }
-        if (msAfterPhotoUrl) {
-          const img = document.createElement('img');
-          img.src = msAfterPhotoUrl;
-          img.className = 'preview-thumb';
-          img.style.width = '50px';
-          img.style.height = '50px';
-          afterPreview.appendChild(img);
-          document.getElementById('afterPhotoLabel').textContent = "등록 완료";
-        }
-      };
-
-      // Measure submit handler (Screen 3)
-      const measureForm = document.getElementById('measureForm');
-      measureForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        if (!selectedIncident) return;
-
-        const hazardFactors = document.getElementById('msHazardFactors').value.trim();
-        const currentMeasure = document.getElementById('msCurrentMeasure').value.trim();
-        const proposedMeasure = document.getElementById('msProposedMeasure').value.trim();
-        const managerId = document.getElementById('msManagerID').value;
-        const dueDate = document.getElementById('msDueDate').value;
-
-        // Completion details
-        const completionDate = document.getElementById('msCompletionDate').value;
-        const actionContent = document.getElementById('msActionContent').value.trim();
-
-        // Immediately COMPLETED if completionDate is set, otherwise PROGRESS
-        const measureStatus = completionDate ? 'COMPLETED' : 'PROGRESS';
-
-        const payload = {
-          incidentId: selectedIncident.IncidentID,
-          hazardFactors,
-          currentMeasure,
-          proposedMeasure,
-          managerId,
-          dueDate,
-          completionDate: completionDate || null,
-          actionContent: actionContent || null,
-          beforePhotoPath: msBeforePhotoUrl,
-          afterPhotoPath: msAfterPhotoUrl,
-          measureStatus,
-          userId: managerName
-        };
-
+      // 7.3. [화면 2] 사고현황 목록 조회 및 필터링
+      const loadIncidents = async () => {
         try {
-          const response = await fetch(API_BASE + '/api/measures', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
+          const response = await fetch(API_BASE + '/api/incidents');
           const result = await response.json();
 
           if (result.success) {
-            showAlert("대책 및 개선 등록 완료", `안전 대책 수립 상태가 성공적으로 <strong>${measureStatus === 'COMPLETED' ? '조치완료(COMPLETED) 상태로 종결' : '진행중(PROGRESS) 상태로 등록'}</strong> 처리되었습니다.`, () => {
-              loadIncidents();
-              // Back to master list
-              const masterTab = document.querySelector('.sidebar-nav .nav-item[data-tab="classify"]');
-              if (masterTab) masterTab.click();
-            });
-          } else {
-            alert("대책 등록 실패: " + result.message);
+            loadedIncidents = result.data;
+            filterAndRenderIncidents();
           }
         } catch (err) {
-          console.error(err);
-          alert("서버 연결에 실패했습니다.");
+          console.error("사고 목록 조회 오류:", err);
         }
-      });
+      };
+
+      const filterAndRenderIncidents = () => {
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
+        const type = document.getElementById('filterIncidentType').value;
+        const status = document.getElementById('filterStatus').value;
+
+        const filtered = loadedIncidents.filter(inc => {
+          const incDate = inc.OccurrenceDateTime.split(' ')[0];
+          if (startDate && incDate < startDate) return false;
+          if (endDate && incDate > endDate) return false;
+          if (type !== 'ALL' && inc.IncidentType !== type) return false;
+          if (status !== 'ALL' && inc.ClassificationStatus !== status) return false;
+          return true;
+        });
+
+        renderIncidentsTable(filtered);
+      };
+
+      document.getElementById('btnFilterSearch').addEventListener('click', filterAndRenderIncidents);
+
+      const renderIncidentsTable = (incidents) => {
+        const tbody = document.getElementById('incidentTableBody');
+        tbody.innerHTML = '';
+
+        if (incidents.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
+                조회된 사고 데이터가 없습니다.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        incidents.forEach(inc => {
+          const tr = document.createElement('tr');
+          if (selectedIncident && selectedIncident.IncidentID === inc.IncidentID) {
+            tr.className = 'selected-row';
+          }
+
+          const typeLabels = { INJURY: '부상재해', DEATH: '사망재해', NEAR_MISS: '아차사고' };
+          const statusLabels = { DRAFT: '검토대기', CLASSIFIED: '분류완료', MEASURED: '대책수립', CLOSED: '조치완료' };
+          const statusColors = { DRAFT: 'status-pending', CLASSIFIED: 'status-reviewing', MEASURED: 'status-resolved', CLOSED: 'status-resolved' };
+
+          tr.innerHTML = `
+            <td>${inc.IncidentID}</td>
+            <td>${inc.CompanyBranch}</td>
+            <td><span class="tag-type type-${inc.IncidentType.toLowerCase()}">${typeLabels[inc.IncidentType] || inc.IncidentType}</span></td>
+            <td class="td-date">${inc.OccurrenceDateTime}</td>
+            <td style="font-weight:600;">${inc.IncidentTitle}</td>
+            <td>${inc.EquipmentName || '-'}</td>
+            <td>${inc.RegUserID}</td>
+            <td><span class="status-badge ${statusColors[inc.ClassificationStatus] || ''}">${statusLabels[inc.ClassificationStatus] || inc.ClassificationStatus}</span></td>
+          `;
+
+          tr.addEventListener('click', () => {
+            document.querySelectorAll('#incidentTableBody tr').forEach(row => row.classList.remove('selected-row'));
+            tr.classList.add('selected-row');
+
+            selectedIncident = inc;
+            renderIncidentDetailPanel(inc);
+          });
+
+          tbody.appendChild(tr);
+        });
+      };
+
+      const renderIncidentDetailPanel = (inc) => {
+        document.getElementById('detailEmptyState').style.display = 'none';
+        const panel = document.getElementById('detailMainPanel');
+        panel.style.display = 'block';
+
+        const typeLabels = { INJURY: '부상재해', DEATH: '사망재해', NEAR_MISS: '아차사고' };
+        document.getElementById('dtIncidentID').textContent = inc.IncidentID;
+        document.getElementById('dtCompanyBranch').textContent = inc.CompanyBranch;
+        document.getElementById('dtIncidentType').textContent = typeLabels[inc.IncidentType] || inc.IncidentType;
+        document.getElementById('dtOccurrenceDateTime').textContent = inc.OccurrenceDateTime;
+        document.getElementById('dtLocation').textContent = inc.Location;
+        document.getElementById('dtEquipmentName').textContent = inc.EquipmentName || '-';
+        document.getElementById('dtIncidentTitle').textContent = inc.IncidentTitle;
+        document.getElementById('dtIncidentContent').textContent = inc.IncidentContent;
+
+        const photoContainer = document.getElementById('dtPhotoContainer');
+        if (inc.PhotoPath) {
+          photoContainer.style.display = 'block';
+          document.getElementById('dtPhotoImg').src = inc.PhotoPath;
+        } else {
+          photoContainer.style.display = 'none';
+        }
+
+        const docContainer = document.getElementById('dtDocContainer');
+        if (inc.DocPath) {
+          docContainer.style.display = 'block';
+          const link = document.getElementById('dtDocLink');
+          link.href = inc.DocPath;
+          link.textContent = inc.DocPath.split('/').pop();
+        } else {
+          docContainer.style.display = 'none';
+        }
+
+        // [분류 및 대책] 서브 섹션
+        document.getElementById('dtClassStatus').textContent = inc.ClassificationStatus === 'DRAFT' ? '미분류 (대기)' : '분류 완료';
+        document.getElementById('dtInternalType').textContent = inc.InternalAccidentType || '-';
+        document.getElementById('dtInternalAmount').textContent = inc.InternalCompAmount ? Number(inc.InternalCompAmount).toLocaleString() + ' 원' : '-';
+        document.getElementById('dtAbsenceDays').textContent = inc.ActualAbsenceDays ? inc.ActualAbsenceDays + ' 일' : '-';
+        document.getElementById('dtExternalReport').textContent = inc.ExternalReportType || '-';
+        document.getElementById('dtComWelNo').textContent = inc.ComWelAccidentNo || '-';
+
+        // Load safety measures panel if selected
+        renderMeasurePanel();
+      };
+
+      // 7.4. [화면 3] 대책 수립 및 개선이행 관리
+      const renderMeasurePanel = async () => {
+        const container = document.getElementById('measureTabContainer');
+        if (!container) return;
+
+        if (!selectedIncident) {
+          container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">좌측 사고현황판에서 사고 건을 선택해 주세요.</div>`;
+          return;
+        }
+
+        container.innerHTML = `<div style="padding: 20px; color: var(--text-muted);">대책 및 이행 정보를 불러오는 중...</div>`;
+
+        try {
+          const res = await fetch(API_BASE + `/api/incidents/${selectedIncident.IncidentID}/classification`);
+          const classification = await res.json();
+
+          const measureRes = await fetch(API_BASE + `/api/incidents/${selectedIncident.IncidentID}/measures`);
+          const measureData = await measureRes.json();
+
+          let classHtml = '';
+          if (!classification.success || !classification.data) {
+            // Render Classification Form
+            classHtml = `
+              <form id="formClassify" style="background:#f8fafc; border: 1px dashed #cbd5e1; border-radius:6px; padding:16px; margin-bottom:20px;">
+                <h4 style="margin:0 0 12px 0; font-size:14px; font-weight:700; color:#1e293b;">⚡ 1단계: 사고 심사 분류 등록</h4>
+                <div class="db-grid-layout" style="grid-template-columns:1fr 1fr; gap:16px; margin-bottom:12px;">
+                  <div class="form-group">
+                    <label class="form-label-desc">* 사내 사고 구분</label>
+                    <select id="selInternalAccidentType" class="form-select-custom" required>
+                      <option value="COMP_COMPANY">내부공상</option>
+                      <option value="COMP_SPECIAL">특수공상</option>
+                      <option value="COMP_LEGAL">법정재해</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label-desc">사내 보상 금액 (원)</label>
+                    <input type="number" id="numInternalCompAmount" class="form-input-custom" placeholder="1000000" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label-desc">실제 요양/휴업일수 (일)</label>
+                    <input type="number" id="numActualAbsenceDays" class="form-input-custom" placeholder="5" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label-desc">* 외부 보고 구분</label>
+                    <select id="selExternalReportType" class="form-select-custom" required>
+                      <option value="NONE">보고 제외</option>
+                      <option value="MOEL">노동부 산업재해조사표 보고</option>
+                      <option value="COMWEL">근로복지공단 요양신청</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label-desc">근복 요양 승인번호 / 재해조사표 접수번호</label>
+                    <input type="text" id="txtComWelAccidentNo" class="form-input-custom" placeholder="제 2026-12345 호" />
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:10px;">사고 분류 확정</button>
+              </form>
+            `;
+          } else {
+            // Render Classification Info
+            const c = classification.data;
+            const labels = { COMP_COMPANY: '내부공상', COMP_SPECIAL: '특수공상', COMP_LEGAL: '법정재해' };
+            const extLabels = { NONE: '보고 제외', MOEL: '산업재해조사표 보고', COMWEL: '근복 요양신청' };
+
+            classHtml = `
+              <div style="background:#f0f9ff; border: 1px solid #bae6fd; border-radius:6px; padding:16px; margin-bottom:20px;">
+                <h4 style="margin:0 0 10px 0; font-size:14px; font-weight:700; color:#0369a1;">✓ 사고 심사 분류 완료</h4>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12.5px;">
+                  <div><strong>사내 사고 구분:</strong> ${labels[c.InternalAccidentType] || c.InternalAccidentType}</div>
+                  <div><strong>사내 보상 금액:</strong> ${c.InternalCompAmount ? Number(c.InternalCompAmount).toLocaleString() + ' 원' : '-'}</div>
+                  <div><strong>휴업 요양 일수:</strong> ${c.ActualAbsenceDays ? c.ActualAbsenceDays + ' 일' : '-'}</div>
+                  <div><strong>외부 보고 구분:</strong> ${extLabels[c.ExternalReportType] || c.ExternalReportType}</div>
+                  <div style="grid-column: span 2;"><strong>보고 접수 번호:</strong> ${c.ComWelAccidentNo || '-'}</div>
+                </div>
+              </div>
+            `;
+          }
+
+          let measureHtml = '';
+          if (!measureData.success || !measureData.data) {
+            // Render Measure Form
+            measureHtml = `
+              <form id="formMeasure" style="background:#fcf8f2; border: 1px dashed #fbd38d; border-radius:6px; padding:16px;">
+                <h4 style="margin:0 0 12px 0; font-size:14px; font-weight:700; color:#c05621;">🛡️ 2단계: 안전 보건 감소대책 수립</h4>
+                <div class="form-group" style="margin-bottom:12px;">
+                  <label class="form-label-desc">* 사고 발생 유해위험요인 (Hazard Factors)</label>
+                  <textarea id="txtHazardFactors" class="form-textarea-custom" placeholder="지게차 후진 시 후방 시야 사각지대 미확보 및 속도 과속 작동" required></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom:12px;">
+                  <label class="form-label-desc">* 개선 감소 대책 (Proposed Measure)</label>
+                  <textarea id="txtProposedMeasure" class="form-textarea-custom" placeholder="지게차 후방 카메라 및 스마트 근접 경보 센서 센싱 보강 설치 지시" required></textarea>
+                </div>
+                <div class="db-grid-layout" style="grid-template-columns:1fr 1fr; gap:16px; margin-bottom:12px;">
+                  <div class="form-group">
+                    <label class="form-label-desc">* 개선 조치 담당자</label>
+                    <select id="selManagerID" class="form-select-custom" required>
+                      <option value="김철수 대리 (생산2팀)" selected>김철수 대리 (생산2팀)</option>
+                      <option value="박영희 과장 (설비공정팀)">박영희 과장 (설비공정팀)</option>
+                      <option value="이민우 사원 (안전관리부)">이민우 사원 (안전관리부)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label-desc">* 이행 기한 (Due Date)</label>
+                    <input type="date" id="dateDueDate" class="form-input-custom" required />
+                  </div>
+                </div>
+                <button type="submit" class="btn style-danger" style="width:100%; padding:10px; background-color:#dd6b20; border-color:#dd6b20; color:#fff;">감소대책 확정</button>
+              </form>
+            `;
+          } else {
+            // Render Measure Info + Action Follow-up
+            const m = measureData.data;
+            const statusLabels = { OPEN: '개선진행중', CLOSED: '조치이행완료' };
+            const badgeColor = m.MeasureStatus === 'CLOSED' ? 'status-resolved' : 'status-pending';
+
+            let actionHtml = '';
+            if (m.MeasureStatus === 'OPEN') {
+              actionHtml = `
+                <div style="border-top: 1px dashed #cbd5e1; margin-top: 16px; padding-top: 16px;">
+                  <h5 style="margin:0 0 10px 0; font-size:13px; font-weight:700; color:#9c4221;">🛠️ 3단계: 개선 조치 이행 결과 피드백</h5>
+                  
+                  <div class="db-grid-layout" style="grid-template-columns:1fr 1fr; gap:16px; margin-bottom:12px;">
+                    <div class="form-group">
+                      <label class="form-label-desc">개선 전 사진</label>
+                      ${m.BeforePhotoPath ? `<div class="photo-preview-box"><img src="${m.BeforePhotoPath}" style="max-height:80px;"/></div>` : '선택된 전 이미지가 없습니다'}
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label-desc">개선 후 사진 업로드</label>
+                      <div class="photo-upload-box" id="btnUploadAfterPhoto" style="min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px dashed #cbd5e1; border-radius: 6px; cursor: pointer; background: #fff;">
+                        <span id="afterPhotoUploadLabel">사진 등록</span>
+                        <input type="file" id="afterPhotoFileInput" accept="image/*" style="display:none">
+                        <div id="afterPhotoPreview" style="margin-top: 5px;"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="button" class="btn btn-primary" id="btnCompleteMeasure" style="width:100%; padding:10px;">최종 개선 이행 확인 (완료)</button>
+                </div>
+              `;
+            } else {
+              actionHtml = `
+                <div style="border-top: 1px dashed #cbd5e1; margin-top: 16px; padding-top: 16px; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12.5px;">
+                  <div><strong>이행 조치일:</strong> ${m.CompletionDate}</div>
+                  <div style="grid-column: span 2; display: flex; gap: 10px; margin-top:6px;">
+                    <div><strong>개선 전:</strong><br/>${m.BeforePhotoPath ? `<img src="${m.BeforePhotoPath}" style="max-height:80px; border-radius:4px;" />` : '사진 없음'}</div>
+                    <div><strong>개선 후:</strong><br/>${m.AfterPhotoPath ? `<img src="${m.AfterPhotoPath}" style="max-height:80px; border-radius:4px;" />` : '사진 없음'}</div>
+                  </div>
+                </div>
+              `;
+            }
+
+            measureHtml = `
+              <div style="background:#fffaf0; border: 1px solid #fbd38d; border-radius:6px; padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #fee2e2; padding-bottom:6px;">
+                  <h4 style="margin:0; font-size:14px; font-weight:700; color:#c05621;">✓ 감소대책 및 이행 이력</h4>
+                  <span class="status-badge ${badgeColor}" style="margin:0;">${statusLabels[m.MeasureStatus] || m.MeasureStatus}</span>
+                </div>
+                <div style="font-size:12.5px; display:flex; flex-direction:column; gap:8px;">
+                  <div><strong>유해위험요인:</strong><div style="padding:6px; background:#fff; border:1px solid #fed7d7; border-radius:4px; margin-top:2px;">${m.HazardFactors}</div></div>
+                  <div><strong>감소대책 제안:</strong><div style="padding:6px; background:#fff; border:1px solid #fed7d7; border-radius:4px; margin-top:2px;">${m.ProposedMeasure}</div></div>
+                  <div style="display:flex; gap:16px;">
+                    <div><strong>조치담당:</strong> ${m.ManagerID}</div>
+                    <div><strong>조치기한:</strong> ${m.DueDate}</div>
+                  </div>
+                </div>
+                ${actionHtml}
+              </div>
+            `;
+          }
+
+          container.innerHTML = `
+            <h3 style="font-size:15px; font-weight:700; margin:0 0 16px 0; color:#1e293b; display:flex; justify-content:space-between; align-items:center;">
+              🛡️ 안전대책 수립 & 개선 개선이행 관리
+              <span style="font-size:11px; font-weight:500; background:#e2e8f0; padding:2px 6px; border-radius:4px;">No.${selectedIncident.IncidentID}</span>
+            </h3>
+            ${classHtml}
+            ${measureHtml}
+          `;
+
+          // Bind Listeners
+          const formClassify = document.getElementById('formClassify');
+          if (formClassify) {
+            formClassify.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const payload = {
+                incidentId: selectedIncident.IncidentID,
+                internalType: document.getElementById('selInternalAccidentType').value,
+                internalAmount: document.getElementById('numInternalCompAmount').value || null,
+                absenceDays: document.getElementById('numActualAbsenceDays').value || null,
+                externalType: document.getElementById('selExternalReportType').value,
+                comWelNo: document.getElementById('txtComWelAccidentNo').value.trim()
+              };
+
+              try {
+                const response = await fetch(API_BASE + '/api/classifications', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+                });
+                const r = await response.json();
+                if (r.success) {
+                  showAlert("분류 완료", "사고 분류 정보가 성공적으로 입력되었습니다.");
+                  loadIncidents();
+                  renderMeasurePanel();
+                } else {
+                  alert(r.message);
+                }
+              } catch (err) {
+                console.error(err);
+              }
+            });
+          }
+
+          const formMeasure = document.getElementById('formMeasure');
+          if (formMeasure) {
+            formMeasure.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const payload = {
+                incidentId: selectedIncident.IncidentID,
+                hazardFactors: document.getElementById('txtHazardFactors').value.trim(),
+                proposedMeasure: document.getElementById('txtProposedMeasure').value.trim(),
+                managerId: document.getElementById('selManagerID').value,
+                dueDate: document.getElementById('dateDueDate').value,
+                beforePhotoPath: selectedIncident.PhotoPath
+              };
+
+              try {
+                const response = await fetch(API_BASE + '/api/measures', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+                });
+                const r = await response.json();
+                if (r.success) {
+                  showAlert("대책 완료", "안전감소대책이 성공적으로 수립되었습니다.");
+                  loadIncidents();
+                  renderMeasurePanel();
+                } else {
+                  alert(r.message);
+                }
+              } catch (err) {
+                console.error(err);
+              }
+            });
+          }
+
+          // Follow up trigger
+          const btnUploadAfterPhoto = document.getElementById('btnUploadAfterPhoto');
+          if (btnUploadAfterPhoto) {
+            setupFileUpload('btnUploadAfterPhoto', 'afterPhotoFileInput', 'afterPhotoUploadLabel', 'afterPhotoPreview', (url) => { msAfterPhotoUrl = url; });
+          }
+
+          const btnCompleteMeasure = document.getElementById('btnCompleteMeasure');
+          if (btnCompleteMeasure) {
+            btnCompleteMeasure.addEventListener('click', async () => {
+              if (!msAfterPhotoUrl) {
+                alert("개선 완료를 증빙하기 위한 개선 후 사진을 먼저 업로드해 주세요.");
+                return;
+              }
+
+              try {
+                const response = await fetch(API_BASE + '/api/measures/complete', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    incidentId: selectedIncident.IncidentID,
+                    afterPhotoPath: msAfterPhotoUrl
+                  })
+                });
+                const r = await response.json();
+                if (r.success) {
+                  msAfterPhotoUrl = null;
+                  showAlert("최종 완료", "모든 안전 대책 수립 및 개선 조치가 완료되었습니다.");
+                  loadIncidents();
+                  renderMeasurePanel();
+                }
+              } catch (err) {
+                console.error(err);
+              }
+            });
+          }
+
+        } catch (e) {
+          console.error(e);
+        }
+      };
 
       // 7.5. [화면 4] 일일 안전점검 등록 스크립트
+      const inspCompanyBranchSelect = document.getElementById('inspCompanyBranch');
+      const inspEquipmentNameSelect = document.getElementById('inspEquipmentName');
+      const inspTypeRadios = document.getElementsByName('inspType');
+
+      // Initialize company branch select fields to user's logged company branch
+      const initBranchSelects = () => {
+        const selects = [
+          inspCompanyBranchSelect,
+          document.getElementById('regCompanyBranch')
+        ];
+        
+        selects.forEach(select => {
+          if (!select) return;
+          
+          let optionExists = false;
+          for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === companyName) {
+              optionExists = true;
+              select.selectedIndex = i;
+              break;
+            }
+          }
+          
+          if (!optionExists) {
+            const opt = document.createElement('option');
+            opt.value = companyName;
+            opt.textContent = companyName;
+            select.appendChild(opt);
+            select.value = companyName;
+          }
+          
+          const lowerName = managerName.toLowerCase();
+          const isGlobalAdmin = lowerName.includes('관리자') || lowerName.includes('master') || lowerName.includes('dev') || sessionStorage.getItem('bizpro_company_name') === null;
+          
+          if (!isGlobalAdmin) {
+            select.disabled = true;
+          }
+        });
+      };
+      initBranchSelects();
+
       document.getElementById('inspDate').value = now.toISOString().split('T')[0];
       document.getElementById('inspInspector').value = managerName;
 
-      // 7.5.1. 점검 유형 선택에 따른 장비 선택 활성화
-      const inspTypeRadios = document.getElementsByName('inspType');
-      const inspEquipmentNameSelect = document.getElementById('inspEquipmentName');
+      let currentChecklistItems = [];
 
+      const loadBranchEquipments = async (branch) => {
+        try {
+          const res = await fetch(API_BASE + `/api/equipments?companyBranch=${encodeURIComponent(branch)}`);
+          const result = await res.json();
+          if (result.success && result.data) {
+            inspEquipmentNameSelect.innerHTML = '<option value="" disabled selected>장비를 선택하세요</option>';
+            result.data.forEach(eq => {
+              const opt = document.createElement('option');
+              opt.value = eq.equipment_name;
+              opt.textContent = eq.equipment_name;
+              inspEquipmentNameSelect.appendChild(opt);
+            });
+          }
+        } catch (err) {
+          console.error("장비 목록 로딩 실패:", err);
+        }
+      };
+
+      const loadBranchChecklist = async (branch) => {
+        try {
+          const res = await fetch(API_BASE + `/api/checklist-items?companyBranch=${encodeURIComponent(branch)}`);
+          const result = await res.json();
+          if (result.success && result.data && result.data.length > 0) {
+            currentChecklistItems = result.data;
+            renderDynamicChecklistTable();
+          } else {
+            // Fallback generic standard checklist
+            currentChecklistItems = [
+              { item_code: 'ITEM_01', item_text: '기계·설비의 방호장치(비상정지장치 등) 작동 상태가 정상인가?', response_type: 'YN' },
+              { item_code: 'ITEM_02', item_text: '전기 분전함 전면에 적재물이 없고 외함 접지가 양호한가?', response_type: 'YN' },
+              { item_code: 'ITEM_03', item_text: '현장 내 통로가 확보되어 있고 비상구 주위 유해요인이 없는가?', response_type: 'YN' }
+            ];
+            renderDynamicChecklistTable();
+          }
+        } catch (err) {
+          console.error("체크리스트 로딩 실패:", err);
+        }
+      };
+
+      const renderDynamicChecklistTable = () => {
+        const tbody = document.querySelector('#dailyInspectionForm table tbody');
+        tbody.innerHTML = '';
+        
+        currentChecklistItems.forEach((item, index) => {
+          const tr = document.createElement('tr');
+          
+          const tdNo = document.createElement('td');
+          tdNo.style.cssText = 'text-align: center; font-weight: 600;';
+          tdNo.textContent = index + 1;
+          
+          const tdText = document.createElement('td');
+          tdText.style.fontSize = '13px';
+          tdText.textContent = item.item_text;
+          
+          const tdResult = document.createElement('td');
+          const resultDiv = document.createElement('div');
+          resultDiv.style.cssText = 'display: flex; justify-content: space-around; align-items: center;';
+          
+          const labelGood = document.createElement('label');
+          labelGood.style.cssText = 'font-size: 12px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; margin: 0;';
+          const rGood = document.createElement('input');
+          rGood.type = 'radio';
+          rGood.name = `chkResult_${item.item_code}`;
+          rGood.value = 'GOOD';
+          rGood.checked = true;
+          rGood.style.marginRight = '4px';
+          labelGood.appendChild(rGood);
+          labelGood.appendChild(document.createTextNode('양호'));
+          
+          const labelAction = document.createElement('label');
+          labelAction.style.cssText = 'font-size: 12px; font-weight: 500; cursor: pointer; color: #dc2626; display: inline-flex; align-items: center; margin: 0;';
+          const rAction = document.createElement('input');
+          rAction.type = 'radio';
+          rAction.name = `chkResult_${item.item_code}`;
+          rAction.value = 'ACTION_REQUIRED';
+          rAction.style.marginRight = '4px';
+          labelAction.appendChild(rAction);
+          labelAction.appendChild(document.createTextNode('조치필요'));
+          
+          const labelNA = document.createElement('label');
+          labelNA.style.cssText = 'font-size: 12px; font-weight: 500; cursor: pointer; color: #64748b; display: inline-flex; align-items: center; margin: 0;';
+          const rNA = document.createElement('input');
+          rNA.type = 'radio';
+          rNA.name = `chkResult_${item.item_code}`;
+          rNA.value = 'NA';
+          rNA.style.marginRight = '4px';
+          labelNA.appendChild(rNA);
+          labelNA.appendChild(document.createTextNode('N/A'));
+          
+          const onRadioChange = () => {
+            checkNonComplianceState();
+          };
+          rGood.addEventListener('change', onRadioChange);
+          rAction.addEventListener('change', onRadioChange);
+          rNA.addEventListener('change', onRadioChange);
+          
+          resultDiv.appendChild(labelGood);
+          resultDiv.appendChild(labelAction);
+          resultDiv.appendChild(labelNA);
+          tdResult.appendChild(resultDiv);
+          
+          tr.appendChild(tdNo);
+          tr.appendChild(tdText);
+          tr.appendChild(tdResult);
+          tbody.appendChild(tr);
+        });
+        
+        checkNonComplianceState();
+      };
+
+      const checkNonComplianceState = () => {
+        let anyFail = false;
+        currentChecklistItems.forEach(item => {
+          const radio = document.querySelector(`input[name="chkResult_${item.item_code}"]:checked`);
+          if (radio && radio.value === 'ACTION_REQUIRED') {
+            anyFail = true;
+          }
+        });
+        
+        const nonComplianceSection = document.getElementById('nonComplianceSection');
+        const nonComplianceInputs = [
+          document.getElementById('inspIssueDesc'),
+          document.getElementById('inspActionReq'),
+          document.getElementById('inspManagerID'),
+          document.getElementById('inspDueDate')
+        ];
+        
+        if (anyFail) {
+          nonComplianceSection.style.opacity = '1';
+          nonComplianceSection.style.pointerEvents = 'auto';
+          nonComplianceInputs.forEach(input => {
+            if (input) {
+              input.disabled = false;
+              input.required = true;
+            }
+          });
+          document.getElementById('inspPhotoFileInput').disabled = false;
+        } else {
+          nonComplianceSection.style.opacity = '0.5';
+          nonComplianceSection.style.pointerEvents = 'none';
+          nonComplianceInputs.forEach(input => {
+            if (input) {
+              input.disabled = true;
+              input.required = false;
+              if (input.tagName !== 'SELECT') {
+                input.value = '';
+              }
+            }
+          });
+          document.getElementById('inspPhotoFileInput').disabled = true;
+        }
+      };
+
+      inspCompanyBranchSelect.addEventListener('change', (e) => {
+        const branch = e.target.value;
+        loadBranchEquipments(branch);
+        loadBranchChecklist(branch);
+      });
+
+      // 7.5.1. 점검 유형 선택에 따른 장비 선택 활성화
       inspTypeRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
           if (e.target.value === 'EQUIPMENT') {
@@ -1422,48 +1698,9 @@
         });
       });
 
-      // 7.5.2. 체크리스트 3번 '조치필요'에 따른 부적합 안전조치 섹션 활성화
-      const chkResult3Radios = document.getElementsByName('chkResult3');
-      const nonComplianceSection = document.getElementById('nonComplianceSection');
-      const nonComplianceInputs = [
-        document.getElementById('inspIssueDesc'),
-        document.getElementById('inspActionReq'),
-        document.getElementById('inspManagerID'),
-        document.getElementById('inspDueDate')
-      ];
-
-      chkResult3Radios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-          if (e.target.value === 'ACTION_REQUIRED') {
-            nonComplianceSection.style.opacity = '1';
-            nonComplianceSection.style.pointerEvents = 'auto';
-            nonComplianceInputs.forEach(input => {
-              input.disabled = false;
-              input.required = true;
-            });
-            document.getElementById('inspPhotoFileInput').disabled = false;
-            
-            // Set due date to today + 2 days if empty
-            if (!document.getElementById('inspDueDate').value) {
-              const dueLimit = new Date();
-              dueLimit.setDate(dueLimit.getDate() + 2);
-              document.getElementById('inspDueDate').value = dueLimit.toISOString().split('T')[0];
-            }
-          } else {
-            nonComplianceSection.style.opacity = '0.5';
-            nonComplianceSection.style.pointerEvents = 'none';
-            nonComplianceInputs.forEach(input => {
-              input.disabled = true;
-              input.required = false;
-              input.value = input.tagName === 'SELECT' ? input.options[0].value : '';
-            });
-            document.getElementById('inspPhotoFileInput').disabled = true;
-            document.getElementById('inspPhotoPreview').innerHTML = '';
-            document.getElementById('inspPhotoUploadLabel').textContent = "현장 사진 업로드";
-            inspPhotoUrl = null;
-          }
-        });
-      });
+      // Load initial lists
+      loadBranchEquipments(inspCompanyBranchSelect.value);
+      loadBranchChecklist(inspCompanyBranchSelect.value);
 
       // 7.5.3. 안전점검 사진 업로드 등록
       let inspPhotoUrl = null;
@@ -1544,8 +1781,7 @@
 
       document.getElementById('btnSaveInspDraft').addEventListener('click', () => {
         lastSubmitStatus = 'DRAFT';
-        // Minimum validation for DRAFT
-        if (!document.getElementById('inspCompanyBranch').value || !document.getElementById('inspDate').value || !document.getElementById('inspInspector').value) {
+        if (!inspCompanyBranchSelect.value || !document.getElementById('inspDate').value || !document.getElementById('inspInspector').value) {
           alert("사업장, 점검일자, 점검자는 필수입니다.");
           return;
         }
@@ -1568,15 +1804,31 @@
       const submitInspection = async () => {
         const signatureData = sigCanvas ? sigCanvas.toDataURL() : null;
 
+        const checkResults = currentChecklistItems.map(item => {
+          const radio = document.querySelector(`input[name="chkResult_${item.item_code}"]:checked`);
+          return {
+            itemCode: item.item_code,
+            resultStatus: radio ? radio.value : 'NA'
+          };
+        });
+
+        const check1Radio = document.querySelector('input[name="chkResult_ITEM_01"]:checked');
+        const check2Radio = document.querySelector('input[name="chkResult_ITEM_02"]:checked');
+        const check3Radio = document.querySelector('input[name="chkResult_ITEM_03"]:checked');
+
         const payload = {
-          companyBranch: document.getElementById('inspCompanyBranch').value,
+          companyBranch: inspCompanyBranchSelect.value,
           inspectionType: document.querySelector('input[name="inspType"]:checked').value,
-          equipmentName: document.getElementById('inspEquipmentName').value || null,
+          equipmentName: inspEquipmentNameSelect.value || null,
           inspectionDate: document.getElementById('inspDate').value,
           inspector: document.getElementById('inspInspector').value.trim(),
-          check1Result: document.querySelector('input[name="chkResult1"]:checked').value,
-          check2Result: document.querySelector('input[name="chkResult2"]:checked').value,
-          check3Result: document.querySelector('input[name="chkResult3"]:checked').value,
+          
+          check1Result: check1Radio ? check1Radio.value : 'GOOD',
+          check2Result: check2Radio ? check2Radio.value : 'GOOD',
+          check3Result: check3Radio ? check3Radio.value : 'GOOD',
+          
+          checkResults: checkResults,
+          
           issueDescription: document.getElementById('inspIssueDesc').value.trim(),
           actionRequired: document.getElementById('inspActionReq').value.trim(),
           beforePhotoPath: inspPhotoUrl,
@@ -1610,13 +1862,7 @@
               inspPhotoUrl = null;
 
               inspEquipmentNameSelect.disabled = true;
-
-              nonComplianceSection.style.opacity = '0.5';
-              nonComplianceSection.style.pointerEvents = 'none';
-              nonComplianceInputs.forEach(input => {
-                input.disabled = true;
-              });
-              document.getElementById('inspPhotoFileInput').disabled = true;
+              checkNonComplianceState();
 
               // Back to master list
               const masterTab = document.querySelector('.sidebar-nav .nav-item[data-tab="classify"]');
@@ -1706,9 +1952,15 @@
 
           const statusColor = insp.Status === 'SUBMITTED' ? 'status-resolved' : 'status-pending';
 
-          const score1 = insp.Check1Result === 'GOOD' ? 'O' : (insp.Check1Result === 'ACTION_REQUIRED' ? 'X' : '-');
-          const score2 = insp.Check2Result === 'GOOD' ? 'O' : (insp.Check2Result === 'ACTION_REQUIRED' ? 'X' : '-');
-          const score3 = insp.Check3Result === 'GOOD' ? 'O' : (insp.Check3Result === 'ACTION_REQUIRED' ? 'X' : '-');
+          let scoreText = '';
+          if (insp.TotalCount !== undefined && insp.TotalCount !== null && insp.TotalCount > 0) {
+            scoreText = `양호 ${insp.PassCount} / 조치 ${insp.FailCount}`;
+          } else {
+            const score1 = insp.Check1Result === 'GOOD' ? 'O' : (insp.Check1Result === 'ACTION_REQUIRED' ? 'X' : '-');
+            const score2 = insp.Check2Result === 'GOOD' ? 'O' : (insp.Check2Result === 'ACTION_REQUIRED' ? 'X' : '-');
+            const score3 = insp.Check3Result === 'GOOD' ? 'O' : (insp.Check3Result === 'ACTION_REQUIRED' ? 'X' : '-');
+            scoreText = `${score1}/${score2}/${score3}`;
+          }
 
           tr.innerHTML = `
             <td>${insp.InspectionID}</td>
@@ -1716,7 +1968,7 @@
             <td><span class="tag-type type-etc" style="font-size: 11px;">${typeLabels[insp.InspectionType] || insp.InspectionType}</span></td>
             <td style="font-weight:600;">${insp.EquipmentName || '-'}</td>
             <td>${insp.Inspector}</td>
-            <td style="text-align: center; font-weight: bold; font-size: 12px;">${score1}/${score2}/${score3}</td>
+            <td style="text-align: center; font-weight: bold; font-size: 12px; color: #1e293b;">${scoreText}</td>
             <td style="text-align: center;"><span class="status-badge ${statusColor}" style="margin: 0; font-size: 11px; padding: 2px 6px;">${statusLabels[insp.Status] || insp.Status}</span></td>
           `;
 
@@ -1761,48 +2013,122 @@
         document.getElementById('detailDate').textContent = insp.InspectionDate;
         document.getElementById('detailInspector').textContent = insp.Inspector;
 
-        const setChkBadge = (elementId, value) => {
-          const el = document.getElementById(elementId);
-          if (value === 'GOOD') {
-            el.textContent = '양호';
-            el.className = 'status-badge status-resolved';
-            el.style.backgroundColor = '';
-            el.style.color = '';
-          } else if (value === 'ACTION_REQUIRED') {
-            el.textContent = '조치필요';
-            el.className = 'status-badge status-pending';
-            el.style.backgroundColor = '';
-            el.style.color = '';
-          } else {
-            el.textContent = 'N/A';
-            el.className = 'status-badge';
-            el.style.backgroundColor = '#e2e8f0';
-            el.style.color = '#475569';
+        // Fetch checklist details from server dynamically
+        const loadDetailChecklist = async () => {
+          const detailContainer = document.getElementById('detailChecklistContainer');
+          detailContainer.innerHTML = '<span style="color: #64748b; font-size: 11px;">상세 결과 데이터 로딩 중...</span>';
+          try {
+            const res = await fetch(API_BASE + '/api/inspections/' + insp.InspectionID + '/details');
+            const result = await res.json();
+            if (result.success && result.data && result.data.length > 0) {
+              detailContainer.innerHTML = '';
+              let hasAnyFail = false;
+              result.data.forEach((item) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 4px;';
+                
+                const titleSpan = document.createElement('span');
+                titleSpan.textContent = `${item.ItemCode}. ${item.ItemText}`;
+                if (item.ResultStatus === 'FAIL') {
+                  titleSpan.style.fontWeight = '600';
+                  hasAnyFail = true;
+                }
+                
+                const badgeSpan = document.createElement('span');
+                badgeSpan.style.margin = '0';
+                badgeSpan.style.padding = '2px 6px';
+                if (item.ResultStatus === 'PASS') {
+                  badgeSpan.textContent = '양호';
+                  badgeSpan.className = 'status-badge status-resolved';
+                } else if (item.ResultStatus === 'FAIL') {
+                  badgeSpan.textContent = '조치필요';
+                  badgeSpan.className = 'status-badge status-pending';
+                } else {
+                  badgeSpan.textContent = 'N/A';
+                  badgeSpan.className = 'status-badge';
+                  badgeSpan.style.backgroundColor = '#e2e8f0';
+                  badgeSpan.style.color = '#475569';
+                }
+                
+                itemDiv.appendChild(titleSpan);
+                itemDiv.appendChild(badgeSpan);
+                detailContainer.appendChild(itemDiv);
+              });
+              
+              const ncSection = document.getElementById('detailNonComplianceSection');
+              if (hasAnyFail) {
+                ncSection.style.display = 'block';
+                document.getElementById('detailIssueDesc').textContent = insp.IssueDescription || '';
+                document.getElementById('detailActionReq').textContent = insp.ActionRequired || '';
+                document.getElementById('detailManager').textContent = insp.ManagerID || '-';
+                document.getElementById('detailDueDate').textContent = insp.DueDate || '-';
+
+                const photoContainer = document.getElementById('detailPhotoContainer');
+                if (insp.BeforePhotoPath) {
+                  photoContainer.style.display = 'block';
+                  document.getElementById('detailPhotoImg').src = insp.BeforePhotoPath;
+                } else {
+                  photoContainer.style.display = 'none';
+                }
+              } else {
+                ncSection.style.display = 'none';
+              }
+            } else {
+              // Legacy render fallback
+              detailContainer.innerHTML = '';
+              const addLegacyItem = (num, text, val) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 4px;';
+                const titleSpan = document.createElement('span');
+                titleSpan.textContent = `${num}. ${text}`;
+                const badgeSpan = document.createElement('span');
+                badgeSpan.style.margin = '0';
+                badgeSpan.style.padding = '2px 6px';
+                if (val === 'GOOD') {
+                  badgeSpan.textContent = '양호';
+                  badgeSpan.className = 'status-badge status-resolved';
+                } else if (val === 'ACTION_REQUIRED') {
+                  badgeSpan.textContent = '조치필요';
+                  badgeSpan.className = 'status-badge status-pending';
+                } else {
+                  badgeSpan.textContent = 'N/A';
+                  badgeSpan.className = 'status-badge';
+                  badgeSpan.style.backgroundColor = '#e2e8f0';
+                  badgeSpan.style.color = '#475569';
+                }
+                itemDiv.appendChild(titleSpan);
+                itemDiv.appendChild(badgeSpan);
+                detailContainer.appendChild(itemDiv);
+              };
+              addLegacyItem(1, '기계·설비의 방호장치(비상정지장치 등) 작동 상태가 정상인가?', insp.Check1Result);
+              addLegacyItem(2, '전기 분전함 전면에 적재물이 없고 외함 접지가 양호한가?', insp.Check2Result);
+              addLegacyItem(3, '현장 내 통로가 확보되어 있고 비상구 주위 유해요인이 없는가?', insp.Check3Result);
+              
+              const ncSection = document.getElementById('detailNonComplianceSection');
+              if (insp.Check3Result === 'ACTION_REQUIRED') {
+                ncSection.style.display = 'block';
+                document.getElementById('detailIssueDesc').textContent = insp.IssueDescription || '';
+                document.getElementById('detailActionReq').textContent = insp.ActionRequired || '';
+                document.getElementById('detailManager').textContent = insp.ManagerID || '-';
+                document.getElementById('detailDueDate').textContent = insp.DueDate || '-';
+
+                const photoContainer = document.getElementById('detailPhotoContainer');
+                if (insp.BeforePhotoPath) {
+                  photoContainer.style.display = 'block';
+                  document.getElementById('detailPhotoImg').src = insp.BeforePhotoPath;
+                } else {
+                  photoContainer.style.display = 'none';
+                }
+              } else {
+                ncSection.style.display = 'none';
+              }
+            }
+          } catch (e) {
+            console.error(e);
+            detailContainer.innerHTML = '<span style="color: #dc2626; font-size: 11px;">상세 정보를 불러올 수 없습니다.</span>';
           }
         };
-
-        setChkBadge('detailChk1Badge', insp.Check1Result);
-        setChkBadge('detailChk2Badge', insp.Check2Result);
-        setChkBadge('detailChk3Badge', insp.Check3Result);
-
-        const ncSection = document.getElementById('detailNonComplianceSection');
-        if (insp.Check3Result === 'ACTION_REQUIRED') {
-          ncSection.style.display = 'block';
-          document.getElementById('detailIssueDesc').textContent = insp.IssueDescription || '';
-          document.getElementById('detailActionReq').textContent = insp.ActionRequired || '';
-          document.getElementById('detailManager').textContent = insp.ManagerID || '-';
-          document.getElementById('detailDueDate').textContent = insp.DueDate || '-';
-
-          const photoContainer = document.getElementById('detailPhotoContainer');
-          if (insp.BeforePhotoPath) {
-            photoContainer.style.display = 'block';
-            document.getElementById('detailPhotoImg').src = insp.BeforePhotoPath;
-          } else {
-            photoContainer.style.display = 'none';
-          }
-        } else {
-          ncSection.style.display = 'none';
-        }
+        loadDetailChecklist();
 
         const sigImg = document.getElementById('detailSignatureImg');
         if (insp.SignatureData) {
@@ -1844,7 +2170,7 @@
               .replace(/### (.*)/g, '<h4 style="margin: 12px 0 6px 0; color: #0f172a; font-size: 13px; font-weight: 700;">$1</h4>')
               .replace(/#### (.*)/g, '<h5 style="margin: 8px 0 4px 0; color: #1e293b; font-size: 12px; font-weight: 700;">$1</h5>')
               .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-              .replace(/`([^`]+)`/g, '<code style="background-color: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>')
+              .replace(/\`([^\`]+)\`/g, '<code style="background-color: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>')
               .replace(/> (.*)/g, '<blockquote style="border-left: 3px solid #0284c7; padding-left: 8px; color: #0369a1; margin: 8px 0; font-style: italic;">$1</blockquote>')
               .replace(/- (.*)/g, '<li style="margin-left: 12px; list-style-type: disc;">$1</li>');
             resultBox.innerHTML = answerHtml;
@@ -1873,6 +2199,186 @@
       const headerLogoutBtn = document.getElementById('headerLogoutBtn');
       if (sidebarLogout) sidebarLogout.addEventListener('click', logoutAction);
       if (headerLogoutBtn) headerLogoutBtn.addEventListener('click', logoutAction);
+
+      // ==========================================
+      // [화면 6] 장비 및 점검지 설정 스크립트
+      // ==========================================
+      const settingsEquipTableBody = document.getElementById('settingsEquipTableBody');
+      const settingsChecklistTableBody = document.getElementById('settingsChecklistTableBody');
+
+      const loadSettingsPanel = async () => {
+        await Promise.all([
+          loadSettingsEquipments(),
+          loadSettingsChecklist()
+        ]);
+      };
+
+      const loadSettingsEquipments = async () => {
+        try {
+          const res = await fetch(API_BASE + `/api/equipments?companyBranch=${encodeURIComponent(companyName)}`);
+          const result = await res.json();
+          if (result.success && result.data) {
+            settingsEquipTableBody.innerHTML = '';
+            if (result.data.length === 0) {
+              settingsEquipTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #94a3b8; padding: 12px;">등록된 장비가 없습니다.</td></tr>';
+              return;
+            }
+            result.data.forEach(eq => {
+              const tr = document.createElement('tr');
+              
+              const typeLabels = {
+                FORKLIFT: '지게차',
+                CRANE: '크레인',
+                CUTTER: '절단기',
+                MIXER: '반죽기',
+                OTHER: '기타'
+              };
+
+              tr.innerHTML = `
+                <td style="font-weight: 600; font-size: 13px;">${eq.equipment_name}</td>
+                <td style="font-size: 13px;">${typeLabels[eq.equipment_type] || eq.equipment_type}</td>
+                <td style="text-align: center;">
+                  <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 6px; font-size: 11px; background-color: #ef4444; color: #fff; border: none; border-radius: 3px;" onclick="deleteEquipment('${eq.equipment_id}')">삭제</button>
+                </td>
+              `;
+              settingsEquipTableBody.appendChild(tr);
+            });
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      const loadSettingsChecklist = async () => {
+        try {
+          const res = await fetch(API_BASE + `/api/checklist-items?companyBranch=${encodeURIComponent(companyName)}`);
+          const result = await res.json();
+          if (result.success && result.data) {
+            settingsChecklistTableBody.innerHTML = '';
+            if (result.data.length === 0) {
+              settingsChecklistTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #94a3b8; padding: 12px;">등록된 점검 항목이 없습니다.</td></tr>';
+              return;
+            }
+            result.data.forEach(item => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td style="font-weight: 600; text-align: center; font-size: 13px;">${item.item_code}</td>
+                <td style="font-size: 12.5px;">${item.item_text}</td>
+                <td style="text-align: center;">
+                  <button type="button" class="btn btn-secondary btn-sm" style="padding: 2px 6px; font-size: 11px; background-color: #ef4444; color: #fff; border: none; border-radius: 3px;" onclick="deleteChecklistItem('${item.item_id}')">삭제</button>
+                </td>
+              `;
+              settingsChecklistTableBody.appendChild(tr);
+            });
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      document.getElementById('btnSaveEquip').addEventListener('click', async () => {
+        const nameInput = document.getElementById('newEquipName');
+        const typeSelect = document.getElementById('newEquipType');
+        const name = nameInput.value.trim();
+        const type = typeSelect.value;
+        
+        if (!name) {
+          alert('장비명을 입력해 주세요.');
+          return;
+        }
+
+        try {
+          const res = await fetch(API_BASE + '/api/equipments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              equipmentName: name,
+              equipmentType: type,
+              companyBranch: companyName
+            })
+          });
+          const result = await res.json();
+          if (result.success) {
+            nameInput.value = '';
+            await loadSettingsEquipments();
+            loadBranchEquipments(companyName);
+            showAlert('성공', '장비가 성공적으로 등록되었습니다.');
+          } else {
+            alert(result.message);
+          }
+        } catch (err) {
+          console.error(err);
+          alert('장비 등록 중 오류가 발생했습니다.');
+        }
+      });
+
+      document.getElementById('btnSaveCheckItem').addEventListener('click', async () => {
+        const codeInput = document.getElementById('newCheckItemCode');
+        const textInput = document.getElementById('newCheckItemText');
+        const code = codeInput.value.trim().toUpperCase();
+        const text = textInput.value.trim();
+        
+        if (!code || !text) {
+          alert('항목코드와 점검 항목 내용을 모두 입력해 주세요.');
+          return;
+        }
+
+        try {
+          const res = await fetch(API_BASE + '/api/checklist-items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              companyBranch: companyName,
+              itemCode: code,
+              itemText: text,
+              responseType: 'YN'
+            })
+          });
+          const result = await res.json();
+          if (result.success) {
+            codeInput.value = '';
+            textInput.value = '';
+            await loadSettingsChecklist();
+            loadBranchChecklist(companyName);
+            showAlert('성공', '점검 항목이 성공적으로 등록되었습니다.');
+          } else {
+            alert(result.message);
+          }
+        } catch (err) {
+          console.error(err);
+          alert('점검 항목 등록 중 오류가 발생했습니다.');
+        }
+      });
+
+      window.deleteEquipment = async (id) => {
+        if (!confirm('정말로 이 장비를 삭제하시겠습니까?')) return;
+        try {
+          const res = await fetch(API_BASE + `/api/equipments/${id}`, { method: 'DELETE' });
+          const result = await res.json();
+          if (result.success) {
+            await loadSettingsEquipments();
+            loadBranchEquipments(companyName);
+            showAlert('성공', '장비가 삭제되었습니다.');
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      window.deleteChecklistItem = async (id) => {
+        if (!confirm('정말로 이 점검 항목을 삭제하시겠습니까?')) return;
+        try {
+          const res = await fetch(API_BASE + `/api/checklist-items/${id}`, { method: 'DELETE' });
+          const result = await res.json();
+          if (result.success) {
+            await loadSettingsChecklist();
+            loadBranchChecklist(companyName);
+            showAlert('성공', '점검 항목이 삭제되었습니다.');
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
 
       // Initial load
       loadIncidents();

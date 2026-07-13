@@ -825,7 +825,10 @@ app.post('/api/inspections', async (req, res) => {
         status
     } = req.body;
 
-    if (!companyBranch || !inspectionType || !inspectionDate || !inspector || !check1Result || !check2Result || !check3Result || !status) {
+    const hasLegacyResults = (check1Result !== undefined && check2Result !== undefined && check3Result !== undefined);
+    const hasDynamicResults = (req.body.checkResults && Array.isArray(req.body.checkResults));
+
+    if (!companyBranch || !inspectionType || !inspectionDate || !inspector || (!hasLegacyResults && !hasDynamicResults) || !status) {
         return res.status(400).json({ success: false, message: '필수 입력 항목이 누락되었습니다.' });
     }
 
@@ -857,7 +860,7 @@ app.post('/api/inspections', async (req, res) => {
 
         // Truncate other inputs to match database lengths safely (preventing multi-byte truncation errors)
         const inspectorId = inspector ? inspector.split(/[\s\(]/)[0].substring(0, 6) : 'System';
-        const equipId = equipmentName ? equipmentName.substring(0, 12) : null;
+        const equipId = equipmentName ? equipmentName.substring(0, 36) : null;
 
         // Generate UUID
         const inspectionId = crypto.randomUUID();
@@ -892,18 +895,26 @@ app.post('/api/inspections', async (req, res) => {
             // B. Insert into Safety_Inspection_Details for each item
             // Map check results to DETAILS constraint: 'PASS', 'FAIL', or 'NA'
             const mapResultStatus = (res) => {
-                if (res === 'GOOD') return 'PASS';
-                if (res === 'ACTION_REQUIRED') return 'FAIL';
+                if (res === 'GOOD' || res === 'PASS') return 'PASS';
+                if (res === 'ACTION_REQUIRED' || res === 'FAIL') return 'FAIL';
                 return 'NA';
             };
 
-            const results = [
-                { itemCode: 'ITEM_01', resultStatus: mapResultStatus(check1Result) },
-                { itemCode: 'ITEM_02', resultStatus: mapResultStatus(check2Result) },
-                { itemCode: 'ITEM_03', resultStatus: mapResultStatus(check3Result) }
-            ];
+            let results = [];
+            if (hasDynamicResults) {
+                results = req.body.checkResults.map(r => ({
+                    itemCode: r.itemCode,
+                    resultStatus: mapResultStatus(r.resultStatus)
+                }));
+            } else {
+                results = [
+                    { itemCode: 'ITEM_01', resultStatus: mapResultStatus(check1Result) },
+                    { itemCode: 'ITEM_02', resultStatus: mapResultStatus(check2Result) },
+                    { itemCode: 'ITEM_03', resultStatus: mapResultStatus(check3Result) }
+                ];
+            }
 
-            let item3DetailId = null;
+            let failedDetails = [];
 
             for (const r of results) {
                 const detailRequest = new sql.Request(transaction);
@@ -917,13 +928,17 @@ app.post('/api/inspections', async (req, res) => {
                         VALUES (@inspectionId, @itemCode, @resultStatus)
                     `);
                 
-                if (r.itemCode === 'ITEM_03') {
-                    item3DetailId = detailResult.recordset[0].detail_id;
+                if (r.resultStatus === 'FAIL') {
+                    failedDetails.push({
+                        detailId: detailResult.recordset[0].detail_id,
+                        itemCode: r.itemCode
+                    });
                 }
             }
 
-            // C. Insert into Safety_Non_Compliance if item 3 requires action
-            if (check3Result === 'ACTION_REQUIRED') {
+            // C. Insert into Safety_Non_Compliance if any item failed
+            if (failedDetails.length > 0) {
+                const firstFail = failedDetails[0];
                 const ncId = crypto.randomUUID();
                 const mId = managerId ? managerId.split(/[\s\(]/)[0].substring(0, 6) : 'System';
                 const beforeImg = beforePhotoPath ? beforePhotoPath.substring(0, 255) : null;
@@ -933,7 +948,7 @@ app.post('/api/inspections', async (req, res) => {
                 await ncRequest
                     .input('ncId', sql.VarChar(36), ncId)
                     .input('inspectionId', sql.VarChar(36), inspectionId)
-                    .input('detailId', sql.BigInt, item3DetailId)
+                    .input('detailId', sql.BigInt, firstFail.detailId)
                     .input('issueDescription', sql.NVarChar(sql.MAX), issueDescription || '')
                     .input('actionRequired', sql.NVarChar(sql.MAX), actionRequired || '')
                     .input('managerId', sql.NVarChar(20), mId)
@@ -1001,6 +1016,9 @@ app.get('/api/inspections', async (req, res) => {
                     WHEN 'FAIL' THEN 'ACTION_REQUIRED'
                     ELSE d3.result_status
                 END AS Check3Result,
+                (SELECT COUNT(*) FROM Safety_Inspection_Details d WHERE d.inspection_id = m.inspection_id AND d.result_status = 'PASS') AS PassCount,
+                (SELECT COUNT(*) FROM Safety_Inspection_Details d WHERE d.inspection_id = m.inspection_id AND d.result_status = 'FAIL') AS FailCount,
+                (SELECT COUNT(*) FROM Safety_Inspection_Details d WHERE d.inspection_id = m.inspection_id) AS TotalCount,
                 nc.issue_description AS IssueDescription,
                 nc.action_required AS ActionRequired,
                 nc.before_img_path AS BeforePhotoPath,
@@ -1023,6 +1041,162 @@ app.get('/api/inspections', async (req, res) => {
     } catch (err) {
         console.error('Fetch inspections error:', err);
         return res.status(500).json({ success: false, message: '안전점검 이력을 조회하는 중 서버 오류가 발생했습니다.' });
+    }
+});
+
+// API: Get Inspection Details (dynamic items lookup)
+app.get('/api/inspections/:id/details', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const pool = await getPool();
+        const result = await pool.request()
+            .input('inspectionId', sql.VarChar(36), id)
+            .query(`
+                SELECT 
+                    d.detail_id AS DetailID,
+                    d.item_code AS ItemCode,
+                    d.result_status AS ResultStatus,
+                    c.item_text AS ItemText
+                FROM Safety_Inspection_Details d
+                LEFT JOIN Safety_Inspection_Master m ON d.inspection_id = m.inspection_id
+                LEFT JOIN ChecklistItems c ON (
+                    CASE c.company_branch 
+                        WHEN '서울 본사 공장' THEN 'SEOUL'
+                        WHEN '부산 지사 공장' THEN 'BUSAN'
+                        WHEN '인천 물류 센터' THEN 'INCHEON'
+                        ELSE c.company_branch
+                    END
+                ) = m.site_id AND d.item_code = c.item_code
+                WHERE d.inspection_id = @inspectionId
+            `);
+        // If no ChecklistItems match, supply standard fallbacks
+        const data = result.recordset.map(row => {
+            if (!row.ItemText) {
+                if (row.ItemCode === 'ITEM_01') row.ItemText = '기계·설비의 방호장치(비상정지장치 등) 작동 상태가 정상인가?';
+                else if (row.ItemCode === 'ITEM_02') row.ItemText = '전기 분전함 전면에 적재물이 없고 외함 접지가 양호한가?';
+                else if (row.ItemCode === 'ITEM_03') row.ItemText = '현장 내 통로가 확보되어 있고 비상구 주위 유해요인이 없는가?';
+                else row.ItemText = `점검 항목 (${row.ItemCode})`;
+            }
+            return row;
+        });
+        return res.json({ success: true, data });
+    } catch (err) {
+        console.error('Fetch inspection details error:', err);
+        return res.status(500).json({ success: false, message: '점검 세부 내역을 조회하는 중 서버 오류가 발생했습니다.' });
+    }
+});
+
+// API: Get Equipments
+app.get('/api/equipments', async (req, res) => {
+    const { companyBranch } = req.query;
+    try {
+        const pool = await getPool();
+        let query = 'SELECT equipment_id, equipment_name, equipment_type, company_branch FROM EquipmentMaster';
+        let request = pool.request();
+        if (companyBranch) {
+            query += ' WHERE company_branch = @companyBranch';
+            request.input('companyBranch', sql.NVarChar(100), companyBranch);
+        }
+        const result = await request.query(query);
+        return res.json({ success: true, data: result.recordset });
+    } catch (err) {
+        console.error('Fetch equipments error:', err);
+        return res.status(500).json({ success: false, message: '장비 목록을 조회하는 중 서버 오류가 발생했습니다.' });
+    }
+});
+
+// API: Add Equipment
+app.post('/api/equipments', async (req, res) => {
+    const { equipmentName, equipmentType, companyBranch } = req.body;
+    if (!equipmentName || !companyBranch) {
+        return res.status(400).json({ success: false, message: '장비명과 사업장명은 필수입니다.' });
+    }
+    try {
+        const pool = await getPool();
+        const equipmentId = crypto.randomUUID();
+        await pool.request()
+            .input('equipmentId', sql.VarChar(36), equipmentId)
+            .input('equipmentName', sql.NVarChar(150), equipmentName)
+            .input('equipmentType', sql.VarChar(50), equipmentType || 'OTHER')
+            .input('companyBranch', sql.NVarChar(100), companyBranch)
+            .query('INSERT INTO EquipmentMaster (equipment_id, equipment_name, equipment_type, company_branch) VALUES (@equipmentId, @equipmentName, @equipmentType, @companyBranch)');
+        return res.status(201).json({ success: true, message: '장비가 성공적으로 등록되었습니다.' });
+    } catch (err) {
+        console.error('Add equipment error:', err);
+        return res.status(500).json({ success: false, message: '장비 등록 중 서버 오류가 발생했습니다.' });
+    }
+});
+
+// API: Delete Equipment
+app.delete('/api/equipments/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const pool = await getPool();
+        await pool.request()
+            .input('equipmentId', sql.VarChar(36), id)
+            .query('DELETE FROM EquipmentMaster WHERE equipment_id = @equipmentId');
+        return res.json({ success: true, message: '장비가 성공적으로 삭제되었습니다.' });
+    } catch (err) {
+        console.error('Delete equipment error:', err);
+        return res.status(500).json({ success: false, message: '장비 삭제 중 서버 오류가 발생했습니다.' });
+    }
+});
+
+// API: Get Checklist Items
+app.get('/api/checklist-items', async (req, res) => {
+    const { companyBranch } = req.query;
+    try {
+        const pool = await getPool();
+        let query = 'SELECT item_id, company_branch, item_code, item_text, response_type FROM ChecklistItems';
+        let request = pool.request();
+        if (companyBranch) {
+            query += ' WHERE company_branch = @companyBranch';
+            request.input('companyBranch', sql.NVarChar(100), companyBranch);
+        }
+        query += ' ORDER BY item_code ASC';
+        const result = await request.query(query);
+        return res.json({ success: true, data: result.recordset });
+    } catch (err) {
+        console.error('Fetch checklist items error:', err);
+        return res.status(500).json({ success: false, message: '체크리스트 항목을 조회하는 중 서버 오류가 발생했습니다.' });
+    }
+});
+
+// API: Add Checklist Item
+app.post('/api/checklist-items', async (req, res) => {
+    const { companyBranch, itemCode, itemText, responseType } = req.body;
+    if (!companyBranch || !itemCode || !itemText) {
+        return res.status(400).json({ success: false, message: '사업장명, 항목코드, 항목내용은 필수입니다.' });
+    }
+    try {
+        const pool = await getPool();
+        const itemId = crypto.randomUUID();
+        await pool.request()
+            .input('itemId', sql.VarChar(36), itemId)
+            .input('companyBranch', sql.NVarChar(100), companyBranch)
+            .input('itemCode', sql.VarChar(10), itemCode)
+            .input('itemText', sql.NVarChar(500), itemText)
+            .input('responseType', sql.VarChar(20), responseType || 'YN')
+            .query('INSERT INTO ChecklistItems (item_id, company_branch, item_code, item_text, response_type) VALUES (@itemId, @companyBranch, @itemCode, @itemText, @responseType)');
+        return res.status(201).json({ success: true, message: '체크리스트 항목이 성공적으로 등록되었습니다.' });
+    } catch (err) {
+        console.error('Add checklist item error:', err);
+        return res.status(500).json({ success: false, message: '체크리스트 항목 등록 중 서버 오류가 발생했습니다.' });
+    }
+});
+
+// API: Delete Checklist Item
+app.delete('/api/checklist-items/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const pool = await getPool();
+        await pool.request()
+            .input('itemId', sql.VarChar(36), id)
+            .query('DELETE FROM ChecklistItems WHERE item_id = @itemId');
+        return res.json({ success: true, message: '체크리스트 항목이 성공적으로 삭제되었습니다.' });
+    } catch (err) {
+        console.error('Delete checklist item error:', err);
+        return res.status(500).json({ success: false, message: '체크리스트 항목 삭제 중 서버 오류가 발생했습니다.' });
     }
 });
 
