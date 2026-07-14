@@ -97,6 +97,23 @@
               <input type="date" id="filterEndDate" class="filter-input-date">
             </div>
             <div class="filter-item">
+              <span class="filter-label">사고유형</span>
+              <select id="filterIncidentType" class="filter-input-text" style="width: auto; padding-right: 28px;">
+                <option value="ALL">전체</option>
+                <option value="INJURY">부상재해</option>
+                <option value="DEATH">사망재해</option>
+                <option value="NEAR_MISS">아차사고</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <span class="filter-label">분류상태</span>
+              <select id="filterStatus" class="filter-input-text" style="width: auto; padding-right: 28px;">
+                <option value="ALL">전체</option>
+                <option value="UNCLASSIFIED">검토대기</option>
+                <option value="COMPLETED">분류완료</option>
+              </select>
+            </div>
+            <div class="filter-item">
               <span class="filter-label">검색어</span>
               <input type="text" id="filterKeyword" class="filter-input-text" placeholder="기계명, 사고명 등 입력">
             </div>
@@ -350,96 +367,10 @@
               <p class="panel-subtitle">접수된 사고에 대한 유해 요인을 차단할 수 있는 감소 대책을 수립하고 현장 이행을 완료합니다.</p>
             </div>
 
-            <div id="measureEmptyState" class="cm-empty-state" style="min-height: 250px; padding: 48px;">
-              <span>📊 '마스터 관리' 화면에서 특정 사고 행을 클릭하여 선택한 후 대책 탭으로 이동해 주세요.</span>
-            </div>
-
-            <div id="measureContentPanel" style="display: none;">
-              <!-- Selected Incident Header -->
-              <div class="linked-accident-card" id="measureLinkedHeader">
-                <span class="linked-tag">연계사고</span>
-                <span id="measureSelectedTitle">식빵절단기 측면 커버 개방으로 인한 손가락 끼임 사고 (2026-06-18 등록)</span>
+            <div id="measureTabContainer">
+              <div id="measureEmptyState" class="cm-empty-state" style="min-height: 250px; padding: 48px;">
+                <span>📊 '마스터 관리' 화면에서 특정 사고 행을 클릭하여 선택한 후 대책 탭으로 이동해 주세요.</span>
               </div>
-
-              <form id="measureForm">
-                <div class="db-grid-layout" style="grid-template-columns: 1fr 1fr; gap: 24px;">
-                  
-                  <!-- Left side: Risk Assessment & Mitigation Setup -->
-                  <div class="form-card" style="display: flex; flex-direction: column; gap: 16px; border: none; padding: 0; background: none; box-shadow: none;">
-                    <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">■ 위험성 평가 및 대책 수립</h4>
-                    
-                    <div class="form-group">
-                      <label class="form-label-desc">* 유해위험요인</label>
-                      <textarea id="msHazardFactors" class="form-textarea-custom" placeholder="발생한 유해 요인을 기입하세요" required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label-desc">현재 조치 사항</label>
-                      <textarea id="msCurrentMeasure" class="form-textarea-custom" placeholder="임시 조치 사항 등 입력" style="min-height: 60px;"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label-desc">* 근본 감소대책</label>
-                      <textarea id="msProposedMeasure" class="form-textarea-custom" placeholder="구체적인 설비적/시스템적 대책을 기술하세요" required></textarea>
-                    </div>
-
-                    <div class="assignee-row">
-                      <div class="form-group">
-                        <label class="form-label-desc">* 조치 담당자</label>
-                        <div class="select-wrapper">
-                          <select id="msManagerID" class="form-select-custom" required>
-                            <option value="이무사 (공정관리팀)" selected>이무사 (공정관리팀)</option>
-                            <option value="김안전 (안전관리부)">김안전 (안전관리부)</option>
-                            <option value="박대비 (생산팀)">박대비 (생산팀)</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">* 조치 기한</label>
-                        <input type="date" id="msDueDate" class="form-input-custom" required>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Right side: Field Action Completion -->
-                  <div class="form-card" style="display: flex; flex-direction: column; gap: 16px; border: none; padding: 0; background: none; box-shadow: none;">
-                    <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">■ 현장 조치 결과 기록 (담당자 입력 영역)</h4>
-                    
-                    <div class="form-group">
-                      <label class="form-label-desc">조치 완료일</label>
-                      <input type="date" id="msCompletionDate" class="form-input-custom">
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label-desc">이행 결과 내용</label>
-                      <textarea id="msActionContent" class="form-textarea-custom" placeholder="이행 결과 완료 사항 기입"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label-desc">조치 전/후 사진</label>
-                      <div class="before-after-grid">
-                        <div class="photo-upload-box" id="btnUploadBeforePhoto" style="min-height: 100px;">
-                          <div class="evidence-icon" style="font-size: 18px;">📷</div>
-                          <span class="photo-upload-label" id="beforePhotoLabel">개선전 사진 등록</span>
-                          <input type="file" id="beforePhotoFileInput" accept="image/*" style="display:none">
-                          <div id="beforePhotoPreview" class="media-preview-container"></div>
-                        </div>
-                        <div class="photo-upload-box" id="btnUploadAfterPhoto" style="min-height: 100px;">
-                          <div class="evidence-icon" style="font-size: 18px;">📷</div>
-                          <span class="photo-upload-label" id="afterPhotoLabel">개선후 사진 등록</span>
-                          <input type="file" id="afterPhotoFileInput" accept="image/*" style="display:none">
-                          <div id="afterPhotoPreview" class="media-preview-container"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
-                <button type="submit" class="btn-submit-measure" id="btnSubmitMeasure">
-                  개선 조치 완료 등록
-                </button>
-              </form>
             </div>
           </div>
         </div>
@@ -869,6 +800,8 @@
       // 1. Session context info
       const managerName = sessionStorage.getItem('bizpro_manager_name') || '김안전 관리자';
       const companyName = sessionStorage.getItem('bizpro_company_name') || '(주)무사제조업체';
+      const lowerName = managerName.toLowerCase();
+      const isGlobalAdmin = lowerName.includes('관리자') || lowerName.includes('master') || lowerName.includes('dev') || sessionStorage.getItem('bizpro_company_name') === null;
       
       document.getElementById('dbManagerName').textContent = managerName;
       document.getElementById('dbCompanyName').textContent = companyName;
@@ -1081,15 +1014,35 @@
       const filterAndRenderIncidents = () => {
         const startDate = document.getElementById('filterStartDate').value;
         const endDate = document.getElementById('filterEndDate').value;
-        const type = document.getElementById('filterIncidentType').value;
-        const status = document.getElementById('filterStatus').value;
+        const typeEl = document.getElementById('filterIncidentType');
+        const statusEl = document.getElementById('filterStatus');
+        const type = typeEl ? typeEl.value : 'ALL';
+        const status = statusEl ? statusEl.value : 'ALL';
+        const keyword = document.getElementById('filterKeyword') ? document.getElementById('filterKeyword').value.trim().toLowerCase() : '';
 
         const filtered = loadedIncidents.filter(inc => {
-          const incDate = inc.OccurrenceDateTime.split(' ')[0];
+          if (!isGlobalAdmin && inc.CompanyBranch !== companyName) return false;
+          
+          let incDate = '';
+          if (inc.OccurrenceDateTime) {
+            incDate = inc.OccurrenceDateTime.split(/[ T]/)[0];
+          }
           if (startDate && incDate < startDate) return false;
           if (endDate && incDate > endDate) return false;
           if (type !== 'ALL' && inc.IncidentType !== type) return false;
           if (status !== 'ALL' && inc.ClassificationStatus !== status) return false;
+
+          // Keyword filter
+          if (keyword) {
+            const title = (inc.IncidentTitle || '').toLowerCase();
+            const content = (inc.IncidentContent || '').toLowerCase();
+            const equip = (inc.EquipmentName || '').toLowerCase();
+            const branch = (inc.CompanyBranch || '').toLowerCase();
+            if (!title.includes(keyword) && !content.includes(keyword) && !equip.includes(keyword) && !branch.includes(keyword)) {
+              return false;
+            }
+          }
+          
           return true;
         });
 
@@ -1099,13 +1052,35 @@
       document.getElementById('btnFilterSearch').addEventListener('click', filterAndRenderIncidents);
 
       const renderIncidentsTable = (incidents) => {
-        const tbody = document.getElementById('incidentTableBody');
+        const tbody = document.getElementById('classificationTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
+
+        // Update badge counts dynamically
+        const totalCount = incidents.length;
+        const internalCount = incidents.filter(inc => inc.InternalAccidentType && inc.InternalAccidentType !== 'NOT_APPLIED').length;
+        const externalCount = incidents.filter(inc => inc.ComWelApprovalStatus && inc.ComWelApprovalStatus !== 'NOT_SUBMITTED').length;
+        const moelCount = incidents.filter(inc => inc.LaborMinistryStatus === 'NOT_REPORTED').length;
+
+        const badgeAllEl = document.getElementById('badgeAll');
+        const badgeInternalEl = document.getElementById('badgeInternal');
+        const badgeExternalEl = document.getElementById('badgeExternal');
+        const badgeMoelEl = document.getElementById('badgeMoel');
+        const moelWarningCountEl = document.getElementById('moelWarningCount');
+
+        if (badgeAllEl) badgeAllEl.textContent = `전체 ${totalCount}건`;
+        if (badgeInternalEl) badgeInternalEl.textContent = `내부공상 ${internalCount}건`;
+        if (badgeExternalEl) badgeExternalEl.textContent = `산재신청 중 ${externalCount}건`;
+        if (moelWarningCountEl) {
+          moelWarningCountEl.textContent = `${moelCount}건 (★지연주의)`;
+        } else if (badgeMoelEl) {
+          badgeMoelEl.textContent = `노동청 미보고 ${moelCount}건`;
+        }
 
         if (incidents.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
+              <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
                 조회된 사고 데이터가 없습니다.
               </td>
             </tr>
@@ -1119,77 +1094,196 @@
             tr.className = 'selected-row';
           }
 
-          const typeLabels = { INJURY: '부상재해', DEATH: '사망재해', NEAR_MISS: '아차사고' };
-          const statusLabels = { DRAFT: '검토대기', CLASSIFIED: '분류완료', MEASURED: '대책수립', CLOSED: '조치완료' };
-          const statusColors = { DRAFT: 'status-pending', CLASSIFIED: 'status-reviewing', MEASURED: 'status-resolved', CLOSED: 'status-resolved' };
+          const typeLabels = { INJURY: '부상재해', DEATH: '사망재해', NEAR_MISS: '아차사고', PROPERTY: '물적피해' };
+          const statusLabels = { 
+            DRAFT: '검토대기', 
+            UNCLASSIFIED: '검토대기',
+            CLASSIFIED: '분류완료', 
+            COMPLETED: '분류완료',
+            MEASURED: '대책수립', 
+            CLOSED: '조치완료' 
+          };
+          const statusColors = { 
+            DRAFT: 'status-pending', 
+            UNCLASSIFIED: 'status-pending',
+            CLASSIFIED: 'status-reviewing', 
+            COMPLETED: 'status-reviewing',
+            MEASURED: 'status-resolved', 
+            CLOSED: 'status-resolved' 
+          };
+          const internalLabels = {
+            NOT_APPLIED: '미적용',
+            COMP_COMPANY: '내부공상',
+            COMP_SPECIAL: '특수공상',
+            COMP_LEGAL: '법정재해'
+          };
+          const externalLabels = {
+            NOT_REQUIRED: '해당없음',
+            WELFARE_ONLY: '근복 신청',
+            LABOR_ONLY: '노동청 보고',
+            BOTH: '이중 대상'
+          };
 
           tr.innerHTML = `
             <td>${inc.IncidentID}</td>
-            <td>${inc.CompanyBranch}</td>
-            <td><span class="tag-type type-${inc.IncidentType.toLowerCase()}">${typeLabels[inc.IncidentType] || inc.IncidentType}</span></td>
-            <td class="td-date">${inc.OccurrenceDateTime}</td>
-            <td style="font-weight:600;">${inc.IncidentTitle}</td>
+            <td class="td-date">${inc.OccurrenceDateTime ? inc.OccurrenceDateTime.split(/[ T]/)[0] : '-'}</td>
             <td>${inc.EquipmentName || '-'}</td>
-            <td>${inc.RegUserID}</td>
+            <td><span class="tag-type type-${inc.IncidentType.toLowerCase()}">${typeLabels[inc.IncidentType] || inc.IncidentType}</span></td>
+            <td>${internalLabels[inc.InternalAccidentType] || inc.InternalAccidentType || '-'}</td>
+            <td>${externalLabels[inc.ExternalReportType] || inc.ExternalReportType || '-'}</td>
             <td><span class="status-badge ${statusColors[inc.ClassificationStatus] || ''}">${statusLabels[inc.ClassificationStatus] || inc.ClassificationStatus}</span></td>
           `;
 
           tr.addEventListener('click', () => {
-            document.querySelectorAll('#incidentTableBody tr').forEach(row => row.classList.remove('selected-row'));
+            document.querySelectorAll('#classificationTableBody tr').forEach(row => row.classList.remove('selected-row'));
             tr.classList.add('selected-row');
 
             selectedIncident = inc;
-            renderIncidentDetailPanel(inc);
+            renderComplianceForm(inc);
           });
 
           tbody.appendChild(tr);
         });
       };
 
-      const renderIncidentDetailPanel = (inc) => {
-        document.getElementById('detailEmptyState').style.display = 'none';
-        const panel = document.getElementById('detailMainPanel');
-        panel.style.display = 'block';
+      // Render Selected Row Compliance Info Card
+      const complianceEmptyState = document.getElementById('complianceEmptyState');
+      const complianceFormPanel = document.getElementById('complianceFormPanel');
+      const compSelectedTitle = document.getElementById('compSelectedTitle');
 
-        const typeLabels = { INJURY: '부상재해', DEATH: '사망재해', NEAR_MISS: '아차사고' };
-        document.getElementById('dtIncidentID').textContent = inc.IncidentID;
-        document.getElementById('dtCompanyBranch').textContent = inc.CompanyBranch;
-        document.getElementById('dtIncidentType').textContent = typeLabels[inc.IncidentType] || inc.IncidentType;
-        document.getElementById('dtOccurrenceDateTime').textContent = inc.OccurrenceDateTime;
-        document.getElementById('dtLocation').textContent = inc.Location;
-        document.getElementById('dtEquipmentName').textContent = inc.EquipmentName || '-';
-        document.getElementById('dtIncidentTitle').textContent = inc.IncidentTitle;
-        document.getElementById('dtIncidentContent').textContent = inc.IncidentContent;
+      const renderComplianceForm = (inc) => {
+        complianceEmptyState.style.display = 'none';
+        complianceFormPanel.style.display = 'block';
 
-        const photoContainer = document.getElementById('dtPhotoContainer');
-        if (inc.PhotoPath) {
-          photoContainer.style.display = 'block';
-          document.getElementById('dtPhotoImg').src = inc.PhotoPath;
-        } else {
-          photoContainer.style.display = 'none';
-        }
+        compSelectedTitle.textContent = `${inc.EquipmentName || '장비 없음'} - ${inc.IncidentTitle}`;
 
-        const docContainer = document.getElementById('dtDocContainer');
-        if (inc.DocPath) {
-          docContainer.style.display = 'block';
-          const link = document.getElementById('dtDocLink');
-          link.href = inc.DocPath;
-          link.textContent = inc.DocPath.split('/').pop();
-        } else {
-          docContainer.style.display = 'none';
-        }
+        // Populate fields
+        document.getElementById('compAccidentTypeCode').value = inc.AccidentTypeCode || '';
+        document.getElementById('compInternalAmount').value = inc.InternalCompAmount || 0;
+        document.getElementById('compAbsenceDays').value = inc.ActualAbsenceDays || 0;
+        document.getElementById('compComWelNo').value = inc.ComWelAccidentNo || '';
+        document.getElementById('compLaborMinistryDate').value = inc.LaborMinistryReportDate ? inc.LaborMinistryReportDate.split('T')[0] : '';
 
-        // [분류 및 대책] 서브 섹션
-        document.getElementById('dtClassStatus').textContent = inc.ClassificationStatus === 'DRAFT' ? '미분류 (대기)' : '분류 완료';
-        document.getElementById('dtInternalType').textContent = inc.InternalAccidentType || '-';
-        document.getElementById('dtInternalAmount').textContent = inc.InternalCompAmount ? Number(inc.InternalCompAmount).toLocaleString() + ' 원' : '-';
-        document.getElementById('dtAbsenceDays').textContent = inc.ActualAbsenceDays ? inc.ActualAbsenceDays + ' 일' : '-';
-        document.getElementById('dtExternalReport').textContent = inc.ExternalReportType || '-';
-        document.getElementById('dtComWelNo').textContent = inc.ComWelAccidentNo || '-';
+        // Radio Checked
+        const internalDtlRadios = document.getElementsByName('compInternalDtlStatus');
+        internalDtlRadios.forEach(radio => {
+          if (radio.value === inc.InternalDtlStatus || (inc.InternalDtlStatus === undefined && radio.value === '일반공상')) {
+            radio.checked = true;
+          }
+        });
 
-        // Load safety measures panel if selected
-        renderMeasurePanel();
+        // Reset Gemini panel for the newly selected accident
+        document.getElementById('geminiQuestionInput').value = '';
+        document.getElementById('geminiResponseBox').innerHTML = `
+          <span style="color: #9ca3af; font-style: italic;">질문을 입력하시면 비즈프로 AI의 안전 대책 및 법적 조언 분석 결과가 이곳에 출력됩니다.</span>
+        `;
       };
+
+      // Save Classification Master details (Screen 2)
+      document.getElementById('btnSaveClassification').addEventListener('click', async () => {
+        if (!selectedIncident) return;
+
+        const accidentTypeCode = document.getElementById('compAccidentTypeCode').value.trim();
+        const internalCompAmount = parseFloat(document.getElementById('compInternalAmount').value);
+        const actualAbsenceDays = parseInt(document.getElementById('compAbsenceDays').value, 10);
+        const comWelAccidentNo = document.getElementById('compComWelNo').value.trim();
+        const laborMinistryReportDate = document.getElementById('compLaborMinistryDate').value;
+        const internalDtlStatus = document.querySelector('input[name="compInternalDtlStatus"]:checked').value;
+
+        // Determine labor ministry reported state
+        const laborMinistryStatus = laborMinistryReportDate ? 'REPORTED' : 'NOT_REPORTED';
+        const comWelApprovalStatus = comWelAccidentNo ? 'APPROVED' : 'NOT_SUBMITTED';
+
+        const payload = {
+          incidentId: selectedIncident.IncidentID,
+          causalFactorCode: selectedIncident.CausalFactorCode || '',
+          accidentTypeCode: accidentTypeCode || selectedIncident.IncidentType, // 재해형태
+          internalAccidentType: selectedIncident.InternalAccidentType || 'NOT_APPLIED',
+          internalCompAmount,
+          actualAbsenceDays,
+          externalReportType: selectedIncident.ExternalReportType || 'NOT_REQUIRED',
+          comWelAccidentNo,
+          comWelApprovalStatus,
+          comWelApprovalDate: comWelAccidentNo ? new Date().toISOString().split('T')[0] : null,
+          laborMinistryStatus,
+          laborMinistryReportDate,
+          userId: managerName
+        };
+
+        try {
+          const response = await fetch(API_BASE + '/api/classifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            showAlert("분류 마스터 저장 성공", "요청하신 분류 및 대관 상세 정보가 정상 등록되었습니다.", () => {
+              loadIncidents();
+            });
+          } else {
+            alert("저장 실패: " + result.message);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("저장 중 서버와의 통신 에러가 발생했습니다.");
+        }
+      });
+
+      // Ask Gemini advice
+      document.getElementById('btnAskGemini').addEventListener('click', async () => {
+        if (!selectedIncident) return;
+
+        const question = document.getElementById('geminiQuestionInput').value.trim();
+        if (!question) {
+          alert("질문 내용을 입력해 주십시오.");
+          return;
+        }
+
+        const responseBox = document.getElementById('geminiResponseBox');
+        const askButton = document.getElementById('btnAskGemini');
+
+        // Show loading state
+        responseBox.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px; color: #7c3aed; font-weight: 600;">
+            <span style="display: inline-block; animation: spin 1s linear-infinite; font-size: 14px;">⏳</span>
+            비즈프로 AI가 사고 정보를 분석하고 답변을 생성 중입니다...
+          </div>
+        `;
+        askButton.disabled = true;
+
+        try {
+          const response = await fetch(API_BASE + '/api/gemini/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              incidentId: selectedIncident.IncidentID,
+              question: question
+            })
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            let answerHtml = result.answer
+              .replace(/### (.*)/g, '<h4 style="margin: 12px 0 6px 0; color: #1e1b4b; font-size: 13px; font-weight: 700;">$1</h4>')
+              .replace(/#### (.*)/g, '<h5 style="margin: 8px 0 4px 0; color: #312e81; font-size: 12px; font-weight: 700;">$1</h5>')
+              .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+              .replace(/`([^`]+)`/g, '<code style="background-color: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace;">$1</code>')
+              .replace(/> (.*)/g, '<blockquote style="border-left: 3px solid #7c3aed; padding-left: 8px; color: #6b21a8; margin: 8px 0; font-style: italic;">$1</blockquote>')
+              .replace(/- (.*)/g, '<li style="margin-left: 12px; list-style-type: disc;">$1</li>');
+            
+            responseBox.innerHTML = answerHtml;
+          } else {
+            responseBox.innerHTML = `<span style="color: #ef4444;">에러가 발생했습니다: ${result.message}</span>`;
+          }
+        } catch (err) {
+          console.error(err);
+          responseBox.innerHTML = `<span style="color: #ef4444;">서버 통신 중 에러가 발생했습니다.</span>`;
+        } finally {
+          askButton.disabled = false;
+        }
+      });
 
       // 7.4. [화면 3] 대책 수립 및 개선이행 관리
       const renderMeasurePanel = async () => {
@@ -1509,9 +1603,6 @@
             select.appendChild(opt);
             select.value = companyName;
           }
-          
-          const lowerName = managerName.toLowerCase();
-          const isGlobalAdmin = lowerName.includes('관리자') || lowerName.includes('master') || lowerName.includes('dev') || sessionStorage.getItem('bizpro_company_name') === null;
           
           if (!isGlobalAdmin) {
             select.disabled = true;
@@ -1910,6 +2001,7 @@
         const statusFilter = document.getElementById('filterInspStatus').value;
 
         const filtered = loadedInspections.filter(item => {
+          if (!isGlobalAdmin && item.CompanyBranch !== companyName) return false;
           if (startDate && item.InspectionDate < startDate) return false;
           if (endDate && item.InspectionDate > endDate) return false;
           if (typeFilter !== 'ALL' && item.InspectionType !== typeFilter) return false;
