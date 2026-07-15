@@ -433,7 +433,7 @@ ${question}
                 const { GoogleGenAI } = require('@google/genai');
                 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
                 const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
+                    model: 'gemini-3.5-flash',
                     contents: prompt
                 });
                 return res.json({ success: true, answer: response.text });
@@ -597,7 +597,7 @@ ${inspection.Check1Result === 'ACTION_REQUIRED' || inspection.Check2Result === '
                 const { GoogleGenAI } = require('@google/genai');
                 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
                 const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
+                    model: 'gemini-3.5-flash',
                     contents: prompt
                 });
                 return res.json({ success: true, answer: response.text });
