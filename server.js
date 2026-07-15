@@ -900,8 +900,6 @@ app.post('/api/inspections', async (req, res) => {
         const inspectorId = inspector ? inspector.split(/[\s\(]/)[0].substring(0, 6) : 'System';
         const equipId = equipmentName ? equipmentName.substring(0, 36) : null;
 
-        // Generate UUID
-        const inspectionId = crypto.randomUUID();
         const parsedInspDate = inspectionDate ? new Date(inspectionDate) : new Date();
 
         // 3. Database Transaction
@@ -909,6 +907,47 @@ app.post('/api/inspections', async (req, res) => {
         await transaction.begin();
 
         try {
+            // Generate sequence-based ID for the day (format: YYYYMMDD-sequence)
+            let yyyymmdd;
+            if (inspectionDate) {
+                const match = String(inspectionDate).match(/^(\d{4})[-/.]?(\d{2})[-/.]?(\d{2})/);
+                if (match) {
+                    yyyymmdd = match[1] + match[2] + match[3];
+                }
+            }
+            if (!yyyymmdd) {
+                const year = parsedInspDate.getFullYear();
+                const month = String(parsedInspDate.getMonth() + 1).padStart(2, '0');
+                const day = String(parsedInspDate.getDate()).padStart(2, '0');
+                yyyymmdd = `${year}${month}${day}`;
+            }
+
+            const seqReq = new sql.Request(transaction);
+            const seqResult = await seqReq
+                .input('prefix', sql.VarChar(20), yyyymmdd + '-%')
+                .query(`
+                    SELECT inspection_id 
+                    FROM Safety_Inspection_Master WITH (UPDLOCK, HOLDLOCK)
+                    WHERE inspection_id LIKE @prefix
+                `);
+
+            let maxSeq = 0;
+            for (const row of seqResult.recordset) {
+                const id = row.inspection_id;
+                const parts = id.split('-');
+                if (parts.length === 2 && parts[0] === yyyymmdd) {
+                    const seqStr = parts[1];
+                    if (/^\d+$/.test(seqStr)) {
+                        const seqNum = parseInt(seqStr, 10);
+                        if (seqNum > maxSeq) {
+                            maxSeq = seqNum;
+                        }
+                    }
+                }
+            }
+            const nextSeq = maxSeq + 1;
+            const inspectionId = `${yyyymmdd}-${nextSeq}`;
+
             // A. Insert into Safety_Inspection_Master
             const masterRequest = new sql.Request(transaction);
             await masterRequest
