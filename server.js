@@ -5,6 +5,33 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 
+// Load environment variables from .env or env file if they exist
+try {
+    ['.env', 'env'].forEach(filename => {
+        const dotenvPath = path.join(__dirname, filename);
+        if (fs.existsSync(dotenvPath)) {
+            const envContent = fs.readFileSync(dotenvPath, 'utf8');
+            envContent.split(/\r?\n/).forEach(line => {
+                const trimmed = line.trim();
+                if (trimmed && !trimmed.startsWith('#')) {
+                    const parts = trimmed.split('=');
+                    if (parts.length >= 2) {
+                        const key = parts[0].trim();
+                        let val = parts.slice(1).join('=').trim();
+                        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                            val = val.substring(1, val.length - 1);
+                        }
+                        process.env[key] = val;
+                    }
+                }
+            });
+            console.log(`${filename} file loaded successfully.`);
+        }
+    });
+} catch (e) {
+    console.error('Failed to load env file:', e.message);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -427,11 +454,12 @@ ${question}
 - 질문에 대하여 법적 기준(산업안전보건법 등)과 실질적인 기술적 예방대책을 포함하여 신뢰성 있고 구체적으로 성실히 답변해 주세요.
 - 한국어로 명확하고 전문적인 톤으로 작성해 주세요. Markdown 서식을 적극적으로 활용하여 가독성을 높여주세요.`;
 
-        // Check if API key is configured
-        if (process.env.GEMINI_API_KEY) {
+        // Check if API key is configured (header or server env)
+        const geminiApiKey = req.headers['x-gemini-api-key'] || process.env.GEMINI_API_KEY;
+        if (geminiApiKey) {
             try {
                 const { GoogleGenAI } = require('@google/genai');
-                const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+                const ai = new GoogleGenAI({ apiKey: geminiApiKey });
                 const response = await ai.models.generateContent({
                     model: 'gemini-3.5-flash',
                     contents: prompt
@@ -591,11 +619,12 @@ ${inspection.Check1Result === 'ACTION_REQUIRED' || inspection.Check2Result === '
 - **[부족한 부분]**:
 - **[잘 된 부분]**:`;
 
-        // Check if API key is configured
-        if (process.env.GEMINI_API_KEY) {
+        // Check if API key is configured (header or server env)
+        const geminiApiKey = req.headers['x-gemini-api-key'] || process.env.GEMINI_API_KEY;
+        if (geminiApiKey) {
             try {
                 const { GoogleGenAI } = require('@google/genai');
-                const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+                const ai = new GoogleGenAI({ apiKey: geminiApiKey });
                 const response = await ai.models.generateContent({
                     model: 'gemini-3.5-flash',
                     contents: prompt

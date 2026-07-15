@@ -4,4 +4,4 @@ node_modules/
 uploads/
 scratch/
 .env
-
+env
