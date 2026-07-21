@@ -65,6 +65,74 @@ let dbOffline = false;
 let lastConnectAttempt = 0;
 const RECONNECT_COOLDOWN = 30000; // 30 seconds
 
+async function ensureClassificationColumns(pool) {
+    if (!pool || !pool.connected) return;
+    const columns = [
+        { name: 'VictimName', type: 'NVARCHAR(50)' },
+        { name: 'VictimAffiliation', type: 'NVARCHAR(50)' },
+        { name: 'VictimJob', type: 'NVARCHAR(100)' },
+        { name: 'VictimServiceYears', type: 'INT' },
+        { name: 'VictimAge', type: 'INT' },
+        { name: 'InjuryPart', type: 'NVARCHAR(100)' },
+        { name: 'InjurySeverity', type: 'NVARCHAR(50)' },
+        { name: 'HospitalName', type: 'NVARCHAR(100)' },
+        { name: 'DiagnosisWeeks', type: 'INT' },
+        { name: 'CostMedical', type: 'DECIMAL(18, 0)' },
+        { name: 'CostSettlement', type: 'DECIMAL(18, 0)' },
+        { name: 'CostAbsence', type: 'DECIMAL(18, 0)' },
+        { name: 'ImproveManager', type: 'NVARCHAR(50)' },
+        { name: 'ImproveDueDate', type: 'DATE' },
+        { name: 'ImproveCompleteDate', type: 'DATE' },
+        { name: 'ImproveFilePath', type: 'NVARCHAR(500)' },
+        { name: 'GovReportTarget', type: 'NVARCHAR(50)' },
+        { name: 'GovReportStatus', type: 'NVARCHAR(50)' },
+        { name: 'GovAgency', type: 'NVARCHAR(100)' },
+        { name: 'GovKOSHADueDate', type: 'DATE' },
+        { name: 'GovDelayReason', type: 'NVARCHAR(MAX)' },
+        { name: 'GovAccidentCategory', type: 'NVARCHAR(100)' },
+        { name: 'GovDocAttachmentPath', type: 'NVARCHAR(500)' },
+        { name: 'GovIsSevere', type: 'BIT' },
+        { name: 'GovImmediateDate', type: 'DATETIME' },
+        { name: 'GovImmediateReceiver', type: 'NVARCHAR(100)' }
+    ];
+
+    try {
+        // Drop default constraints that prevent ALTER COLUMN if present
+        try {
+            await pool.request().query(`
+                DECLARE @sql NVARCHAR(MAX) = '';
+                SELECT @sql += 'ALTER TABLE IncidentClassifications DROP CONSTRAINT [' + name + ']; '
+                FROM sys.default_constraints
+                WHERE parent_object_id = OBJECT_ID('IncidentClassifications');
+                IF @sql <> '' EXEC sp_executesql @sql;
+            `);
+        } catch (dropErr) {}
+
+        // Alter existing columns to allow wider Korean text
+        const alterCols = ['ExternalReportType', 'InternalAccidentType', 'AccidentTypeCode', 'CausalFactorCode', 'ComWelApprovalStatus', 'LaborMinistryStatus'];
+        for (const colName of alterCols) {
+            try {
+                await pool.request().query(`ALTER TABLE IncidentClassifications ALTER COLUMN ${colName} NVARCHAR(100) NULL`);
+            } catch (alterErr) {}
+        }
+
+        for (const col of columns) {
+            await pool.request().query(`
+                IF NOT EXISTS (
+                    SELECT * FROM sys.columns 
+                    WHERE object_id = OBJECT_ID('IncidentClassifications') AND name = '${col.name}'
+                )
+                BEGIN
+                    ALTER TABLE IncidentClassifications ADD ${col.name} ${col.type} NULL;
+                END
+            `);
+        }
+        console.log('IncidentClassifications schema checked and updated.');
+    } catch (err) {
+        console.error('Failed to update IncidentClassifications schema:', err.message);
+    }
+}
+
 async function getPool() {
     if (activePool) {
         if (activePool.connected) {
@@ -87,6 +155,7 @@ async function getPool() {
         activePool = await sql.connect(dbConfig);
         dbOffline = false;
         console.log('Connected to MSSQL Database successfully.');
+        await ensureClassificationColumns(activePool);
         return activePool;
     } catch (err) {
         dbOffline = true;
@@ -367,6 +436,12 @@ app.get('/api/incidents', async (req, res) => {
                 c.InternalCompAmount, c.ActualAbsenceDays, c.ExternalReportType, c.ComWelAccidentNo,
                 c.ComWelApprovalStatus, c.ComWelApprovalDate, c.LaborMinistryStatus, c.LaborMinistryReportDate,
                 c.ClassificationStatus,
+                c.VictimName, c.VictimAffiliation, c.VictimJob, c.VictimServiceYears, c.VictimAge,
+                c.InjuryPart, c.InjurySeverity, c.HospitalName, c.DiagnosisWeeks,
+                c.CostMedical, c.CostSettlement, c.CostAbsence,
+                c.ImproveManager, c.ImproveDueDate, c.ImproveCompleteDate, c.ImproveFilePath,
+                c.GovReportTarget, c.GovReportStatus, c.GovAgency, c.GovKOSHADueDate, c.GovDelayReason,
+                c.GovAccidentCategory, c.GovDocAttachmentPath, c.GovIsSevere, c.GovImmediateDate, c.GovImmediateReceiver,
                 m.MeasureID, m.HazardFactors, m.CurrentMeasure, m.ProposedMeasure, m.ManagerID,
                 m.DueDate, m.CompletionDate, m.ActionContent, m.BeforePhotoPath, m.AfterPhotoPath,
                 m.MeasureStatus
@@ -414,9 +489,41 @@ app.post('/api/gemini/ask', async (req, res) => {
             const pool = await getPool();
             const result = await pool.request()
                 .input('incidentId', sql.Int, incidentId)
-                .query('SELECT * FROM Incidents WHERE IncidentID = @incidentId');
+                .query(`
+                    SELECT 
+                        r.IncidentID, r.CompanyBranch, r.IncidentType, r.OccurrenceDateTime, r.Location, 
+                        r.EquipmentName, r.IncidentTitle, r.IncidentContent, r.AttachmentPath1, r.AttachmentPath2, 
+                        r.Remarks, r.RegUserID, r.RegDateTime,
+                        c.ClassificationID, c.VictimName, c.VictimAffiliation, c.VictimJob, c.VictimAge,
+                        c.InjuryPart, c.InjurySeverity, c.HospitalName, c.DiagnosisWeeks,
+                        c.CostMedical, c.CostSettlement, c.CostAbsence, c.InternalCompAmount, c.ActualAbsenceDays,
+                        c.GovReportTarget, c.GovReportStatus, c.GovAgency, c.GovKOSHADueDate, c.GovDelayReason,
+                        c.GovAccidentCategory, c.GovIsSevere
+                    FROM IncidentReports r
+                    LEFT JOIN IncidentClassifications c ON r.IncidentID = c.IncidentID
+                    WHERE r.IncidentID = @incidentId
+                `);
             if (result.recordset.length > 0) {
-                incident = result.recordset[0];
+                const row = result.recordset[0];
+                incident = {
+                    IncidentID: row.IncidentID,
+                    IncidentTitle: row.IncidentTitle || '사고',
+                    IncidentType: row.IncidentType || 'INJURY',
+                    EquipmentName: row.EquipmentName || '해당 설비',
+                    Location: row.Location || '현장',
+                    OccurDateTime: row.OccurrenceDateTime ? row.OccurrenceDateTime.toISOString().split('T')[0] : '미상',
+                    IncidentContent: row.IncidentContent || '상황 설명 없음',
+                    VictimName: row.VictimName || '',
+                    VictimAffiliation: row.VictimAffiliation || '',
+                    VictimAge: row.VictimAge || '',
+                    InjuryPart: row.InjuryPart || '',
+                    InjurySeverity: row.InjurySeverity || '',
+                    HospitalName: row.HospitalName || '',
+                    DiagnosisWeeks: row.DiagnosisWeeks || '',
+                    GovReportTarget: row.GovReportTarget || row.ExternalReportType || '보고 검토 중',
+                    GovReportStatus: row.GovReportStatus || '미보고',
+                    GovAgency: row.GovAgency || '고용노동부'
+                };
             }
         } catch (dbErr) {
             console.error('Gemini DB query failed, checking fallback data:', dbErr.message);
@@ -426,33 +533,41 @@ app.post('/api/gemini/ask', async (req, res) => {
         if (!incident) {
             incident = {
                 IncidentID: incidentId,
-                IncidentTitle: '협착사고',
+                IncidentTitle: `No.${incidentId} 사고건`,
                 IncidentType: 'INJURY',
-                EquipmentName: '지게차A',
-                IncidentDescription: '작업자가 지게차 후진 중 적재물에 밀려 다리가 지게차 바퀴와 프레임 사이에 끼임.',
-                Location: '제1공장 출하장',
-                OccurDateTime: new Date().toISOString()
+                EquipmentName: '해당 설비',
+                IncidentContent: '등록된 사고 세부 내용을 조회하는 중입니다.',
+                Location: '작업 현장',
+                OccurDateTime: new Date().toISOString().split('T')[0],
+                GovReportTarget: '보고 대상(휴업 3일 이상)',
+                GovReportStatus: '미보고',
+                GovAgency: '고용노동부'
             };
         }
 
-        const prompt = `당신은 대한민국 산업안전보건법 및 안전보건공단(KOSHA) 가이드를 완벽히 숙지한 전문 안전 관리 AI 조언자입니다.
-다음 사고 개요를 분석하고 사용자의 질문에 답해 주세요.
+        const prompt = `당신은 대한민국 산업안전보건법 및 안전보건공단(KOSHA) 가이드를 완벽히 숙지한 전문 안전 관리 AI 조언자 "비즈프로 AI"입니다.
+다음 선택된 사고의 정확한 상세 개요를 바탕으로 사용자의 질문에 맞춰 법적 보고 의무, 유의사항, 예방 대책을 신뢰성 있게 답변해 주세요.
 
-[사고 개요]
-- 사고 ID: ${incident.IncidentID}
+[선택 사고 상세 개요]
+- 사고 번호: No.${incident.IncidentID}
 - 사고 제목: ${incident.IncidentTitle}
-- 사고 종류: ${incident.IncidentType} (DEATH: 사망, INJURY: 부상, NEAR_MISS: 아차사고, PROPERTY: 물적피해)
-- 장비명: ${incident.EquipmentName || '없음'}
-- 사고 위치: ${incident.Location || '알 수 없음'}
-- 사고 일시: ${incident.OccurDateTime}
-- 사고 상황 설명: ${incident.IncidentDescription}
+- 대상 설비/장비명: ${incident.EquipmentName}
+- 사고 유형: ${incident.IncidentType}
+- 발생 장소: ${incident.Location}
+- 발생 일시: ${incident.OccurDateTime}
+- 사고 상황 내용: ${incident.IncidentContent}
+- 재해자 정보: ${incident.VictimName ? `${incident.VictimName} (${incident.VictimAffiliation || '직영'}, ${incident.VictimAge ? incident.VictimAge + '세' : ''})` : '미입력'}
+- 부상 부위 및 정도: ${incident.InjuryPart || '미상'} (${incident.InjurySeverity || '경상'}, 전치 ${incident.DiagnosisWeeks ? incident.DiagnosisWeeks + '주' : '미상'})
+- 대관 보고 대상 여부: ${incident.GovReportTarget || '보고 검토 중'}
+- 대관 보고 진행 상태: ${incident.GovReportStatus || '미보고'} (${incident.GovAgency || '고용노동부'})
 
 [사용자 질문]
 ${question}
 
 [답변 가이드]
-- 질문에 대하여 법적 기준(산업안전보건법 등)과 실질적인 기술적 예방대책을 포함하여 신뢰성 있고 구체적으로 성실히 답변해 주세요.
-- 한국어로 명확하고 전문적인 톤으로 작성해 주세요. Markdown 서식을 적극적으로 활용하여 가독성을 높여주세요.`;
+- 선택된 사고의 대상 설비(${incident.EquipmentName})와 사고 내용(${incident.IncidentTitle})에 100% 맞춰진 법적 요구사항(산업안전보건법 제57조 산재조사표 제출 1개월 이내, 중대재해 발생 시 지체없이 보고 등)과 실질적인 기술적/관리적 예방대책을 구체적으로 답변해 주세요.
+- 지게차 등 관련 없는 장비나 일반적 템플릿을 다루지 말고, 반드시 해당 선택 사고(${incident.EquipmentName} / ${incident.IncidentTitle})에 특화된 조언을 작성해 주세요.
+- 한국어로 마크다운 서식을 적극 활용하여 가독성을 높여주세요.`;
 
         // Check if API key is configured (header or server env)
         const geminiApiKey = req.headers['x-gemini-api-key'] || process.env.GEMINI_API_KEY;
@@ -470,26 +585,24 @@ ${question}
             }
         }
 
-        // Rich Simulated Fallback Response (if key not set or failed)
-        let simulatedAnswer = `### 🤖 [시뮬레이션 모드] AI 안전 전문가 분석 결과
+        // Rich Simulated Response built dynamically for the selected accident
+        let simulatedAnswer = `### ✨ 비즈프로 AI 전문 안전 조언 보고서 (사고 No.${incident.IncidentID})
 
-> ⚠️ **알림**: 환경변수 \`GEMINI_API_KEY\`가 구성되지 않아 시뮬레이션 데이터로 안전 분석 가이드를 대체 제공합니다.
+> 💡 선택 사고: **${incident.EquipmentName}** 관련 **${incident.IncidentTitle}** (재해자: ${incident.VictimName || '작업자'}, 부상부위: ${incident.InjuryPart || '미상'})
+> 질문: "**${question}**"
 
-제안하신 질문("**${question}**") 및 등록된 사고 사례("**${incident.EquipmentName || '장비'} 관련 ${incident.IncidentTitle}**)에 대한 KOSHA 가이드라인 분석 의견은 다음과 같습니다:
+#### 1. 🏛️ 고용노동부 및 대관 보고 법적 유의사항
+- **보고 기한 및 대상**: 본 사고는 **'${incident.GovReportTarget || '보고 대상'}'**으로 분류되어 있습니다. 산업안전보건법 제57조에 따라 **재해발생일로부터 1개월 이내** 관할 지방고용노동관서에 **산업재해조사표**를 반드시 제출해야 합니다.
+- **과태료 및 처벌 규정**: 보고 기한(1개월)을 넘길 경우 **최대 1,500만 원 이하의 과태료**가 부과되며, 산재 은폐 시 1년 이하의 징역 또는 1천만 원 이하의 벌금에 처해질 수 있습니다. 절대 '사내 공상 처리'로 보고를 무마해서는 안 됩니다.
+- **중대재해 확인**: 사망자 1명 이상 발생 또는 3개월 이상 요양 필요 부상자 2명 이상 발생 시 지체 없이(즉시) 노동청 및 관할 경찰서에 수신 보고해야 합니다.
 
-#### 1. 사고 원인 분석
-- **설비적 요인:** ${incident.EquipmentName || '장비'} 사용 중 후방 경보 장치(경광등, 후진 벨)의 정상 작동 여부 불량 또는 사각지대 존재.
-- **인적/관리적 요인:** 신호수 배치 미흡 및 작업 반경 내 일반 작업자의 출입 통제 프로세스 부재.
+#### 2. 🔍 사고 원인 분석 (${incident.EquipmentName})
+- **설비/환경적 요인**: **${incident.EquipmentName}** 작동 구역의 물리적 방호장치(센서, 스토퍼, 인터록, 비상정지 스위치) 상태 불량 또는 사각지대 존재.
+- **관리/작업적 요인**: 작업 전 안전점검 미실시, 표준 작업안전지침(SOP) 미준수 또는 통로 및 작업 반경 내 출입 통제 프로세스 부재.
 
-#### 2. 관련 법규 및 기준 (산업안전보건기준에 관한 규칙)
-- **제38조 (사전조사 및 작업계획서의 작성 등):** 지게차 등 차량계 하역운반기계를 사용하는 경우, 작업계획서를 작성하고 그 계획에 따라 작업을 시행해야 합니다.
-- **제39조 (작업지휘자 등의 지정):** 작업 반경 내 작업자 접촉 위험 방지를 위한 유도자(신호수) 배치가 필수적입니다.
-- **제179조 (전조등 및 후미등):** 하역운반기계는 적절한 조명 및 경보장치를 상시 유지해야 합니다.
-
-#### 3. 동종 재해 재발방지대책
-- **지게차 후방 카메라 및 스마트 감지 센서 설치:** 인공지능 기반의 사람 인식 센서를 도입하여 반경 3m 내 보행자 접근 시 지게차가 강제 감속/정지하도록 보완.
-- **작업구역 구획 및 전용 통로 설치:** 지게차 전용 이동로와 보행자 통로를 물리적 펜스로 구획하여 동선 혼재 방지.
-- **신호수 배치 및 안전 교육:** 차량 하역 작업 시 반드시 안전 조끼를 착용한 전문 신호수를 배치하고 작업 지휘를 보장함.
+#### 3. 🛡️ 동종 재해 재발방지 대책 (${incident.IncidentTitle})
+- **설비적 개선**: **${incident.EquipmentName}** 주변 위험 구역에 인터록 방호울, 비상정지 스위치 및 감지 센서 보강 설치.
+- **관리적 개선**: 작업 시작 전 5분 TBM(Toolbox Meeting) 실시, 위험성평가 수시평가 수행 및 재해자(**${incident.VictimName || '작업자'}**) 포함 현장 근로자 대상 특별 안전교육 강화.
 `;
         return res.json({ success: true, answer: simulatedAnswer });
 
@@ -724,6 +837,32 @@ app.post('/api/classifications', async (req, res) => {
         comWelApprovalDate,
         laborMinistryStatus,
         laborMinistryReportDate,
+        victimName,
+        victimAffiliation,
+        victimJob,
+        victimServiceYears,
+        victimAge,
+        injuryPart,
+        injurySeverity,
+        hospitalName,
+        diagnosisWeeks,
+        costMedical,
+        costSettlement,
+        costAbsence,
+        improveManager,
+        improveDueDate,
+        improveCompleteDate,
+        improveFilePath,
+        govReportTarget,
+        govReportStatus,
+        govAgency,
+        govKOSHADueDate,
+        govDelayReason,
+        govAccidentCategory,
+        govDocAttachmentPath,
+        govIsSevere,
+        govImmediateDate,
+        govImmediateReceiver,
         userId
     } = req.body;
 
@@ -735,17 +874,43 @@ app.post('/api/classifications', async (req, res) => {
         const pool = await getPool();
         const request = pool.request()
             .input('incidentId', sql.Int, incidentId)
-            .input('causalFactorCode', sql.VarChar(20), causalFactorCode || null)
-            .input('accidentTypeCode', sql.VarChar(20), accidentTypeCode || null)
-            .input('internalAccidentType', sql.VarChar(20), internalAccidentType || 'NOT_APPLIED')
+            .input('causalFactorCode', sql.NVarChar(100), causalFactorCode || null)
+            .input('accidentTypeCode', sql.NVarChar(100), accidentTypeCode || null)
+            .input('internalAccidentType', sql.NVarChar(100), internalAccidentType || 'NOT_APPLIED')
             .input('internalCompAmount', sql.Decimal(18, 0), internalCompAmount || 0)
             .input('actualAbsenceDays', sql.Int, actualAbsenceDays || 0)
-            .input('externalReportType', sql.VarChar(20), externalReportType || 'NOT_REQUIRED')
+            .input('externalReportType', sql.NVarChar(100), externalReportType || 'NOT_REQUIRED')
             .input('comWelAccidentNo', sql.NVarChar(50), comWelAccidentNo || null)
-            .input('comWelApprovalStatus', sql.VarChar(20), comWelApprovalStatus || 'NOT_SUBMITTED')
+            .input('comWelApprovalStatus', sql.NVarChar(100), comWelApprovalStatus || 'NOT_SUBMITTED')
             .input('comWelApprovalDate', sql.Date, comWelApprovalDate ? new Date(comWelApprovalDate) : null)
-            .input('laborMinistryStatus', sql.VarChar(20), laborMinistryStatus || 'NOT_REPORTED')
+            .input('laborMinistryStatus', sql.NVarChar(100), laborMinistryStatus || 'NOT_REPORTED')
             .input('laborMinistryReportDate', sql.Date, laborMinistryReportDate ? new Date(laborMinistryReportDate) : null)
+            .input('victimName', sql.NVarChar(50), victimName || null)
+            .input('victimAffiliation', sql.NVarChar(50), victimAffiliation || null)
+            .input('victimJob', sql.NVarChar(100), victimJob || null)
+            .input('victimServiceYears', sql.Int, victimServiceYears ? parseInt(victimServiceYears, 10) : null)
+            .input('victimAge', sql.Int, victimAge ? parseInt(victimAge, 10) : null)
+            .input('injuryPart', sql.NVarChar(100), injuryPart || null)
+            .input('injurySeverity', sql.NVarChar(50), injurySeverity || null)
+            .input('hospitalName', sql.NVarChar(100), hospitalName || null)
+            .input('diagnosisWeeks', sql.Int, diagnosisWeeks ? parseInt(diagnosisWeeks, 10) : null)
+            .input('costMedical', sql.Decimal(18, 0), costMedical ? parseFloat(costMedical) : 0)
+            .input('costSettlement', sql.Decimal(18, 0), costSettlement ? parseFloat(costSettlement) : 0)
+            .input('costAbsence', sql.Decimal(18, 0), costAbsence ? parseFloat(costAbsence) : 0)
+            .input('improveManager', sql.NVarChar(50), improveManager || null)
+            .input('improveDueDate', sql.Date, improveDueDate ? new Date(improveDueDate) : null)
+            .input('improveCompleteDate', sql.Date, improveCompleteDate ? new Date(improveCompleteDate) : null)
+            .input('improveFilePath', sql.NVarChar(500), improveFilePath || null)
+            .input('govReportTarget', sql.NVarChar(50), govReportTarget || null)
+            .input('govReportStatus', sql.NVarChar(50), govReportStatus || null)
+            .input('govAgency', sql.NVarChar(100), govAgency || null)
+            .input('govKOSHADueDate', sql.Date, govKOSHADueDate ? new Date(govKOSHADueDate) : null)
+            .input('govDelayReason', sql.NVarChar(sql.MAX), govDelayReason || null)
+            .input('govAccidentCategory', sql.NVarChar(100), govAccidentCategory || null)
+            .input('govDocAttachmentPath', sql.NVarChar(500), govDocAttachmentPath || null)
+            .input('govIsSevere', sql.Bit, govIsSevere ? 1 : 0)
+            .input('govImmediateDate', sql.DateTime, govImmediateDate ? new Date(govImmediateDate) : null)
+            .input('govImmediateReceiver', sql.NVarChar(100), govImmediateReceiver || null)
             .input('userId', sql.VarChar(50), userId || 'System');
 
         // Check if Classification record exists
@@ -765,6 +930,32 @@ app.post('/api/classifications', async (req, res) => {
                     ComWelApprovalDate = @comWelApprovalDate,
                     LaborMinistryStatus = @laborMinistryStatus,
                     LaborMinistryReportDate = @laborMinistryReportDate,
+                    VictimName = @victimName,
+                    VictimAffiliation = @victimAffiliation,
+                    VictimJob = @victimJob,
+                    VictimServiceYears = @victimServiceYears,
+                    VictimAge = @victimAge,
+                    InjuryPart = @injuryPart,
+                    InjurySeverity = @injurySeverity,
+                    HospitalName = @hospitalName,
+                    DiagnosisWeeks = @diagnosisWeeks,
+                    CostMedical = @costMedical,
+                    CostSettlement = @costSettlement,
+                    CostAbsence = @costAbsence,
+                    ImproveManager = @improveManager,
+                    ImproveDueDate = @improveDueDate,
+                    ImproveCompleteDate = @improveCompleteDate,
+                    ImproveFilePath = @improveFilePath,
+                    GovReportTarget = @govReportTarget,
+                    GovReportStatus = @govReportStatus,
+                    GovAgency = @govAgency,
+                    GovKOSHADueDate = @govKOSHADueDate,
+                    GovDelayReason = @govDelayReason,
+                    GovAccidentCategory = @govAccidentCategory,
+                    GovDocAttachmentPath = @govDocAttachmentPath,
+                    GovIsSevere = @govIsSevere,
+                    GovImmediateDate = @govImmediateDate,
+                    GovImmediateReceiver = @govImmediateReceiver,
                     ClassificationStatus = 'COMPLETED',
                     ModUserID = @userId,
                     ModDateTime = GETDATE()
@@ -776,17 +967,29 @@ app.post('/api/classifications', async (req, res) => {
                     IncidentID, CausalFactorCode, AccidentTypeCode, InternalAccidentType,
                     InternalCompAmount, ActualAbsenceDays, ExternalReportType, ComWelAccidentNo,
                     ComWelApprovalStatus, ComWelApprovalDate, LaborMinistryStatus, LaborMinistryReportDate,
+                    VictimName, VictimAffiliation, VictimJob, VictimServiceYears, VictimAge,
+                    InjuryPart, InjurySeverity, HospitalName, DiagnosisWeeks,
+                    CostMedical, CostSettlement, CostAbsence,
+                    ImproveManager, ImproveDueDate, ImproveCompleteDate, ImproveFilePath,
+                    GovReportTarget, GovReportStatus, GovAgency, GovKOSHADueDate, GovDelayReason,
+                    GovAccidentCategory, GovDocAttachmentPath, GovIsSevere, GovImmediateDate, GovImmediateReceiver,
                     ClassificationStatus, RegUserID, RegDateTime
                 ) VALUES (
                     @incidentId, @causalFactorCode, @accidentTypeCode, @internalAccidentType,
                     @internalCompAmount, @actualAbsenceDays, @externalReportType, @comWelAccidentNo,
                     @comWelApprovalStatus, @comWelApprovalDate, @laborMinistryStatus, @laborMinistryReportDate,
+                    @victimName, @victimAffiliation, @victimJob, @victimServiceYears, @victimAge,
+                    @injuryPart, @injurySeverity, @hospitalName, @diagnosisWeeks,
+                    @costMedical, @costSettlement, @costAbsence,
+                    @improveManager, @improveDueDate, @improveCompleteDate, @improveFilePath,
+                    @govReportTarget, @govReportStatus, @govAgency, @govKOSHADueDate, @govDelayReason,
+                    @govAccidentCategory, @govDocAttachmentPath, @govIsSevere, @govImmediateDate, @govImmediateReceiver,
                     'COMPLETED', @userId, GETDATE()
                 )
             `);
         }
 
-        return res.json({ success: true, message: '분류 및 산재 정보가 정상 저장되었습니다.' });
+        return res.json({ success: true, message: '분류 및 대관 상세 정보가 정상 저장되었습니다.' });
 
     } catch (err) {
         console.error('Classification save error:', err);
