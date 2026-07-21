@@ -283,9 +283,15 @@
                           <input type="number" id="compInternalAmount" class="form-input-custom" value="0" min="0">
                         </div>
                       </div>
-                      <div class="form-group" style="margin-top: 6px;">
-                        <label class="form-label-desc">실제 휴업 일수 (일)</label>
-                        <input type="number" id="compAbsenceDays" class="form-input-custom" value="0" min="0">
+                      <div class="compliance-grid-2col" style="margin-top: 6px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">실제 휴업 일수 (일)</label>
+                          <input type="number" id="compAbsenceDays" class="form-input-custom" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">보고 휴업 일수 (일)</label>
+                          <input type="number" id="compReportedAbsenceDays" class="form-input-custom" value="0" min="0">
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1365,6 +1371,7 @@
         document.getElementById('compCostAbsence').value = inc.CostAbsence || 0;
         document.getElementById('compInternalAmount').value = inc.InternalCompAmount || 0;
         document.getElementById('compAbsenceDays').value = inc.ActualAbsenceDays || 0;
+        document.getElementById('compReportedAbsenceDays').value = inc.ReportedAbsenceDays || 0;
         document.getElementById('compGovReportTarget').value = inc.GovReportTarget || '보고 대상(휴업 3일 이상/중대재해)';
         document.getElementById('compGovReportStatus').value = inc.GovReportStatus || '미보고';
         document.getElementById('compGovAgency').value = inc.GovAgency || '고용노동부(노동청)';
@@ -1478,6 +1485,7 @@
         const costAbsence = document.getElementById('compCostAbsence').value;
         const internalCompAmount = parseFloat(document.getElementById('compInternalAmount').value || 0);
         const actualAbsenceDays = parseInt(document.getElementById('compAbsenceDays').value || 0, 10);
+        const reportedAbsenceDays = parseInt(document.getElementById('compReportedAbsenceDays').value || 0, 10);
         const govReportTarget = document.getElementById('compGovReportTarget').value;
         const govReportStatus = document.getElementById('compGovReportStatus').value;
         const govAgency = document.getElementById('compGovAgency').value;
@@ -1505,6 +1513,7 @@
           internalAccidentType: internalDtlStatus,
           internalCompAmount,
           actualAbsenceDays,
+          reportedAbsenceDays,
           externalReportType: govReportTarget,
           comWelAccidentNo,
           comWelApprovalStatus,
@@ -1658,6 +1667,10 @@
                     <input type="number" id="numActualAbsenceDays" class="form-input-custom" placeholder="5" />
                   </div>
                   <div class="form-group">
+                    <label class="form-label-desc">보고 요양/휴업일수 (일)</label>
+                    <input type="number" id="numReportedAbsenceDays" class="form-input-custom" placeholder="5" />
+                  </div>
+                  <div class="form-group">
                     <label class="form-label-desc">* 외부 보고 구분</label>
                     <select id="selExternalReportType" class="form-select-custom" required>
                       <option value="NONE">보고 제외</option>
@@ -1709,6 +1722,7 @@
                   <div><strong>사내 사고 구분:</strong> ${internalDisplay}</div>
                   <div><strong>총 산정 보상금:</strong> ${totalCost > 0 ? totalCost.toLocaleString() + ' 원' : '-'}</div>
                   <div><strong>실제 휴업 일수:</strong> ${c.ActualAbsenceDays ? c.ActualAbsenceDays + ' 일' : '-'}</div>
+                  <div><strong>보고 휴업 일수:</strong> ${c.ReportedAbsenceDays ? c.ReportedAbsenceDays + ' 일' : '-'}</div>
                   <div><strong>대관 보고 대상:</strong> ${externalDisplay}</div>
                   <div><strong>보고 진행 상태:</strong> ${c.GovReportStatus || '미보고'} ${c.GovAgency ? '(' + c.GovAgency + ')' : ''}</div>
                   <div><strong>보고 접수 번호:</strong> ${c.ComWelAccidentNo || '-'}</div>
@@ -1829,6 +1843,7 @@
                 internalType: document.getElementById('selInternalAccidentType').value,
                 internalAmount: document.getElementById('numInternalCompAmount').value || null,
                 absenceDays: document.getElementById('numActualAbsenceDays').value || null,
+                reportedAbsenceDays: document.getElementById('numReportedAbsenceDays').value || null,
                 externalType: document.getElementById('selExternalReportType').value,
                 comWelNo: document.getElementById('txtComWelAccidentNo').value.trim()
               };

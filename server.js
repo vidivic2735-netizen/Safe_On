@@ -80,6 +80,7 @@ async function ensureClassificationColumns(pool) {
         { name: 'CostMedical', type: 'DECIMAL(18, 0)' },
         { name: 'CostSettlement', type: 'DECIMAL(18, 0)' },
         { name: 'CostAbsence', type: 'DECIMAL(18, 0)' },
+        { name: 'ReportedAbsenceDays', type: 'INT' },
         { name: 'ImproveManager', type: 'NVARCHAR(50)' },
         { name: 'ImproveDueDate', type: 'DATE' },
         { name: 'ImproveCompleteDate', type: 'DATE' },
@@ -395,11 +396,11 @@ app.post('/api/incidents', async (req, res) => {
                 .input('regUserID', sql.VarChar(50), regUserID || 'System')
                 .query(`
                     INSERT INTO IncidentClassifications (
-                        IncidentID, InternalAccidentType, InternalCompAmount, ActualAbsenceDays,
+                        IncidentID, InternalAccidentType, InternalCompAmount, ActualAbsenceDays, ReportedAbsenceDays,
                         ExternalReportType, ComWelAccidentNo, ComWelApprovalStatus, ComWelApprovalDate,
                         LaborMinistryStatus, LaborMinistryReportDate, ClassificationStatus, RegUserID, RegDateTime
                     ) VALUES (
-                        @incidentId, 'NOT_APPLIED', 0, 0,
+                        @incidentId, 'NOT_APPLIED', 0, 0, 0,
                         'NOT_REQUIRED', NULL, 'NOT_SUBMITTED', NULL,
                         'NOT_REPORTED', NULL, 'UNCLASSIFIED', @regUserID, GETDATE()
                     )
@@ -433,7 +434,7 @@ app.get('/api/incidents', async (req, res) => {
                 r.EquipmentName, r.IncidentTitle, r.IncidentContent, r.AttachmentPath1, r.AttachmentPath2, 
                 r.Remarks, r.RegUserID, r.RegDateTime,
                 c.ClassificationID, c.CausalFactorCode, c.AccidentTypeCode, c.InternalAccidentType,
-                c.InternalCompAmount, c.ActualAbsenceDays, c.ExternalReportType, c.ComWelAccidentNo,
+                c.InternalCompAmount, c.ActualAbsenceDays, c.ReportedAbsenceDays, c.ExternalReportType, c.ComWelAccidentNo,
                 c.ComWelApprovalStatus, c.ComWelApprovalDate, c.LaborMinistryStatus, c.LaborMinistryReportDate,
                 c.ClassificationStatus,
                 c.VictimName, c.VictimAffiliation, c.VictimJob, c.VictimServiceYears, c.VictimAge,
@@ -496,7 +497,7 @@ app.post('/api/gemini/ask', async (req, res) => {
                         r.Remarks, r.RegUserID, r.RegDateTime,
                         c.ClassificationID, c.VictimName, c.VictimAffiliation, c.VictimJob, c.VictimAge,
                         c.InjuryPart, c.InjurySeverity, c.HospitalName, c.DiagnosisWeeks,
-                        c.CostMedical, c.CostSettlement, c.CostAbsence, c.InternalCompAmount, c.ActualAbsenceDays,
+                        c.CostMedical, c.CostSettlement, c.CostAbsence, c.InternalCompAmount, c.ActualAbsenceDays, c.ReportedAbsenceDays,
                         c.GovReportTarget, c.GovReportStatus, c.GovAgency, c.GovKOSHADueDate, c.GovDelayReason,
                         c.GovAccidentCategory, c.GovIsSevere
                     FROM IncidentReports r
@@ -831,6 +832,9 @@ app.post('/api/classifications', async (req, res) => {
         internalAccidentType,
         internalCompAmount,
         actualAbsenceDays,
+        reportedAbsenceDays,
+        repAbsenceDays,
+        absenceDays,
         externalReportType,
         comWelAccidentNo,
         comWelApprovalStatus,
@@ -870,6 +874,9 @@ app.post('/api/classifications', async (req, res) => {
         return res.status(400).json({ success: false, message: '사고 ID는 필수 항목입니다.' });
     }
 
+    const actualAbsenceDaysVal = actualAbsenceDays !== undefined ? actualAbsenceDays : (absenceDays !== undefined ? absenceDays : 0);
+    const reportedAbsenceDaysVal = reportedAbsenceDays !== undefined ? reportedAbsenceDays : (repAbsenceDays !== undefined ? repAbsenceDays : 0);
+
     try {
         const pool = await getPool();
         const request = pool.request()
@@ -878,7 +885,8 @@ app.post('/api/classifications', async (req, res) => {
             .input('accidentTypeCode', sql.NVarChar(100), accidentTypeCode || null)
             .input('internalAccidentType', sql.NVarChar(100), internalAccidentType || 'NOT_APPLIED')
             .input('internalCompAmount', sql.Decimal(18, 0), internalCompAmount || 0)
-            .input('actualAbsenceDays', sql.Int, actualAbsenceDays || 0)
+            .input('actualAbsenceDays', sql.Int, actualAbsenceDaysVal ? parseInt(actualAbsenceDaysVal, 10) : 0)
+            .input('reportedAbsenceDays', sql.Int, reportedAbsenceDaysVal ? parseInt(reportedAbsenceDaysVal, 10) : 0)
             .input('externalReportType', sql.NVarChar(100), externalReportType || 'NOT_REQUIRED')
             .input('comWelAccidentNo', sql.NVarChar(50), comWelAccidentNo || null)
             .input('comWelApprovalStatus', sql.NVarChar(100), comWelApprovalStatus || 'NOT_SUBMITTED')
@@ -924,6 +932,7 @@ app.post('/api/classifications', async (req, res) => {
                     InternalAccidentType = @internalAccidentType,
                     InternalCompAmount = @internalCompAmount,
                     ActualAbsenceDays = @actualAbsenceDays,
+                    ReportedAbsenceDays = @reportedAbsenceDays,
                     ExternalReportType = @externalReportType,
                     ComWelAccidentNo = @comWelAccidentNo,
                     ComWelApprovalStatus = @comWelApprovalStatus,
@@ -965,7 +974,7 @@ app.post('/api/classifications', async (req, res) => {
             await request.query(`
                 INSERT INTO IncidentClassifications (
                     IncidentID, CausalFactorCode, AccidentTypeCode, InternalAccidentType,
-                    InternalCompAmount, ActualAbsenceDays, ExternalReportType, ComWelAccidentNo,
+                    InternalCompAmount, ActualAbsenceDays, ReportedAbsenceDays, ExternalReportType, ComWelAccidentNo,
                     ComWelApprovalStatus, ComWelApprovalDate, LaborMinistryStatus, LaborMinistryReportDate,
                     VictimName, VictimAffiliation, VictimJob, VictimServiceYears, VictimAge,
                     InjuryPart, InjurySeverity, HospitalName, DiagnosisWeeks,
@@ -976,7 +985,7 @@ app.post('/api/classifications', async (req, res) => {
                     ClassificationStatus, RegUserID, RegDateTime
                 ) VALUES (
                     @incidentId, @causalFactorCode, @accidentTypeCode, @internalAccidentType,
-                    @internalCompAmount, @actualAbsenceDays, @externalReportType, @comWelAccidentNo,
+                    @internalCompAmount, @actualAbsenceDays, @reportedAbsenceDays, @externalReportType, @comWelAccidentNo,
                     @comWelApprovalStatus, @comWelApprovalDate, @laborMinistryStatus, @laborMinistryReportDate,
                     @victimName, @victimAffiliation, @victimJob, @victimServiceYears, @victimAge,
                     @injuryPart, @injurySeverity, @hospitalName, @diagnosisWeeks,
