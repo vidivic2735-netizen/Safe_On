@@ -623,6 +623,7 @@ app.post('/api/gemini/analyze-inspection', async (req, res) => {
 
     try {
         let inspection = null;
+        let details = [];
         try {
             const pool = await getPool();
             const result = await pool.request()
@@ -674,11 +675,45 @@ app.post('/api/gemini/analyze-inspection', async (req, res) => {
                     LEFT JOIN Safety_Inspection_Details d1 ON m.inspection_id = d1.inspection_id AND d1.item_code = 'ITEM_01'
                     LEFT JOIN Safety_Inspection_Details d2 ON m.inspection_id = d2.inspection_id AND d2.item_code = 'ITEM_02'
                     LEFT JOIN Safety_Inspection_Details d3 ON m.inspection_id = d3.inspection_id AND d3.item_code = 'ITEM_03'
-                    LEFT JOIN Safety_Non_Compliance nc ON m.inspection_id = nc.inspection_id AND nc.detail_id = d3.detail_id
+                    LEFT JOIN Safety_Non_Compliance nc ON nc.nc_id = (
+                        SELECT TOP 1 nc_id FROM Safety_Non_Compliance WHERE inspection_id = m.inspection_id
+                    )
                     WHERE m.inspection_id = @inspectionId
                 `);
             if (result.recordset.length > 0) {
                 inspection = result.recordset[0];
+
+                // Fetch dynamic checklist details
+                const detailsResult = await pool.request()
+                    .input('inspectionId', sql.VarChar(36), inspectionId)
+                    .query(`
+                        SELECT 
+                            d.detail_id AS DetailID,
+                            d.item_code AS ItemCode,
+                            d.result_status AS ResultStatus,
+                            c.item_text AS ItemText
+                        FROM Safety_Inspection_Details d
+                        LEFT JOIN Safety_Inspection_Master m ON d.inspection_id = m.inspection_id
+                        LEFT JOIN ChecklistItems c ON (
+                            CASE c.company_branch 
+                                WHEN '서울 본사 공장' THEN 'SEOUL'
+                                WHEN '부산 지사 공장' THEN 'BUSAN'
+                                WHEN '인천 물류 센터' THEN 'INCHEON'
+                                ELSE c.company_branch
+                            END
+                        ) = m.site_id AND d.item_code = c.item_code
+                        WHERE d.inspection_id = @inspectionId
+                    `);
+                
+                details = detailsResult.recordset.map(row => {
+                    if (!row.ItemText) {
+                        if (row.ItemCode === 'ITEM_01') row.ItemText = '기계·설비의 방호장치(비상정지장치 등) 작동 상태가 정상인가?';
+                        else if (row.ItemCode === 'ITEM_02') row.ItemText = '전기 분전함 전면에 적재물이 없고 외함 접지가 양호한가?';
+                        else if (row.ItemCode === 'ITEM_03') row.ItemText = '현장 내 통로가 확보되어 있고 비상구 주위 유해요인이 없는가?';
+                        else row.ItemText = `점검 항목 (${row.ItemCode})`;
+                    }
+                    return row;
+                });
             }
         } catch (dbErr) {
             console.error('Gemini Inspection DB query failed, checking fallback data:', dbErr.message);
@@ -693,15 +728,24 @@ app.post('/api/gemini/analyze-inspection', async (req, res) => {
                 EquipmentName: '조립 라인 B',
                 InspectionDate: new Date().toISOString().split('T')[0],
                 Inspector: '김안전',
-                Check1Result: 'GOOD',
-                Check2Result: 'ACTION_REQUIRED',
-                Check3Result: 'GOOD',
                 IssueDescription: '분전함 주변에 이동식 적재 대차가 배치되어 있어 비상시 접근이 차단됨.',
                 ActionRequired: '이동식 대차를 적치 구역으로 이동시키고 분전함 전면 1m 내 황색 구획선 도색 조치.',
                 ManagerID: '이조치 주임',
                 DueDate: new Date().toISOString().split('T')[0]
             };
+            details = [
+                { ItemCode: 'ITEM_01', ItemText: '기계·설비의 방호장치(비상정지장치 등) 작동 상태가 정상인가?', ResultStatus: 'PASS' },
+                { ItemCode: 'ITEM_02', ItemText: '전기 분전함 전면에 적재물이 없고 외함 접지가 양호한가?', ResultStatus: 'FAIL' },
+                { ItemCode: 'ITEM_03', ItemText: '현장 내 통로가 확보되어 있고 비상구 주위 유해요인이 없는가?', ResultStatus: 'PASS' }
+            ];
         }
+
+        const checklistStr = details.map((d, idx) => {
+            const statusStr = d.ResultStatus === 'PASS' ? '양호' : (d.ResultStatus === 'FAIL' ? '조치필요' : 'N/A');
+            return `${idx + 1}. [${d.ItemCode}] ${d.ItemText}: ${statusStr}`;
+        }).join('\n');
+
+        const hasFail = details.some(d => d.ResultStatus === 'FAIL') || !!inspection.IssueDescription;
 
         const prompt = `당신은 대한민국 안전보건공단(KOSHA) 가이드 및 산업안전보건법을 숙지한 전문 안전 관리 AI인 "비즈프로 AI"입니다.
 다음 안전 점검 내역을 분석하여, 안전 관점에서 [위험한 내용], [부족한 부분], [잘 된 부분]을 분류하고 각각 간략하게 정리해 주세요.
@@ -715,11 +759,9 @@ app.post('/api/gemini/analyze-inspection', async (req, res) => {
 - 점검자: ${inspection.Inspector}
 
 [체크리스트 결과]
-1. 방호장치 정상 작동 여부: ${inspection.Check1Result === 'GOOD' ? '양호' : '조치필요'}
-2. 전기 분전함 전면 적재물 및 외함 접지 상태: ${inspection.Check2Result === 'GOOD' ? '양호' : '조치필요'}
-3. 현장 내 통로 및 비상구 주위 상태: ${inspection.Check3Result === 'GOOD' ? '양호' : '조치필요'}
+${checklistStr}
 
-${inspection.Check1Result === 'ACTION_REQUIRED' || inspection.Check2Result === 'ACTION_REQUIRED' || inspection.Check3Result === 'ACTION_REQUIRED' ? `
+${hasFail ? `
 [부적합 조치사항]
 - 위험 요인 설명: ${inspection.IssueDescription || '없음'}
 - 조치 요구사항: ${inspection.ActionRequired || '없음'}
@@ -757,16 +799,16 @@ ${inspection.Check1Result === 'ACTION_REQUIRED' || inspection.Check2Result === '
 **점검 일지 (No.${inspection.InspectionID})**에 대한 비즈프로 AI 분석 의견입니다:
 
 #### 1. 🚨 **위험한 내용**
-${inspection.Check1Result === 'ACTION_REQUIRED' || inspection.Check2Result === 'ACTION_REQUIRED' || inspection.Check3Result === 'ACTION_REQUIRED' ? `
+${hasFail ? `
 - **부적합 사항 감지**: 일부 점검 항목에서 조치필요 판정이 확인되었습니다.
 - **위험 요인**: ${inspection.IssueDescription || '구체적인 위험 요인이 등록되지 않았으나 안전 확인이 요구됩니다.'}
 - **위험 요약**: 방호장치 결함 시 설비 말림 위험, 분전함 적재물 적치 시 과열로 인한 화재 및 누전/감전 위험, 통로 적치물 시 긴급 대피 차단 및 전도 리스크가 존재합니다.
 ` : `
-- **직접적인 물리 위험 없음**: 주요 3대 위험 요소(방호장치, 분전함, 대피로)가 모두 '양호'로 판정되어 직접적이고 시급한 위험 요인은 관찰되지 않습니다.
+- **직접적인 물리 위험 없음**: 모든 항목이 '양호'로 판정되어 직접적이고 시급한 위험 요인은 관찰되지 않습니다.
 `}
 
 #### 2. ⚠️ **부족한 부분**
-${inspection.Check1Result === 'ACTION_REQUIRED' || inspection.Check2Result === 'ACTION_REQUIRED' || inspection.Check3Result === 'ACTION_REQUIRED' ? `
+${hasFail ? `
 - **이행 지연 리스크**: 담당자(${inspection.ManagerID || '미정'}) 및 조치 기한(${inspection.DueDate || '미정'}) 내에 실질적인 작업 및 이동 조치(${inspection.ActionRequired || '미입력'})가 완료되는지 지속적 팔로우업이 필요합니다.
 - **안전 표지 부재**: 임시 차단 구역이나 경고 표지가 누락되었을 수 있어 신속히 보완해야 합니다.
 ` : `
@@ -775,7 +817,7 @@ ${inspection.Check1Result === 'ACTION_REQUIRED' || inspection.Check2Result === '
 
 #### 3. ✅ **잘 된 부분**
 - **체크리스트 양호 요인**:
-${inspection.Check1Result === 'GOOD' ? '  - **방호장치 정상**: 기계 설비의 위험 부분에 방호막/방호장치가 완전하게 설치되어 작동하고 있습니다.\n' : ''}${inspection.Check2Result === 'GOOD' ? '  - **전기 안전 수칙 준수**: 전기 판넬 및 분전함 전면 공간이 상시 개방되어 양호하게 통제되고 있습니다.\n' : ''}${inspection.Check3Result === 'GOOD' ? '  - **비상 통로 확보**: 통행 및 대피 통로에 장애물이 없고 정리가 잘 되어 있습니다.\n' : ''}- **예방 점검 수행**: 점검자 **${inspection.Inspector}**님이 점검일자 **${inspection.InspectionDate}**에 점검 활동을 성실히 이행 및 기록 관리하였습니다.
+${details.filter(d => d.ResultStatus === 'PASS').map(d => `  - **${d.ItemText}**: 양호하게 관리되고 있습니다.\n`).join('')}- **예방 점검 수행**: 점검자 **${inspection.Inspector}**님이 점검일자 **${inspection.InspectionDate}**에 점검 활동을 성실히 이행 및 기록 관리하였습니다.
 `;
         return res.json({ success: true, answer: simulatedAnswer });
 
@@ -1352,7 +1394,9 @@ app.get('/api/inspections', async (req, res) => {
             LEFT JOIN Safety_Inspection_Details d1 ON m.inspection_id = d1.inspection_id AND d1.item_code = 'ITEM_01'
             LEFT JOIN Safety_Inspection_Details d2 ON m.inspection_id = d2.inspection_id AND d2.item_code = 'ITEM_02'
             LEFT JOIN Safety_Inspection_Details d3 ON m.inspection_id = d3.inspection_id AND d3.item_code = 'ITEM_03'
-            LEFT JOIN Safety_Non_Compliance nc ON m.inspection_id = nc.inspection_id AND nc.detail_id = d3.detail_id
+            LEFT JOIN Safety_Non_Compliance nc ON nc.nc_id = (
+                SELECT TOP 1 nc_id FROM Safety_Non_Compliance WHERE inspection_id = m.inspection_id
+            )
             ORDER BY m.created_at DESC
         `);
         return res.json({ success: true, data: result.recordset });
