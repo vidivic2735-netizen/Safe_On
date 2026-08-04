@@ -51,12 +51,12 @@ const dbConfig = {
     server: '14.43.220.172',
     port: 17433,
     database: 'SafetyManagement',
-    connectionTimeout: 2000, // 2 seconds
-    requestTimeout: 2000,    // 2 seconds
+    connectionTimeout: 15000, // 15 seconds
+    requestTimeout: 15000,    // 15 seconds
     options: {
         encrypt: false,
         trustServerCertificate: true,
-        connectTimeout: 2000  // tedious connection timeout
+        connectTimeout: 15000  // tedious connection timeout
     }
 };
 
@@ -94,41 +94,101 @@ async function ensureClassificationColumns(pool) {
         { name: 'GovDocAttachmentPath', type: 'NVARCHAR(500)' },
         { name: 'GovIsSevere', type: 'BIT' },
         { name: 'GovImmediateDate', type: 'DATETIME' },
-        { name: 'GovImmediateReceiver', type: 'NVARCHAR(100)' }
+        { name: 'GovImmediateReceiver', type: 'NVARCHAR(100)' },
+
+        // 1. 산업재해조사표 - 사업장 정보
+        { name: 'GovCompanyNo', type: 'NVARCHAR(50)' },
+        { name: 'GovBizNo', type: 'NVARCHAR(50)' },
+        { name: 'GovEmpCount', type: 'INT' },
+        { name: 'GovIndustryType', type: 'NVARCHAR(100)' },
+        { name: 'GovLocation', type: 'NVARCHAR(300)' },
+        { name: 'GovSubcontractorName', type: 'NVARCHAR(100)' },
+        { name: 'GovSubcontractorNo', type: 'NVARCHAR(50)' },
+        { name: 'GovDispatcherName', type: 'NVARCHAR(100)' },
+        { name: 'GovDispatcherNo', type: 'NVARCHAR(50)' },
+        { name: 'GovConstructionClient', type: 'NVARCHAR(100)' },
+        { name: 'GovConstructionPrimaryName', type: 'NVARCHAR(100)' },
+        { name: 'GovConstructionPrimaryNo', type: 'NVARCHAR(50)' },
+        { name: 'GovConstructionName', type: 'NVARCHAR(200)' },
+        { name: 'GovConstructionType', type: 'NVARCHAR(100)' },
+        { name: 'GovConstructionRatio', type: 'DECIMAL(5, 2)' },
+        { name: 'GovConstructionAmount', type: 'DECIMAL(18, 0)' },
+
+        // 2. 산업재해조사표 - 재해자 정보
+        { name: 'VictimRrn', type: 'NVARCHAR(20)' },
+        { name: 'VictimAddress', type: 'NVARCHAR(300)' },
+        { name: 'VictimPhone', type: 'NVARCHAR(50)' },
+        { name: 'VictimNationality', type: 'NVARCHAR(50)' },
+        { name: 'VictimVisa', type: 'NVARCHAR(50)' },
+        { name: 'VictimOccupation', type: 'NVARCHAR(100)' },
+        { name: 'VictimEntryDate', type: 'DATE' },
+        { name: 'VictimSameWorkDuration', type: 'NVARCHAR(50)' },
+        { name: 'VictimEmploymentType', type: 'NVARCHAR(50)' },
+        { name: 'VictimWorkShift', type: 'NVARCHAR(50)' },
+        { name: 'InjuryType', type: 'NVARCHAR(100)' },
+        { name: 'GovAbsenceDays', type: 'INT' },
+        { name: 'GovIsFatal', type: 'BIT' },
+
+        // 3. 산업재해조사표 - 재해발생 개요 및 원인
+        { name: 'AccidentDateTime', type: 'DATETIME' },
+        { name: 'AccidentLocation', type: 'NVARCHAR(200)' },
+        { name: 'AccidentWorkType', type: 'NVARCHAR(200)' },
+        { name: 'AccidentSituation', type: 'NVARCHAR(MAX)' },
+        { name: 'AccidentCause', type: 'NVARCHAR(MAX)' },
+
+        // 4. 산업재해조사표 - 재발방지 및 기타 정보
+        { name: 'PreventPlan', type: 'NVARCHAR(MAX)' },
+        { name: 'GovRequestTechSupport', type: 'BIT' },
+        { name: 'GovAgreePrivacy', type: 'BIT' },
+        { name: 'GovWriterName', type: 'NVARCHAR(50)' },
+        { name: 'GovWriterPhone', type: 'NVARCHAR(50)' },
+        { name: 'GovWriteDate', type: 'DATE' },
+
+        // 5. 사고경위보고서 관련 정보
+        { name: 'ReportProduct', type: 'NVARCHAR(100)' },
+        { name: 'ReportDeptProcess', type: 'NVARCHAR(100)' },
+        { name: 'ReportCasualtyFatal', type: 'INT' },
+        { name: 'ReportCasualtyInjured', type: 'INT' },
+        { name: 'ReportWorkShiftType', type: 'NVARCHAR(50)' },
+        { name: 'ReportWorkShiftCount', type: 'INT' },
+        { name: 'ReportAccidentType', type: 'NVARCHAR(100)' },
+        { name: 'ReportCauseObject', type: 'NVARCHAR(100)' },
+        { name: 'HexaWho', type: 'NVARCHAR(200)' },
+        { name: 'HexaWhen', type: 'NVARCHAR(200)' },
+        { name: 'HexaWhere', type: 'NVARCHAR(200)' },
+        { name: 'HexaWhat', type: 'NVARCHAR(200)' },
+        { name: 'HexaHow', type: 'NVARCHAR(MAX)' },
+        { name: 'HexaWhy', type: 'NVARCHAR(MAX)' },
+        { name: 'ReportOccurTimeType', type: 'NVARCHAR(50)' },
+        { name: 'ReportLaborLossType', type: 'NVARCHAR(50)' },
+        { name: 'ReportRestrictedWorkDays', type: 'INT' },
+        { name: 'ReportVictimPosition', type: 'NVARCHAR(50)' },
+        { name: 'ReportHarmObject', type: 'NVARCHAR(100)' },
+        { name: 'ReportRegularWork', type: 'NVARCHAR(MAX)' },
+        { name: 'ReportAccidentWork', type: 'NVARCHAR(MAX)' },
+        { name: 'ReportInvestigationDate', type: 'DATE' },
+        { name: 'ReportSupervisor', type: 'NVARCHAR(50)' },
+        { name: 'ReportPreventionPlan', type: 'NVARCHAR(MAX)' }
     ];
 
+
     try {
-        // Drop default constraints that prevent ALTER COLUMN if present
-        try {
-            await pool.request().query(`
-                DECLARE @sql NVARCHAR(MAX) = '';
-                SELECT @sql += 'ALTER TABLE IncidentClassifications DROP CONSTRAINT [' + name + ']; '
-                FROM sys.default_constraints
-                WHERE parent_object_id = OBJECT_ID('IncidentClassifications');
-                IF @sql <> '' EXEC sp_executesql @sql;
-            `);
-        } catch (dropErr) {}
 
-        // Alter existing columns to allow wider Korean text
-        const alterCols = ['ExternalReportType', 'InternalAccidentType', 'AccidentTypeCode', 'CausalFactorCode', 'ComWelApprovalStatus', 'LaborMinistryStatus'];
-        for (const colName of alterCols) {
-            try {
-                await pool.request().query(`ALTER TABLE IncidentClassifications ALTER COLUMN ${colName} NVARCHAR(100) NULL`);
-            } catch (alterErr) {}
-        }
 
+        let sqlBatch = '';
         for (const col of columns) {
-            await pool.request().query(`
+            sqlBatch += `
                 IF NOT EXISTS (
                     SELECT * FROM sys.columns 
                     WHERE object_id = OBJECT_ID('IncidentClassifications') AND name = '${col.name}'
                 )
                 BEGIN
                     ALTER TABLE IncidentClassifications ADD ${col.name} ${col.type} NULL;
-                END
-            `);
+                END;
+            `;
         }
-        console.log('IncidentClassifications schema checked and updated.');
+        await pool.request().query(sqlBatch);
+        console.log('IncidentClassifications schema checked and updated in a single batch.');
     } catch (err) {
         console.error('Failed to update IncidentClassifications schema:', err.message);
     }
@@ -355,64 +415,58 @@ app.post('/api/incidents', async (req, res) => {
         return res.status(400).json({ success: false, message: '필수 입력 항목이 누락되었습니다.' });
     }
 
+    const photoPath = attachmentPath1 || req.body.photoPath || null;
+    const docPath = attachmentPath2 || req.body.docPath || null;
+    const remarksVal = remarks || req.body.remarks || null;
+
     try {
         const pool = await getPool();
-        const transaction = new sql.Transaction(pool);
-        await transaction.begin();
+        
+        // 1. Insert into IncidentReports
+        const result = await pool.request()
+            .input('companyBranch', sql.NVarChar(100), companyBranch)
+            .input('incidentType', sql.VarChar(20), incidentType)
+            .input('occurrenceDateTime', sql.DateTime, new Date(occurrenceDateTime.replace(' ', 'T')))
+            .input('location', sql.NVarChar(255), location)
+            .input('equipmentName', sql.NVarChar(150), equipmentName)
+            .input('incidentTitle', sql.NVarChar(200), incidentTitle)
+            .input('incidentContent', sql.NVarChar(sql.MAX), incidentContent)
+            .input('attachmentPath1', sql.NVarChar(500), photoPath)
+            .input('attachmentPath2', sql.NVarChar(500), docPath)
+            .input('remarks', sql.NVarChar(1000), remarksVal)
+            .input('regUserID', sql.VarChar(50), regUserID || 'System')
+            .query(`
+                INSERT INTO IncidentReports (
+                    CompanyBranch, IncidentType, OccurrenceDateTime, Location, EquipmentName, 
+                    IncidentTitle, IncidentContent, AttachmentPath1, AttachmentPath2, Remarks, 
+                    RegUserID, RegDateTime
+                ) OUTPUT INSERTED.IncidentID
+                VALUES (
+                    @companyBranch, @incidentType, @occurrenceDateTime, @location, @equipmentName,
+                    @incidentTitle, @incidentContent, @attachmentPath1, @attachmentPath2, @remarks,
+                    @regUserID, GETDATE()
+                )
+            `);
 
-        try {
-            const request = new sql.Request(transaction);
-            const result = await request
-                .input('companyBranch', sql.NVarChar(100), companyBranch)
-                .input('incidentType', sql.VarChar(20), incidentType)
-                .input('occurrenceDateTime', sql.DateTime, new Date(occurrenceDateTime.replace(' ', 'T')))
-                .input('location', sql.NVarChar(255), location)
-                .input('equipmentName', sql.NVarChar(150), equipmentName)
-                .input('incidentTitle', sql.NVarChar(200), incidentTitle)
-                .input('incidentContent', sql.NVarChar(sql.MAX), incidentContent)
-                .input('attachmentPath1', sql.NVarChar(500), attachmentPath1 || null)
-                .input('attachmentPath2', sql.NVarChar(500), attachmentPath2 || null)
-                .input('remarks', sql.NVarChar(1000), remarks || null)
-                .input('regUserID', sql.VarChar(50), regUserID || 'System')
-                .query(`
-                    INSERT INTO IncidentReports (
-                        CompanyBranch, IncidentType, OccurrenceDateTime, Location, EquipmentName, 
-                        IncidentTitle, IncidentContent, AttachmentPath1, AttachmentPath2, Remarks, 
-                        RegUserID, RegDateTime
-                    ) OUTPUT INSERTED.IncidentID
-                    VALUES (
-                        @companyBranch, @incidentType, @occurrenceDateTime, @location, @equipmentName,
-                        @incidentTitle, @incidentContent, @attachmentPath1, @attachmentPath2, @remarks,
-                        @regUserID, GETDATE()
-                    )
-                `);
+        const incidentId = result.recordset[0].IncidentID;
 
-            const incidentId = result.recordset[0].IncidentID;
+        // 2. Insert into IncidentClassifications
+        await pool.request()
+            .input('incidentId', sql.Int, incidentId)
+            .input('regUserID', sql.VarChar(50), regUserID || 'System')
+            .query(`
+                INSERT INTO IncidentClassifications (
+                    IncidentID, InternalAccidentType, InternalCompAmount, ActualAbsenceDays, ReportedAbsenceDays,
+                    ExternalReportType, ComWelAccidentNo, ComWelApprovalStatus, ComWelApprovalDate,
+                    LaborMinistryStatus, LaborMinistryReportDate, ClassificationStatus, RegUserID, RegDateTime
+                ) VALUES (
+                    @incidentId, 'NOT_APPLIED', 0, 0, 0,
+                    'NOT_REQUIRED', NULL, 'NOT_SUBMITTED', NULL,
+                    'NOT_REPORTED', NULL, 'UNCLASSIFIED', @regUserID, GETDATE()
+                )
+            `);
 
-            // Also create a default Classification record for this incident
-            const classRequest = new sql.Request(transaction);
-            await classRequest
-                .input('incidentId', sql.Int, incidentId)
-                .input('regUserID', sql.VarChar(50), regUserID || 'System')
-                .query(`
-                    INSERT INTO IncidentClassifications (
-                        IncidentID, InternalAccidentType, InternalCompAmount, ActualAbsenceDays, ReportedAbsenceDays,
-                        ExternalReportType, ComWelAccidentNo, ComWelApprovalStatus, ComWelApprovalDate,
-                        LaborMinistryStatus, LaborMinistryReportDate, ClassificationStatus, RegUserID, RegDateTime
-                    ) VALUES (
-                        @incidentId, 'NOT_APPLIED', 0, 0, 0,
-                        'NOT_REQUIRED', NULL, 'NOT_SUBMITTED', NULL,
-                        'NOT_REPORTED', NULL, 'UNCLASSIFIED', @regUserID, GETDATE()
-                    )
-                `);
-
-            await transaction.commit();
-            return res.status(201).json({ success: true, message: '사고 보고가 성공적으로 등록되었습니다.', incidentId });
-
-        } catch (err) {
-            await transaction.rollback();
-            throw err;
-        }
+        return res.status(201).json({ success: true, message: '사고 보고가 성공적으로 등록되었습니다.', incidentId });
 
     } catch (err) {
         console.error('Incident insert error:', err);
@@ -443,6 +497,20 @@ app.get('/api/incidents', async (req, res) => {
                 c.ImproveManager, c.ImproveDueDate, c.ImproveCompleteDate, c.ImproveFilePath,
                 c.GovReportTarget, c.GovReportStatus, c.GovAgency, c.GovKOSHADueDate, c.GovDelayReason,
                 c.GovAccidentCategory, c.GovDocAttachmentPath, c.GovIsSevere, c.GovImmediateDate, c.GovImmediateReceiver,
+                c.GovCompanyNo, c.GovBizNo, c.GovEmpCount, c.GovIndustryType, c.GovLocation,
+                c.GovSubcontractorName, c.GovSubcontractorNo, c.GovDispatcherName, c.GovDispatcherNo,
+                c.GovConstructionClient, c.GovConstructionPrimaryName, c.GovConstructionPrimaryNo,
+                c.GovConstructionName, c.GovConstructionType, c.GovConstructionRatio, c.GovConstructionAmount,
+                c.VictimRrn, c.VictimAddress, c.VictimPhone, c.VictimNationality, c.VictimVisa, c.VictimOccupation,
+                c.VictimEntryDate, c.VictimSameWorkDuration, c.VictimEmploymentType, c.VictimWorkShift, c.InjuryType,
+                c.GovAbsenceDays, c.GovIsFatal, c.AccidentDateTime, c.AccidentLocation, c.AccidentWorkType,
+                c.AccidentSituation, c.AccidentCause, c.PreventPlan, c.GovRequestTechSupport, c.GovAgreePrivacy,
+                c.GovWriterName, c.GovWriterPhone, c.GovWriteDate, c.ReportProduct, c.ReportDeptProcess,
+                c.ReportCasualtyFatal, c.ReportCasualtyInjured, c.ReportWorkShiftType, c.ReportWorkShiftCount,
+                c.ReportAccidentType, c.ReportCauseObject, c.HexaWho, c.HexaWhen, c.HexaWhere, c.HexaWhat,
+                c.HexaHow, c.HexaWhy, c.ReportOccurTimeType, c.ReportLaborLossType, c.ReportRestrictedWorkDays,
+                c.ReportVictimPosition, c.ReportHarmObject, c.ReportRegularWork, c.ReportAccidentWork,
+                c.ReportInvestigationDate, c.ReportSupervisor, c.ReportPreventionPlan,
                 m.MeasureID, m.HazardFactors, m.CurrentMeasure, m.ProposedMeasure, m.ManagerID,
                 m.DueDate, m.CompletionDate, m.ActionContent, m.BeforePhotoPath, m.AfterPhotoPath,
                 m.MeasureStatus
@@ -909,7 +977,73 @@ app.post('/api/classifications', async (req, res) => {
         govIsSevere,
         govImmediateDate,
         govImmediateReceiver,
-        userId
+        userId,
+
+        // New fields
+        govCompanyNo,
+        govBizNo,
+        govEmpCount,
+        govIndustryType,
+        govLocation,
+        govSubcontractorName,
+        govSubcontractorNo,
+        govDispatcherName,
+        govDispatcherNo,
+        govConstructionClient,
+        govConstructionPrimaryName,
+        govConstructionPrimaryNo,
+        govConstructionName,
+        govConstructionType,
+        govConstructionRatio,
+        govConstructionAmount,
+        victimRrn,
+        victimAddress,
+        victimPhone,
+        victimNationality,
+        victimVisa,
+        victimOccupation,
+        victimEntryDate,
+        victimSameWorkDuration,
+        victimEmploymentType,
+        victimWorkShift,
+        injuryType,
+        govAbsenceDays,
+        govIsFatal,
+        accidentDateTime,
+        accidentLocation,
+        accidentWorkType,
+        accidentSituation,
+        accidentCause,
+        preventPlan,
+        govRequestTechSupport,
+        govAgreePrivacy,
+        govWriterName,
+        govWriterPhone,
+        govWriteDate,
+        reportProduct,
+        reportDeptProcess,
+        reportCasualtyFatal,
+        reportCasualtyInjured,
+        reportWorkShiftType,
+        reportWorkShiftCount,
+        reportAccidentType,
+        reportCauseObject,
+        hexaWho,
+        hexaWhen,
+        hexaWhere,
+        hexaWhat,
+        hexaHow,
+        hexaWhy,
+        reportOccurTimeType,
+        reportLaborLossType,
+        reportRestrictedWorkDays,
+        reportVictimPosition,
+        reportHarmObject,
+        reportRegularWork,
+        reportAccidentWork,
+        reportInvestigationDate,
+        reportSupervisor,
+        reportPreventionPlan
     } = req.body;
 
     if (!incidentId) {
@@ -961,7 +1095,73 @@ app.post('/api/classifications', async (req, res) => {
             .input('govIsSevere', sql.Bit, govIsSevere ? 1 : 0)
             .input('govImmediateDate', sql.DateTime, govImmediateDate ? new Date(govImmediateDate) : null)
             .input('govImmediateReceiver', sql.NVarChar(100), govImmediateReceiver || null)
-            .input('userId', sql.VarChar(50), userId || 'System');
+            .input('userId', sql.VarChar(50), userId || 'System')
+            
+            // New inputs
+            .input('govCompanyNo', sql.NVarChar(50), govCompanyNo || null)
+            .input('govBizNo', sql.NVarChar(50), govBizNo || null)
+            .input('govEmpCount', sql.Int, govEmpCount ? parseInt(govEmpCount, 10) : null)
+            .input('govIndustryType', sql.NVarChar(100), govIndustryType || null)
+            .input('govLocation', sql.NVarChar(300), govLocation || null)
+            .input('govSubcontractorName', sql.NVarChar(100), govSubcontractorName || null)
+            .input('govSubcontractorNo', sql.NVarChar(50), govSubcontractorNo || null)
+            .input('govDispatcherName', sql.NVarChar(100), govDispatcherName || null)
+            .input('govDispatcherNo', sql.NVarChar(50), govDispatcherNo || null)
+            .input('govConstructionClient', sql.NVarChar(100), govConstructionClient || null)
+            .input('govConstructionPrimaryName', sql.NVarChar(100), govConstructionPrimaryName || null)
+            .input('govConstructionPrimaryNo', sql.NVarChar(50), govConstructionPrimaryNo || null)
+            .input('govConstructionName', sql.NVarChar(200), govConstructionName || null)
+            .input('govConstructionType', sql.NVarChar(100), govConstructionType || null)
+            .input('govConstructionRatio', sql.Decimal(5, 2), govConstructionRatio ? parseFloat(govConstructionRatio) : null)
+            .input('govConstructionAmount', sql.Decimal(18, 0), govConstructionAmount ? parseFloat(govConstructionAmount) : null)
+            .input('victimRrn', sql.NVarChar(20), victimRrn || null)
+            .input('victimAddress', sql.NVarChar(300), victimAddress || null)
+            .input('victimPhone', sql.NVarChar(50), victimPhone || null)
+            .input('victimNationality', sql.NVarChar(50), victimNationality || null)
+            .input('victimVisa', sql.NVarChar(50), victimVisa || null)
+            .input('victimOccupation', sql.NVarChar(100), victimOccupation || null)
+            .input('victimEntryDate', sql.Date, victimEntryDate ? new Date(victimEntryDate) : null)
+            .input('victimSameWorkDuration', sql.NVarChar(50), victimSameWorkDuration || null)
+            .input('victimEmploymentType', sql.NVarChar(50), victimEmploymentType || null)
+            .input('victimWorkShift', sql.NVarChar(50), victimWorkShift || null)
+            .input('injuryType', sql.NVarChar(100), injuryType || null)
+            .input('govAbsenceDays', sql.Int, govAbsenceDays ? parseInt(govAbsenceDays, 10) : null)
+            .input('govIsFatal', sql.Bit, govIsFatal ? 1 : 0)
+            .input('accidentDateTime', sql.DateTime, accidentDateTime ? new Date(accidentDateTime) : null)
+            .input('accidentLocation', sql.NVarChar(200), accidentLocation || null)
+            .input('accidentWorkType', sql.NVarChar(200), accidentWorkType || null)
+            .input('accidentSituation', sql.NVarChar(sql.MAX), accidentSituation || null)
+            .input('accidentCause', sql.NVarChar(sql.MAX), accidentCause || null)
+            .input('preventPlan', sql.NVarChar(sql.MAX), preventPlan || null)
+            .input('govRequestTechSupport', sql.Bit, govRequestTechSupport ? 1 : 0)
+            .input('govAgreePrivacy', sql.Bit, govAgreePrivacy ? 1 : 0)
+            .input('govWriterName', sql.NVarChar(50), govWriterName || null)
+            .input('govWriterPhone', sql.NVarChar(50), govWriterPhone || null)
+            .input('govWriteDate', sql.Date, govWriteDate ? new Date(govWriteDate) : null)
+            .input('reportProduct', sql.NVarChar(100), reportProduct || null)
+            .input('reportDeptProcess', sql.NVarChar(100), reportDeptProcess || null)
+            .input('reportCasualtyFatal', sql.Int, reportCasualtyFatal ? parseInt(reportCasualtyFatal, 10) : null)
+            .input('reportCasualtyInjured', sql.Int, reportCasualtyInjured ? parseInt(reportCasualtyInjured, 10) : null)
+            .input('reportWorkShiftType', sql.NVarChar(50), reportWorkShiftType || null)
+            .input('reportWorkShiftCount', sql.Int, reportWorkShiftCount ? parseInt(reportWorkShiftCount, 10) : null)
+            .input('reportAccidentType', sql.NVarChar(100), reportAccidentType || null)
+            .input('reportCauseObject', sql.NVarChar(100), reportCauseObject || null)
+            .input('hexaWho', sql.NVarChar(200), hexaWho || null)
+            .input('hexaWhen', sql.NVarChar(200), hexaWhen || null)
+            .input('hexaWhere', sql.NVarChar(200), hexaWhere || null)
+            .input('hexaWhat', sql.NVarChar(200), hexaWhat || null)
+            .input('hexaHow', sql.NVarChar(sql.MAX), hexaHow || null)
+            .input('hexaWhy', sql.NVarChar(sql.MAX), hexaWhy || null)
+            .input('reportOccurTimeType', sql.NVarChar(50), reportOccurTimeType || null)
+            .input('reportLaborLossType', sql.NVarChar(50), reportLaborLossType || null)
+            .input('reportRestrictedWorkDays', sql.Int, reportRestrictedWorkDays ? parseInt(reportRestrictedWorkDays, 10) : null)
+            .input('reportVictimPosition', sql.NVarChar(50), reportVictimPosition || null)
+            .input('reportHarmObject', sql.NVarChar(100), reportHarmObject || null)
+            .input('reportRegularWork', sql.NVarChar(sql.MAX), reportRegularWork || null)
+            .input('reportAccidentWork', sql.NVarChar(sql.MAX), reportAccidentWork || null)
+            .input('reportInvestigationDate', sql.Date, reportInvestigationDate ? new Date(reportInvestigationDate) : null)
+            .input('reportSupervisor', sql.NVarChar(50), reportSupervisor || null)
+            .input('reportPreventionPlan', sql.NVarChar(sql.MAX), reportPreventionPlan || null);
 
         // Check if Classification record exists
         const checkResult = await request.query('SELECT 1 FROM IncidentClassifications WHERE IncidentID = @incidentId');
@@ -1007,6 +1207,70 @@ app.post('/api/classifications', async (req, res) => {
                     GovIsSevere = @govIsSevere,
                     GovImmediateDate = @govImmediateDate,
                     GovImmediateReceiver = @govImmediateReceiver,
+                    GovCompanyNo = @govCompanyNo,
+                    GovBizNo = @govBizNo,
+                    GovEmpCount = @govEmpCount,
+                    GovIndustryType = @govIndustryType,
+                    GovLocation = @govLocation,
+                    GovSubcontractorName = @govSubcontractorName,
+                    GovSubcontractorNo = @govSubcontractorNo,
+                    GovDispatcherName = @govDispatcherName,
+                    GovDispatcherNo = @govDispatcherNo,
+                    GovConstructionClient = @govConstructionClient,
+                    GovConstructionPrimaryName = @govConstructionPrimaryName,
+                    GovConstructionPrimaryNo = @govConstructionPrimaryNo,
+                    GovConstructionName = @govConstructionName,
+                    GovConstructionType = @govConstructionType,
+                    GovConstructionRatio = @govConstructionRatio,
+                    GovConstructionAmount = @govConstructionAmount,
+                    VictimRrn = @victimRrn,
+                    VictimAddress = @victimAddress,
+                    VictimPhone = @victimPhone,
+                    VictimNationality = @victimNationality,
+                    VictimVisa = @victimVisa,
+                    VictimOccupation = @victimOccupation,
+                    VictimEntryDate = @victimEntryDate,
+                    VictimSameWorkDuration = @victimSameWorkDuration,
+                    VictimEmploymentType = @victimEmploymentType,
+                    VictimWorkShift = @victimWorkShift,
+                    InjuryType = @injuryType,
+                    GovAbsenceDays = @govAbsenceDays,
+                    GovIsFatal = @govIsFatal,
+                    AccidentDateTime = @accidentDateTime,
+                    AccidentLocation = @accidentLocation,
+                    AccidentWorkType = @accidentWorkType,
+                    AccidentSituation = @accidentSituation,
+                    AccidentCause = @accidentCause,
+                    PreventPlan = @preventPlan,
+                    GovRequestTechSupport = @govRequestTechSupport,
+                    GovAgreePrivacy = @govAgreePrivacy,
+                    GovWriterName = @govWriterName,
+                    GovWriterPhone = @govWriterPhone,
+                    GovWriteDate = @govWriteDate,
+                    ReportProduct = @reportProduct,
+                    ReportDeptProcess = @reportDeptProcess,
+                    ReportCasualtyFatal = @reportCasualtyFatal,
+                    ReportCasualtyInjured = @reportCasualtyInjured,
+                    ReportWorkShiftType = @reportWorkShiftType,
+                    ReportWorkShiftCount = @reportWorkShiftCount,
+                    ReportAccidentType = @reportAccidentType,
+                    ReportCauseObject = @reportCauseObject,
+                    HexaWho = @hexaWho,
+                    HexaWhen = @hexaWhen,
+                    HexaWhere = @hexaWhere,
+                    HexaWhat = @hexaWhat,
+                    HexaHow = @hexaHow,
+                    HexaWhy = @hexaWhy,
+                    ReportOccurTimeType = @reportOccurTimeType,
+                    ReportLaborLossType = @reportLaborLossType,
+                    ReportRestrictedWorkDays = @reportRestrictedWorkDays,
+                    ReportVictimPosition = @reportVictimPosition,
+                    ReportHarmObject = @reportHarmObject,
+                    ReportRegularWork = @reportRegularWork,
+                    ReportAccidentWork = @reportAccidentWork,
+                    ReportInvestigationDate = @reportInvestigationDate,
+                    ReportSupervisor = @reportSupervisor,
+                    ReportPreventionPlan = @reportPreventionPlan,
                     ClassificationStatus = 'COMPLETED',
                     ModUserID = @userId,
                     ModDateTime = GETDATE()
@@ -1024,6 +1288,20 @@ app.post('/api/classifications', async (req, res) => {
                     ImproveManager, ImproveDueDate, ImproveCompleteDate, ImproveFilePath,
                     GovReportTarget, GovReportStatus, GovAgency, GovKOSHADueDate, GovDelayReason,
                     GovAccidentCategory, GovDocAttachmentPath, GovIsSevere, GovImmediateDate, GovImmediateReceiver,
+                    GovCompanyNo, GovBizNo, GovEmpCount, GovIndustryType, GovLocation,
+                    GovSubcontractorName, GovSubcontractorNo, GovDispatcherName, GovDispatcherNo,
+                    GovConstructionClient, GovConstructionPrimaryName, GovConstructionPrimaryNo,
+                    GovConstructionName, GovConstructionType, GovConstructionRatio, GovConstructionAmount,
+                    VictimRrn, VictimAddress, VictimPhone, VictimNationality, VictimVisa, VictimOccupation,
+                    VictimEntryDate, VictimSameWorkDuration, VictimEmploymentType, VictimWorkShift, InjuryType,
+                    GovAbsenceDays, GovIsFatal, AccidentDateTime, AccidentLocation, AccidentWorkType,
+                    AccidentSituation, AccidentCause, PreventPlan, GovRequestTechSupport, GovAgreePrivacy,
+                    GovWriterName, GovWriterPhone, GovWriteDate, ReportProduct, ReportDeptProcess,
+                    ReportCasualtyFatal, ReportCasualtyInjured, ReportWorkShiftType, ReportWorkShiftCount,
+                    ReportAccidentType, ReportCauseObject, HexaWho, HexaWhen, HexaWhere, HexaWhat,
+                    HexaHow, HexaWhy, ReportOccurTimeType, ReportLaborLossType, ReportRestrictedWorkDays,
+                    ReportVictimPosition, ReportHarmObject, ReportRegularWork, ReportAccidentWork,
+                    ReportInvestigationDate, ReportSupervisor, ReportPreventionPlan,
                     ClassificationStatus, RegUserID, RegDateTime
                 ) VALUES (
                     @incidentId, @causalFactorCode, @accidentTypeCode, @internalAccidentType,
@@ -1035,6 +1313,20 @@ app.post('/api/classifications', async (req, res) => {
                     @improveManager, @improveDueDate, @improveCompleteDate, @improveFilePath,
                     @govReportTarget, @govReportStatus, @govAgency, @govKOSHADueDate, @govDelayReason,
                     @govAccidentCategory, @govDocAttachmentPath, @govIsSevere, @govImmediateDate, @govImmediateReceiver,
+                    @govCompanyNo, @govBizNo, @govEmpCount, @govIndustryType, @govLocation,
+                    @govSubcontractorName, @govSubcontractorNo, @govDispatcherName, @govDispatcherNo,
+                    @govConstructionClient, @govConstructionPrimaryName, @govConstructionPrimaryNo,
+                    @govConstructionName, @govConstructionType, @govConstructionRatio, @govConstructionAmount,
+                    @victimRrn, @victimAddress, @victimPhone, @victimNationality, @victimVisa, @victimOccupation,
+                    @victimEntryDate, @victimSameWorkDuration, @victimEmploymentType, @victimWorkShift, @injuryType,
+                    @govAbsenceDays, @govIsFatal, @accidentDateTime, @accidentLocation, @accidentWorkType,
+                    @accidentSituation, @accidentCause, @preventPlan, @govRequestTechSupport, @govAgreePrivacy,
+                    @govWriterName, @govWriterPhone, @govWriteDate, @reportProduct, @reportDeptProcess,
+                    @reportCasualtyFatal, @reportCasualtyInjured, @reportWorkShiftType, @reportWorkShiftCount,
+                    @reportAccidentType, @reportCauseObject, @hexaWho, @hexaWhen, @hexaWhere, @hexaWhat,
+                    @hexaHow, @hexaWhy, @reportOccurTimeType, @reportLaborLossType, @reportRestrictedWorkDays,
+                    @reportVictimPosition, @reportHarmObject, @reportRegularWork, @reportAccidentWork,
+                    @reportInvestigationDate, @reportSupervisor, @reportPreventionPlan,
                     'COMPLETED', @userId, GETDATE()
                 )
             `);

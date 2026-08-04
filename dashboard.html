@@ -178,235 +178,651 @@
                     <span id="dDayBadge" class="status-badge" style="background-color: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; font-size: 11px;">산재조사표 D-Day</span>
                   </h4>
 
-                  <div class="form-group" style="margin-bottom: 12px;">
-                    <label class="form-label-desc">재해형태 입력 (기속요인/발생형태)</label>
-                    <input type="text" id="compAccidentTypeCode" class="form-input-custom" placeholder="예: 끼임·감김, 부딪힘, 넘어짐">
+                  <!-- Tab Navigation -->
+                  <div class="compliance-tabs" style="display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px;">
+                    <button type="button" class="comp-tab-btn active" data-tab="general" style="flex: 1; padding: 10px; border: none; background: none; border-bottom: 3px solid #2563eb; font-weight: 700; font-size: 12px; color: #1e3a8a; cursor: pointer; transition: all 0.2s;">일반 및 대관 기본</button>
+                    <button type="button" class="comp-tab-btn" data-tab="gov" style="flex: 1; padding: 10px; border: none; background: none; border-bottom: 3px solid transparent; font-weight: 500; font-size: 12px; color: #64748b; cursor: pointer; transition: all 0.2s;">산업재해조사표</button>
+                    <button type="button" class="comp-tab-btn" data-tab="report" style="flex: 1; padding: 10px; border: none; background: none; border-bottom: 3px solid transparent; font-weight: 500; font-size: 12px; color: #64748b; cursor: pointer; transition: all 0.2s;">사고경위보고서</button>
                   </div>
 
-                  <!-- 1. 재해 구분 및 인적 정보 -->
-                  <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
-                    <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
-                      <span>👤</span> 1. 재해 처리 구분 및 인적 정보
-                    </h5>
-                    <div class="form-group" style="margin-bottom: 10px;">
-                      <label class="form-label-desc">재해 처리 유형 세분화</label>
-                      <select id="compInternalDtlStatus" class="form-input-custom" style="width: 100%;">
-                        <option value="일반공상">일반공상</option>
-                        <option value="특별공상">특별공상</option>
-                        <option value="산재(공단승인)">산재(공단승인)</option>
-                        <option value="단순처치(약제/자체)">단순처치(약제/자체)</option>
-                        <option value="사고조사 중">사고조사 중</option>
-                        <option value="비재해(기각)">비재해(기각)</option>
-                      </select>
+                  <!-- Tab 1: General & Reporting Base -->
+                  <div id="compTabGeneral" class="comp-tab-pane">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                      <label class="form-label-desc">재해형태 입력 (기속요인/발생형태)</label>
+                      <input type="text" id="compAccidentTypeCode" class="form-input-custom" placeholder="예: 끼임·감김, 부딪힘, 넘어짐">
                     </div>
-                    <div class="compliance-grid-2col">
-                      <div class="form-group">
-                        <label class="form-label-desc">재해자 성명</label>
-                        <input type="text" id="compVictimName" class="form-input-custom" placeholder="예: 홍길동">
-                      </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">소속 구분</label>
-                        <select id="compVictimAffiliation" class="form-input-custom">
-                          <option value="직영">직영</option>
-                          <option value="수급업체">수급업체</option>
-                          <option value="협력사">협력사</option>
+
+                    <!-- 1. 재해 구분 및 인적 정보 -->
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+                        <span>👤</span> 1. 재해 처리 구분 및 인적 정보
+                      </h5>
+                      <div class="form-group" style="margin-bottom: 10px;">
+                        <label class="form-label-desc">재해 처리 유형 세분화</label>
+                        <select id="compInternalDtlStatus" class="form-input-custom" style="width: 100%;">
+                          <option value="일반공상">일반공상</option>
+                          <option value="특별공상">특별공상</option>
+                          <option value="산재(공단승인)">산재(공단승인)</option>
+                          <option value="단순처치(약제/자체)">단순처치(약제/자체)</option>
+                          <option value="사고조사 중">사고조사 중</option>
+                          <option value="비재해(기각)">비재해(기각)</option>
                         </select>
                       </div>
+                      <div class="compliance-grid-2col">
+                        <div class="form-group">
+                          <label class="form-label-desc">재해자 성명</label>
+                          <input type="text" id="compVictimName" class="form-input-custom" placeholder="예: 홍길동">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">소속 구분</label>
+                          <select id="compVictimAffiliation" class="form-input-custom">
+                            <option value="직영">직영</option>
+                            <option value="수급업체">수급업체</option>
+                            <option value="협력사">협력사</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="compliance-grid-3col" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">직무/공정</label>
+                          <input type="text" id="compVictimJob" class="form-input-custom" placeholder="예: 용접/가공">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">근속연수(년)</label>
+                          <input type="number" id="compVictimServiceYears" class="form-input-custom" min="0" placeholder="예: 3">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">연령(세)</label>
+                          <input type="number" id="compVictimAge" class="form-input-custom" min="0" placeholder="예: 42">
+                        </div>
+                      </div>
                     </div>
-                    <div class="compliance-grid-3col" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;">
-                      <div class="form-group">
-                        <label class="form-label-desc">직무/공정</label>
-                        <input type="text" id="compVictimJob" class="form-input-custom" placeholder="예: 용접/가공">
+
+                    <!-- 2. 손상 및 의료/비용 정보 -->
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+                        <span>🏥</span> 2. 손상·의료 및 비용 세부 정보
+                      </h5>
+                      <div class="compliance-grid-2col">
+                        <div class="form-group">
+                          <label class="form-label-desc">부상 부위</label>
+                          <input type="text" id="compInjuryPart" class="form-input-custom" placeholder="예: 오른손 손가락, 다리">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">부상 정도</label>
+                          <select id="compInjurySeverity" class="form-input-custom">
+                            <option value="경상">경상</option>
+                            <option value="중상">중상</option>
+                            <option value="휴업">휴업</option>
+                            <option value="통원">통원</option>
+                            <option value="사망">사망</option>
+                          </select>
+                        </div>
                       </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">근속연수(년)</label>
-                        <input type="number" id="compVictimServiceYears" class="form-input-custom" min="0" placeholder="예: 3">
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">진료/입원 병원명</label>
+                          <input type="text" id="compHospitalName" class="form-input-custom" placeholder="예: 한국병원">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">전치 진단 (주)</label>
+                          <input type="number" id="compDiagnosisWeeks" class="form-input-custom" min="0" placeholder="예: 3">
+                        </div>
                       </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">연령(세)</label>
-                        <input type="number" id="compVictimAge" class="form-input-custom" min="0" placeholder="예: 42">
+                      
+                      <div style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+                        <label class="form-label-desc" style="font-weight: 700; color: #1e293b;">💰 보상 및 세부 비용</label>
+                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                          <div class="form-group">
+                            <label class="form-label-desc">치료비 (원)</label>
+                            <input type="number" id="compCostMedical" class="form-input-custom" value="0" min="0">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">위로금/합의금 (원)</label>
+                            <input type="number" id="compCostSettlement" class="form-input-custom" value="0" min="0">
+                          </div>
+                        </div>
+                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                          <div class="form-group">
+                            <label class="form-label-desc">휴업수당 (원)</label>
+                            <input type="number" id="compCostAbsence" class="form-input-custom" value="0" min="0">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">내부 보상 총액 (원)</label>
+                            <input type="number" id="compInternalAmount" class="form-input-custom" value="0" min="0">
+                          </div>
+                        </div>
+                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                          <div class="form-group">
+                            <label class="form-label-desc">실제 휴업 일수 (일)</label>
+                            <input type="number" id="compAbsenceDays" class="form-input-custom" value="0" min="0">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">보고 휴업 일수 (일)</label>
+                            <input type="number" id="compReportedAbsenceDays" class="form-input-custom" value="0" min="0">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 3. 대관 보고 판정 및 제출 준수 -->
+                    <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #1e40af; display: flex; align-items: center; gap: 6px;">
+                        <span>🏛️</span> 3. 대관 보고 판정 및 제출 준수 (고용노동부/공단)
+                      </h5>
+                      <div class="compliance-grid-2col">
+                        <div class="form-group">
+                          <label class="form-label-desc">대관 보고 대상 여부</label>
+                          <select id="compGovReportTarget" class="form-input-custom">
+                            <option value="보고 대상(휴업 3일 이상/중대재해)">보고 대상(휴업 3일 이상/중대재해)</option>
+                            <option value="보고 미대상(3일 미만)">보고 미대상(3일 미만)</option>
+                            <option value="검토 중">검토 중</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">보고 진행 상태</label>
+                          <select id="compGovReportStatus" class="form-input-custom">
+                            <option value="미보고">미보고</option>
+                            <option value="보고 작성 중">보고 작성 중</option>
+                            <option value="제출 완료">제출 완료</option>
+                            <option value="지연 제출">지연 제출</option>
+                            <option value="해당 없음">해당 없음</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">보고 접수 기관</label>
+                          <select id="compGovAgency" class="form-input-custom">
+                            <option value="고용노동부(노동청)">고용노동부(노동청)</option>
+                            <option value="근로복지공단">근로복지공단</option>
+                            <option value="소방서·경찰서">소방서·경찰서</option>
+                            <option value="기타">기타</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">산재조사표 제출 마감일 (1개월)</label>
+                          <input type="date" id="compGovKOSHADueDate" class="form-input-custom" readonly style="background-color: #f1f5f9;">
+                        </div>
+                      </div>
+
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">근로복지공단 승인/접수번호</label>
+                          <input type="text" id="compComWelNo" class="form-input-custom" placeholder="예: 2026-A01">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">노동청 실측 조사표 제출일</label>
+                          <input type="date" id="compLaborMinistryDate" class="form-input-custom">
+                        </div>
+                      </div>
+
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">대관 보고용 재해 원인/형태 분류</label>
+                        <input type="text" id="compGovAccidentCategory" class="form-input-custom" placeholder="노동청 표준 분류 (예: 기속요인: 지게차, 발생형태: 협착)">
+                      </div>
+
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">보고 지연 사유 (마감 초과 시 작성)</label>
+                        <textarea id="compGovDelayReason" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 재해자 진단 지연 또는 목격자 확인 지체로 인한 사유"></textarea>
+                      </div>
+                    </div>
+
+                    <!-- 4. 중대재해 및 즉시 보고 관리 -->
+                    <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #991b1b; display: flex; align-items: center; gap: 6px;">
+                        <span>🚨</span> 4. 중대재해 지정 및 즉시 보고 (지체 없이)
+                      </h5>
+                      <div class="form-group" style="margin-bottom: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #b91c1c; cursor: pointer;">
+                          <input type="checkbox" id="compGovIsSevere" style="width: 18px; height: 18px; accent-color: #dc2626;">
+                          중대재해 대상 (사망 1명 이상 / 3개월 이상 요양 2명 이상 등)
+                        </label>
+                      </div>
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">즉시 보고 일시 (지체없이)</label>
+                          <input type="datetime-local" id="compGovImmediateDate" class="form-input-custom">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">수신 기관/담당자 명</label>
+                          <input type="text" id="compGovImmediateReceiver" class="form-input-custom" placeholder="예: 서울지방고용노동청 산재예방지도과 김감독관">
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 5. 개선 조치 및 첨부 서류 -->
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+                        <span>🛠️</span> 5. 개선 조치 및 증빙 서류 첨부
+                      </h5>
+                      <div class="compliance-grid-3col" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">조치 담당자</label>
+                          <input type="text" id="compImproveManager" class="form-input-custom" placeholder="담당자 성명">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">완료 예정일</label>
+                          <input type="date" id="compImproveDueDate" class="form-input-custom">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">완료 조치일</label>
+                          <input type="date" id="compImproveCompleteDate" class="form-input-custom">
+                        </div>
+                      </div>
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">대관 제출 서류 첨부 (산재조사표, 요양신청서, 진단서 등)</label>
+                        <input type="file" id="compGovDocAttachment" class="form-input-custom" style="padding: 4px;">
+                        <input type="hidden" id="compGovDocAttachmentPath">
+                        <div id="compGovDocPreview" style="font-size: 11px; color: #2563eb; margin-top: 4px;"></div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- 2. 손상 및 의료/비용 정보 -->
-                  <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
-                    <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
-                      <span>🏥</span> 2. 손상·의료 및 비용 세부 정보
-                    </h5>
-                    <div class="compliance-grid-2col">
-                      <div class="form-group">
-                        <label class="form-label-desc">부상 부위</label>
-                        <input type="text" id="compInjuryPart" class="form-input-custom" placeholder="예: 오른손 손가락, 다리">
+                  <!-- Tab 2: Industrial Accident Report (산업재해조사표) -->
+                  <div id="compTabGov" class="comp-tab-pane" style="display: none;">
+                    <!-- I. 사업장 정보 -->
+                    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #166534; display: flex; align-items: center; gap: 6px;">
+                        <span>🏢</span> Ⅰ. 사업장 정보 (산업재해조사표)
+                      </h5>
+                      <div class="compliance-grid-2col">
+                        <div class="form-group">
+                          <label class="form-label-desc">산재관리번호 (사업개시번호)</label>
+                          <input type="text" id="compGovCompanyNo" class="form-input-custom" placeholder="예: 123-45-67890-0">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">사업자등록번호</label>
+                          <input type="text" id="compGovBizNo" class="form-input-custom" placeholder="예: 123-45-67890">
+                        </div>
                       </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">부상 정도</label>
-                        <select id="compInjurySeverity" class="form-input-custom">
-                          <option value="경상">경상</option>
-                          <option value="중상">중상</option>
-                          <option value="휴업">휴업</option>
-                          <option value="통원">통원</option>
-                          <option value="사망">사망</option>
-                        </select>
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">근로자 수</label>
+                          <input type="number" id="compGovEmpCount" class="form-input-custom" min="0" placeholder="명">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">업종</label>
+                          <input type="text" id="compGovIndustryType" class="form-input-custom" placeholder="예: 제조업">
+                        </div>
+                      </div>
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">소재지</label>
+                        <input type="text" id="compGovLocation" class="form-input-custom" placeholder="상세 주소 입력">
+                      </div>
+                      
+                      <div style="margin-top: 10px; border-top: 1px dashed #bbf7d0; padding-top: 8px;">
+                        <label class="form-label-desc" style="font-weight: 700; color: #166534;">👥 수급인 / 파견근로자 정보</label>
+                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                          <div class="form-group">
+                            <label class="form-label-desc">원도급인 사업장명</label>
+                            <input type="text" id="compGovSubcontractorName" class="form-input-custom" placeholder="원도급 사업장명">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">원도급인 산재관리번호</label>
+                            <input type="text" id="compGovSubcontractorNo" class="form-input-custom" placeholder="산재관리번호">
+                          </div>
+                        </div>
+                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                          <div class="form-group">
+                            <label class="form-label-desc">파견사업주 사업장명</label>
+                            <input type="text" id="compGovDispatcherName" class="form-input-custom" placeholder="파견사업장명">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">파견사업주 산재관리번호</label>
+                            <input type="text" id="compGovDispatcherNo" class="form-input-custom" placeholder="산재관리번호">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style="margin-top: 10px; border-top: 1px dashed #bbf7d0; padding-top: 8px;">
+                        <label class="form-label-desc" style="font-weight: 700; color: #166534;">🏗️ 건설업 관련 작성 정보 (해당 시)</label>
+                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                          <div class="form-group">
+                            <label class="form-label-desc">발주자</label>
+                            <input type="text" id="compGovConstructionClient" class="form-input-custom" placeholder="민간/국가/공공기관 등">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">원수급 사업장명</label>
+                            <input type="text" id="compGovConstructionPrimaryName" class="form-input-custom" placeholder="원수급 사업장명">
+                          </div>
+                        </div>
+                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                          <div class="form-group">
+                            <label class="form-label-desc">원수급 산재관리번호</label>
+                            <input type="text" id="compGovConstructionPrimaryNo" class="form-input-custom" placeholder="원수급 관리번호">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">공사현장 명</label>
+                            <input type="text" id="compGovConstructionName" class="form-input-custom" placeholder="현장 명">
+                          </div>
+                        </div>
+                        <div class="compliance-grid-3col" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 6px;">
+                          <div class="form-group">
+                            <label class="form-label-desc">공사종류</label>
+                            <input type="text" id="compGovConstructionType" class="form-input-custom" placeholder="예: 토목, 건축">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">공정률 (%)</label>
+                            <input type="number" id="compGovConstructionRatio" class="form-input-custom" min="0" max="100" step="0.01" placeholder="%">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">공사금액 (백만원)</label>
+                            <input type="number" id="compGovConstructionAmount" class="form-input-custom" min="0" placeholder="백만원">
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div class="compliance-grid-2col" style="margin-top: 8px;">
-                      <div class="form-group">
-                        <label class="form-label-desc">진료/입원 병원명</label>
-                        <input type="text" id="compHospitalName" class="form-input-custom" placeholder="예: 한국병원">
+
+                    <!-- II. 재해자 정보 -->
+                    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #166534; display: flex; align-items: center; gap: 6px;">
+                        <span>👤</span> Ⅱ. 재해자 정보 (산업재해조사표)
+                      </h5>
+                      <div class="compliance-grid-2col">
+                        <div class="form-group">
+                          <label class="form-label-desc">주민등록번호 앞 7자리 (-******)</label>
+                          <input type="text" id="compVictimRrn" class="form-input-custom" placeholder="예: 900101-1">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">휴대전화 번호</label>
+                          <input type="text" id="compVictimPhone" class="form-input-custom" placeholder="예: 010-1234-5678">
+                        </div>
                       </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">전치 진단 (주)</label>
-                        <input type="number" id="compDiagnosisWeeks" class="form-input-custom" min="0" placeholder="예: 3">
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">주소</label>
+                        <input type="text" id="compVictimAddress" class="form-input-custom" placeholder="실거주지 주소">
+                      </div>
+                      <div class="compliance-grid-3col" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">국적</label>
+                          <input type="text" id="compVictimNationality" class="form-input-custom" placeholder="예: 내국인 / 대한민국">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">체류자격</label>
+                          <input type="text" id="compVictimVisa" class="form-input-custom" placeholder="예: E-9 (외국인)">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">직업</label>
+                          <input type="text" id="compVictimOccupation" class="form-input-custom" placeholder="예: 프레스조작원">
+                        </div>
+                      </div>
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">입사일</label>
+                          <input type="date" id="compVictimEntryDate" class="form-input-custom">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">동종업무 근속기간</label>
+                          <input type="text" id="compVictimSameWorkDuration" class="form-input-custom" placeholder="예: 2년 5개월">
+                        </div>
+                      </div>
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">고용형태</label>
+                          <select id="compVictimEmploymentType" class="form-input-custom">
+                            <option value="상용">상용</option>
+                            <option value="임시">임시</option>
+                            <option value="일용">일용</option>
+                            <option value="무급가족종사자">무급가족종사자</option>
+                            <option value="자영업자">자영업자</option>
+                            <option value="그 밖의 사항">그 밖의 사항</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">근무형태</label>
+                          <select id="compVictimWorkShift" class="form-input-custom">
+                            <option value="정상">정상</option>
+                            <option value="2교대">2교대</option>
+                            <option value="3교대">3교대</option>
+                            <option value="4교대">4교대</option>
+                            <option value="시간제">시간제</option>
+                            <option value="그 밖의 사항">그 밖의 사항</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">상해종류 (질병명)</label>
+                          <input type="text" id="compInjuryType" class="form-input-custom" placeholder="예: 골절, 베임, 절단">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">휴업예상일수 (일)</label>
+                          <input type="number" id="compGovAbsenceDays" class="form-input-custom" min="0" placeholder="예: 14">
+                        </div>
+                      </div>
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #166534; cursor: pointer;">
+                          <input type="checkbox" id="compGovIsFatal" style="width: 18px; height: 18px; accent-color: #22c55e;">
+                          사망 여부 (사망 시 체크)
+                        </label>
                       </div>
                     </div>
-                    
-                    <div style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
-                      <label class="form-label-desc" style="font-weight: 700; color: #1e293b;">💰 보상 및 세부 비용</label>
-                      <div class="compliance-grid-2col" style="margin-top: 6px;">
+
+                    <!-- III. 재해발생 개요 및 원인 -->
+                    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #166534; display: flex; align-items: center; gap: 6px;">
+                        <span>📝</span> Ⅲ. 재해발생 개요 및 원인
+                      </h5>
+                      <div class="compliance-grid-2col">
                         <div class="form-group">
-                          <label class="form-label-desc">치료비 (원)</label>
-                          <input type="number" id="compCostMedical" class="form-input-custom" value="0" min="0">
+                          <label class="form-label-desc">발생일시</label>
+                          <input type="datetime-local" id="compAccidentDateTime" class="form-input-custom">
                         </div>
                         <div class="form-group">
-                          <label class="form-label-desc">위로금/합의금 (원)</label>
-                          <input type="number" id="compCostSettlement" class="form-input-custom" value="0" min="0">
-                        </div>
-                      </div>
-                      <div class="compliance-grid-2col" style="margin-top: 6px;">
-                        <div class="form-group">
-                          <label class="form-label-desc">휴업수당 (원)</label>
-                          <input type="number" id="compCostAbsence" class="form-input-custom" value="0" min="0">
-                        </div>
-                        <div class="form-group">
-                          <label class="form-label-desc">내부 보상 총액 (원)</label>
-                          <input type="number" id="compInternalAmount" class="form-input-custom" value="0" min="0">
+                          <label class="form-label-desc">발생장소 (공정포함)</label>
+                          <input type="text" id="compAccidentLocation" class="form-input-custom" placeholder="예: 생산1팀 사출공정">
                         </div>
                       </div>
-                      <div class="compliance-grid-2col" style="margin-top: 6px;">
-                        <div class="form-group">
-                          <label class="form-label-desc">실제 휴업 일수 (일)</label>
-                          <input type="number" id="compAbsenceDays" class="form-input-custom" value="0" min="0">
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">재해관련 작업유형</label>
+                        <input type="text" id="compAccidentWorkType" class="form-input-custom" placeholder="예: 사출기 금형 점검 작업 중">
+                      </div>
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">재해발생 당시 상황</label>
+                        <textarea id="compAccidentSituation" class="form-textarea-custom" style="height: 60px; min-height: 60px;" placeholder="기계 점검 중 동료 작업자가 조작 스위치를 가동하여 금형 사이에 끼임"></textarea>
+                      </div>
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">재해발생원인</label>
+                        <textarea id="compAccidentCause" class="form-textarea-custom" style="height: 60px; min-height: 60px;" placeholder="방호장치 미작동 및 작업자 간 의사소통 부족으로 기계 임의 기동"></textarea>
+                      </div>
+                    </div>
+
+                    <!-- IV. 재발방지계획 및 기타 동의 -->
+                    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #166534; display: flex; align-items: center; gap: 6px;">
+                        <span>🛡️</span> Ⅳ. 재발방지계획 및 기타
+                      </h5>
+                      <div class="form-group">
+                        <label class="form-label-desc">재발방지계획</label>
+                        <textarea id="compPreventPlan" class="form-textarea-custom" style="height: 70px; min-height: 70px;" placeholder="1. 인터록 센서 추가 설치 및 이중화 작동 점검&#10;2. 점검 시 LOTO (Lock-Out Tag-Out) 절차 수립 및 철저 준수"></textarea>
+                      </div>
+                      <div class="form-group" style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #166534; cursor: pointer;">
+                          <input type="checkbox" id="compGovRequestTechSupport" style="width: 16px; height: 16px; accent-color: #22c55e;">
+                          안전보건공단 즉시 기술지원 서비스 요청
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #166534; cursor: pointer;">
+                          <input type="checkbox" id="compGovAgreePrivacy" style="width: 16px; height: 16px; accent-color: #22c55e;">
+                          산재보험급여 신청방법 안내를 위한 개인정보 활용 동의
+                        </label>
+                      </div>
+                      <div style="margin-top: 10px; border-top: 1px dashed #bbf7d0; padding-top: 8px;">
+                        <label class="form-label-desc" style="font-weight: 700; color: #166534;">✍️ 보고서 서명 및 작성 메타데이터</label>
+                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                          <div class="form-group">
+                            <label class="form-label-desc">작성자 성명</label>
+                            <input type="text" id="compGovWriterName" class="form-input-custom" placeholder="성명">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">작성자 전화번호</label>
+                            <input type="text" id="compGovWriterPhone" class="form-input-custom" placeholder="전화번호">
+                          </div>
                         </div>
-                        <div class="form-group">
-                          <label class="form-label-desc">보고 휴업 일수 (일)</label>
-                          <input type="number" id="compReportedAbsenceDays" class="form-input-custom" value="0" min="0">
+                        <div class="form-group" style="margin-top: 6px;">
+                          <label class="form-label-desc">작성일자</label>
+                          <input type="date" id="compGovWriteDate" class="form-input-custom">
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <!-- 3. 대관 보고 판정 및 제출 준수 -->
-                  <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
-                    <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #1e40af; display: flex; align-items: center; gap: 6px;">
-                      <span>🏛️</span> 3. 대관 보고 판정 및 제출 준수 (고용노동부/공단)
-                    </h5>
-                    <div class="compliance-grid-2col">
-                      <div class="form-group">
-                        <label class="form-label-desc">대관 보고 대상 여부</label>
-                        <select id="compGovReportTarget" class="form-input-custom">
-                          <option value="보고 대상(휴업 3일 이상/중대재해)">보고 대상(휴업 3일 이상/중대재해)</option>
-                          <option value="보고 미대상(3일 미만)">보고 미대상(3일 미만)</option>
-                          <option value="검토 중">검토 중</option>
-                        </select>
+                  <!-- Tab 3: Accident Report (사고경위보고서) -->
+                  <div id="compTabReport" class="comp-tab-pane" style="display: none;">
+                    <!-- I. 일반 경위 및 인적 피해 -->
+                    <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px;">
+                        <span>📋</span> Ⅰ. 일반 경위 및 인적 피해
+                      </h5>
+                      <div class="compliance-grid-2col">
+                        <div class="form-group">
+                          <label class="form-label-desc">생산품</label>
+                          <input type="text" id="compReportProduct" class="form-input-custom" placeholder="예: ECOTHANE HT-85A-16 생산">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">발생 (부서/공정)</label>
+                          <input type="text" id="compReportDeptProcess" class="form-input-custom" placeholder="예: 생산 1팀 (TPU 생산)">
+                        </div>
                       </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">보고 진행 상태</label>
-                        <select id="compGovReportStatus" class="form-input-custom">
-                          <option value="미보고">미보고</option>
-                          <option value="보고 작성 중">보고 작성 중</option>
-                          <option value="제출 완료">제출 완료</option>
-                          <option value="지연 제출">지연 제출</option>
-                          <option value="해당 없음">해당 없음</option>
-                        </select>
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">인적피해 사망자 수</label>
+                          <input type="number" id="compReportCasualtyFatal" class="form-input-custom" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">인적피해 부상자 수</label>
+                          <input type="number" id="compReportCasualtyInjured" class="form-input-custom" min="0" value="0">
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div class="compliance-grid-2col" style="margin-top: 8px;">
-                      <div class="form-group">
-                        <label class="form-label-desc">보고 접수 기관</label>
-                        <select id="compGovAgency" class="form-input-custom">
-                          <option value="고용노동부(노동청)">고용노동부(노동청)</option>
-                          <option value="근로복지공단">근로복지공단</option>
-                          <option value="소방서·경찰서">소방서·경찰서</option>
-                          <option value="기타">기타</option>
-                        </select>
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">작업형태</label>
+                          <select id="compReportWorkShiftType" class="form-input-custom">
+                            <option value="단독">단독</option>
+                            <option value="복수">복수</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">복수 작업자 인원수 (해당 시)</label>
+                          <input type="number" id="compReportWorkShiftCount" class="form-input-custom" min="0" placeholder="명">
+                        </div>
                       </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">산재조사표 제출 마감일 (1개월)</label>
-                        <input type="date" id="compGovKOSHADueDate" class="form-input-custom" readonly style="background-color: #f1f5f9;">
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">발생형태</label>
+                          <input type="text" id="compReportAccidentType" class="form-input-custom" placeholder="예: 베임 사고, 끼임 사고">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">기인물(원인물)</label>
+                          <input type="text" id="compReportCauseObject" class="form-input-custom" placeholder="예: 커터칼, 사출기 금형">
+                        </div>
                       </div>
                     </div>
 
-                    <div class="compliance-grid-2col" style="margin-top: 8px;">
-                      <div class="form-group">
-                        <label class="form-label-desc">근로복지공단 승인/접수번호</label>
-                        <input type="text" id="compComWelNo" class="form-input-custom" placeholder="예: 2026-A01">
+                    <!-- II. 재해발생과정 육하원칙 -->
+                    <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px;">
+                        <span>🔍</span> Ⅱ. 재해발생과정 및 원인 (육하원칙)
+                      </h5>
+                      <div class="compliance-grid-2col">
+                        <div class="form-group">
+                          <label class="form-label-desc">누가</label>
+                          <input type="text" id="compHexaWho" class="form-input-custom" placeholder="예: TPU 생산지원 일용직 이삭이">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">언제</label>
+                          <input type="text" id="compHexaWhen" class="form-input-custom" placeholder="예: 2019년 02월 23일 오전 08시 40분 경">
+                        </div>
                       </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">노동청 실측 조사표 제출일</label>
-                        <input type="date" id="compLaborMinistryDate" class="form-input-custom">
+                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">어디서</label>
+                          <input type="text" id="compHexaWhere" class="form-input-custom" placeholder="예: TPU 생산 제품 포장 중에">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">무엇을</label>
+                          <input type="text" id="compHexaWhat" class="form-input-custom" placeholder="예: 제품 포장 지대 밀봉 박음질 작업 중에">
+                        </div>
+                      </div>
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">어떻게</label>
+                        <textarea id="compHexaHow" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 지대 컷팅을 위하여 커터 칼로 작업하다 칼이 미끄러져 왼쪽 팔 안쪽 부위를 베임"></textarea>
+                      </div>
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">왜</label>
+                        <textarea id="compHexaWhy" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 지대 미봉합 부위가 잘 잘리지 않자 힘을 주어 컷팅하다가 균형을 잃음"></textarea>
                       </div>
                     </div>
 
-                    <div class="form-group" style="margin-top: 8px;">
-                      <label class="form-label-desc">대관 보고용 재해 원인/형태 분류</label>
-                      <input type="text" id="compGovAccidentCategory" class="form-input-custom" placeholder="노동청 표준 분류 (예: 기속요인: 지게차, 발생형태: 협착)">
-                    </div>
-
-                    <div class="form-group" style="margin-top: 8px;">
-                      <label class="form-label-desc">보고 지연 사유 (마감 초과 시 작성)</label>
-                      <textarea id="compGovDelayReason" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 재해자 진단 지연 또는 목격자 확인 지체로 인한 사유"></textarea>
-                    </div>
-                  </div>
-
-                  <!-- 4. 중대재해 및 즉시 보고 관리 -->
-                  <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
-                    <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #991b1b; display: flex; align-items: center; gap: 6px;">
-                      <span>🚨</span> 4. 중대재해 지정 및 즉시 보고 (지체 없이)
-                    </h5>
-                    <div class="form-group" style="margin-bottom: 8px;">
-                      <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #b91c1c; cursor: pointer;">
-                        <input type="checkbox" id="compGovIsSevere" style="width: 18px; height: 18px; accent-color: #dc2626;">
-                        중대재해 대상 (사망 1명 이상 / 3개월 이상 요양 2명 이상 등)
-                      </label>
-                    </div>
-                    <div class="compliance-grid-2col" style="margin-top: 8px;">
-                      <div class="form-group">
-                        <label class="form-label-desc">즉시 보고 일시 (지체없이)</label>
-                        <input type="datetime-local" id="compGovImmediateDate" class="form-input-custom">
+                    <!-- III. 재해자 및 조치 상세 -->
+                    <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px;">
+                        <span>🛡️</span> Ⅲ. 재해자 및 조치 상세
+                      </h5>
+                      <div class="compliance-grid-2col">
+                        <div class="form-group">
+                          <label class="form-label-desc">발생시점</label>
+                          <select id="compReportOccurTimeType" class="form-input-custom">
+                            <option value="정규작업">정규작업</option>
+                            <option value="식사휴식">식사휴식</option>
+                            <option value="작업전">작업전</option>
+                            <option value="출퇴근">출퇴근</option>
+                            <option value="휴일근무">휴일근무</option>
+                            <option value="시간외근무">시간외근무</option>
+                            <option value="기타">기타</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">근로손실 구분</label>
+                          <select id="compReportLaborLossType" class="form-input-custom">
+                            <option value="부상">부상</option>
+                            <option value="사망">사망</option>
+                            <option value="재해당일 계속작업">재해당일 계속작업</option>
+                            <option value="재해당일 작업불가">재해당일 작업불가</option>
+                          </select>
+                        </div>
                       </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">수신 기관/담당자 명</label>
-                        <input type="text" id="compGovImmediateReceiver" class="form-input-custom" placeholder="예: 서울지방고용노동청 산재예방지도과 김감독관">
+                      <div class="compliance-grid-3col" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;">
+                        <div class="form-group">
+                          <label class="form-label-desc">직위</label>
+                          <input type="text" id="compReportVictimPosition" class="form-input-custom" placeholder="예: 사원, 주임, 대리">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">가해물</label>
+                          <input type="text" id="compReportHarmObject" class="form-input-custom" placeholder="예: 커터칼">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label-desc">제한을 받은 일수</label>
+                          <input type="number" id="compReportRestrictedWorkDays" class="form-input-custom" min="0" value="0">
+                        </div>
                       </div>
-                    </div>
-                  </div>
-
-                  <!-- 5. 개선 조치 및 첨부 서류 -->
-                  <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
-                    <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
-                      <span>🛠️</span> 5. 개선 조치 및 증빙 서류 첨부
-                    </h5>
-                    <div class="compliance-grid-3col" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-                      <div class="form-group">
-                        <label class="form-label-desc">조치 담당자</label>
-                        <input type="text" id="compImproveManager" class="form-input-custom" placeholder="담당자 성명">
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">평상시 수행 작업공정 내용</label>
+                        <textarea id="compReportRegularWork" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 포장 작업, 지대 적재"></textarea>
                       </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">완료 예정일</label>
-                        <input type="date" id="compImproveDueDate" class="form-input-custom">
+                      <div class="form-group" style="margin-top: 8px;">
+                        <label class="form-label-desc">재해당시 수행 작업공정 내용</label>
+                        <textarea id="compReportAccidentWork" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 포장 지대 컷팅 작업"></textarea>
                       </div>
-                      <div class="form-group">
-                        <label class="form-label-desc">완료 조치일</label>
-                        <input type="date" id="compImproveCompleteDate" class="form-input-custom">
+                      
+                      <div style="margin-top: 10px; border-top: 1px dashed #fef3c7; padding-top: 8px;">
+                        <label class="form-label-desc" style="font-weight: 700; color: #92400e;">✍️ 조사 감독자 및 보고서용 대책</label>
+                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                          <div class="form-group">
+                            <label class="form-label-desc">조사일시</label>
+                            <input type="date" id="compReportInvestigationDate" class="form-input-custom">
+                          </div>
+                          <div class="form-group">
+                            <label class="form-label-desc">관리감독자(사고조사자)</label>
+                            <input type="text" id="compReportSupervisor" class="form-input-custom" placeholder="조사자 성명">
+                          </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 6px;">
+                          <label class="form-label-desc">재발방지대책 (경위서용)</label>
+                          <textarea id="compReportPreventionPlan" class="form-textarea-custom" style="height: 60px; min-height: 60px;" placeholder="예: 컷팅 전용 안전 칼 사용 준수, 칼 사용 시 보호장갑(방검장갑) 의무 착용"></textarea>
+                        </div>
                       </div>
-                    </div>
-                    <div class="form-group" style="margin-top: 8px;">
-                      <label class="form-label-desc">대관 제출 서류 첨부 (산재조사표, 요양신청서, 진단서 등)</label>
-                      <input type="file" id="compGovDocAttachment" class="form-input-custom" style="padding: 4px;">
-                      <input type="hidden" id="compGovDocAttachmentPath">
-                      <div id="compGovDocPreview" style="font-size: 11px; color: #2563eb; margin-top: 4px;"></div>
                     </div>
                   </div>
 
@@ -1158,7 +1574,8 @@
           incidentTitle: document.getElementById('regIncidentTitle').value.trim(),
           incidentContent: document.getElementById('regIncidentContent').value.trim(),
           photoPath: regPhotoUrl,
-          docPath: regDocUrl
+          docPath: regDocUrl,
+          remarks: document.getElementById('regRemarks').value.trim()
         };
 
         try {
@@ -1348,6 +1765,38 @@
       const complianceFormPanel = document.getElementById('complianceFormPanel');
       const compSelectedTitle = document.getElementById('compSelectedTitle');
 
+      // Switch Selected Accident details tab
+      window.switchCompTab = (tabName) => {
+        document.querySelectorAll('.compliance-tabs .comp-tab-btn').forEach(btn => {
+          if (btn.getAttribute('data-tab') === tabName) {
+            btn.classList.add('active');
+            btn.style.borderBottomColor = '#2563eb';
+            btn.style.fontWeight = '700';
+            btn.style.color = '#1e3a8a';
+          } else {
+            btn.classList.remove('active');
+            btn.style.borderBottomColor = 'transparent';
+            btn.style.fontWeight = '500';
+            btn.style.color = '#64748b';
+          }
+        });
+        document.querySelectorAll('.comp-tab-pane').forEach(pane => {
+          if (pane.id === 'compTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)) {
+            pane.style.display = 'block';
+          } else {
+            pane.style.display = 'none';
+          }
+        });
+      };
+
+      // Bind tab buttons
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('comp-tab-btn')) {
+          const tabName = e.target.getAttribute('data-tab');
+          switchCompTab(tabName);
+        }
+      });
+
       const renderComplianceForm = (inc) => {
         complianceEmptyState.style.display = 'none';
         complianceFormPanel.style.display = 'block';
@@ -1385,6 +1834,75 @@
         document.getElementById('compImproveManager').value = inc.ImproveManager || '';
         document.getElementById('compImproveDueDate').value = inc.ImproveDueDate ? inc.ImproveDueDate.split('T')[0] : '';
         document.getElementById('compImproveCompleteDate').value = inc.ImproveCompleteDate ? inc.ImproveCompleteDate.split('T')[0] : '';
+        document.getElementById('compGovDocAttachmentPath').value = inc.GovDocAttachmentPath || '';
+
+        // Tab 2: Industrial Accident Report specific fields
+        document.getElementById('compGovCompanyNo').value = inc.GovCompanyNo || '';
+        document.getElementById('compGovBizNo').value = inc.GovBizNo || '';
+        document.getElementById('compGovEmpCount').value = (inc.GovEmpCount !== null && inc.GovEmpCount !== undefined) ? inc.GovEmpCount : '';
+        document.getElementById('compGovIndustryType').value = inc.GovIndustryType || '';
+        document.getElementById('compGovLocation').value = inc.GovLocation || '';
+        document.getElementById('compGovSubcontractorName').value = inc.GovSubcontractorName || '';
+        document.getElementById('compGovSubcontractorNo').value = inc.GovSubcontractorNo || '';
+        document.getElementById('compGovDispatcherName').value = inc.GovDispatcherName || '';
+        document.getElementById('compGovDispatcherNo').value = inc.GovDispatcherNo || '';
+        document.getElementById('compGovConstructionClient').value = inc.GovConstructionClient || '';
+        document.getElementById('compGovConstructionPrimaryName').value = inc.GovConstructionPrimaryName || '';
+        document.getElementById('compGovConstructionPrimaryNo').value = inc.GovConstructionPrimaryNo || '';
+        document.getElementById('compGovConstructionName').value = inc.GovConstructionName || '';
+        document.getElementById('compGovConstructionType').value = inc.GovConstructionType || '';
+        document.getElementById('compGovConstructionRatio').value = (inc.GovConstructionRatio !== null && inc.GovConstructionRatio !== undefined) ? inc.GovConstructionRatio : '';
+        document.getElementById('compGovConstructionAmount').value = (inc.GovConstructionAmount !== null && inc.GovConstructionAmount !== undefined) ? inc.GovConstructionAmount : '';
+        document.getElementById('compVictimRrn').value = inc.VictimRrn || '';
+        document.getElementById('compVictimPhone').value = inc.VictimPhone || '';
+        document.getElementById('compVictimAddress').value = inc.VictimAddress || '';
+        document.getElementById('compVictimNationality').value = inc.VictimNationality || '';
+        document.getElementById('compVictimVisa').value = inc.VictimVisa || '';
+        document.getElementById('compVictimOccupation').value = inc.VictimOccupation || '';
+        document.getElementById('compVictimEntryDate').value = inc.VictimEntryDate ? inc.VictimEntryDate.split('T')[0] : '';
+        document.getElementById('compVictimSameWorkDuration').value = inc.VictimSameWorkDuration || '';
+        document.getElementById('compVictimEmploymentType').value = inc.VictimEmploymentType || '상용';
+        document.getElementById('compVictimWorkShift').value = inc.VictimWorkShift || '정상';
+        document.getElementById('compInjuryType').value = inc.InjuryType || '';
+        document.getElementById('compGovAbsenceDays').value = (inc.GovAbsenceDays !== null && inc.GovAbsenceDays !== undefined) ? inc.GovAbsenceDays : '';
+        document.getElementById('compGovIsFatal').checked = !!inc.GovIsFatal;
+        document.getElementById('compAccidentDateTime').value = inc.AccidentDateTime ? inc.AccidentDateTime.substring(0, 16) : '';
+        document.getElementById('compAccidentLocation').value = inc.AccidentLocation || '';
+        document.getElementById('compAccidentWorkType').value = inc.AccidentWorkType || '';
+        document.getElementById('compAccidentSituation').value = inc.AccidentSituation || '';
+        document.getElementById('compAccidentCause').value = inc.AccidentCause || '';
+        document.getElementById('compPreventPlan').value = inc.PreventPlan || '';
+        document.getElementById('compGovRequestTechSupport').checked = !!inc.GovRequestTechSupport;
+        document.getElementById('compGovAgreePrivacy').checked = !!inc.GovAgreePrivacy;
+        document.getElementById('compGovWriterName').value = inc.GovWriterName || '';
+        document.getElementById('compGovWriterPhone').value = inc.GovWriterPhone || '';
+        document.getElementById('compGovWriteDate').value = inc.GovWriteDate ? inc.GovWriteDate.split('T')[0] : '';
+
+        // Tab 3: Accident Report specific fields
+        document.getElementById('compReportProduct').value = inc.ReportProduct || '';
+        document.getElementById('compReportDeptProcess').value = inc.ReportDeptProcess || '';
+        document.getElementById('compReportCasualtyFatal').value = (inc.ReportCasualtyFatal !== null && inc.ReportCasualtyFatal !== undefined) ? inc.ReportCasualtyFatal : 0;
+        document.getElementById('compReportCasualtyInjured').value = (inc.ReportCasualtyInjured !== null && inc.ReportCasualtyInjured !== undefined) ? inc.ReportCasualtyInjured : 0;
+        document.getElementById('compReportWorkShiftType').value = inc.ReportWorkShiftType || '단독';
+        document.getElementById('compReportWorkShiftCount').value = (inc.ReportWorkShiftCount !== null && inc.ReportWorkShiftCount !== undefined) ? inc.ReportWorkShiftCount : '';
+        document.getElementById('compReportAccidentType').value = inc.ReportAccidentType || '';
+        document.getElementById('compReportCauseObject').value = inc.ReportCauseObject || '';
+        document.getElementById('compHexaWho').value = inc.HexaWho || '';
+        document.getElementById('compHexaWhen').value = inc.HexaWhen || '';
+        document.getElementById('compHexaWhere').value = inc.HexaWhere || '';
+        document.getElementById('compHexaWhat').value = inc.HexaWhat || '';
+        document.getElementById('compHexaHow').value = inc.HexaHow || '';
+        document.getElementById('compHexaWhy').value = inc.HexaWhy || '';
+        document.getElementById('compReportOccurTimeType').value = inc.ReportOccurTimeType || '정규작업';
+        document.getElementById('compReportLaborLossType').value = inc.ReportLaborLossType || '부상';
+        document.getElementById('compReportRestrictedWorkDays').value = (inc.ReportRestrictedWorkDays !== null && inc.ReportRestrictedWorkDays !== undefined) ? inc.ReportRestrictedWorkDays : 0;
+        document.getElementById('compReportVictimPosition').value = inc.ReportVictimPosition || '';
+        document.getElementById('compReportHarmObject').value = inc.ReportHarmObject || '';
+        document.getElementById('compReportRegularWork').value = inc.ReportRegularWork || '';
+        document.getElementById('compReportAccidentWork').value = inc.ReportAccidentWork || '';
+        document.getElementById('compReportInvestigationDate').value = inc.ReportInvestigationDate ? inc.ReportInvestigationDate.split('T')[0] : '';
+        document.getElementById('compReportSupervisor').value = inc.ReportSupervisor || '';
+        document.getElementById('compReportPreventionPlan').value = inc.ReportPreventionPlan || '';
         document.getElementById('compGovDocAttachmentPath').value = inc.GovDocAttachmentPath || '';
         
         const previewDiv = document.getElementById('compGovDocPreview');
@@ -1502,6 +2020,74 @@
         const improveCompleteDate = document.getElementById('compImproveCompleteDate').value;
         const govDocAttachmentPath = document.getElementById('compGovDocAttachmentPath').value;
 
+        // Tab 2: Industrial Accident Report specific fields
+        const govCompanyNo = document.getElementById('compGovCompanyNo').value.trim();
+        const govBizNo = document.getElementById('compGovBizNo').value.trim();
+        const govEmpCount = document.getElementById('compGovEmpCount').value ? parseInt(document.getElementById('compGovEmpCount').value, 10) : null;
+        const govIndustryType = document.getElementById('compGovIndustryType').value.trim();
+        const govLocation = document.getElementById('compGovLocation').value.trim();
+        const govSubcontractorName = document.getElementById('compGovSubcontractorName').value.trim();
+        const govSubcontractorNo = document.getElementById('compGovSubcontractorNo').value.trim();
+        const govDispatcherName = document.getElementById('compGovDispatcherName').value.trim();
+        const govDispatcherNo = document.getElementById('compGovDispatcherNo').value.trim();
+        const govConstructionClient = document.getElementById('compGovConstructionClient').value.trim();
+        const govConstructionPrimaryName = document.getElementById('compGovConstructionPrimaryName').value.trim();
+        const govConstructionPrimaryNo = document.getElementById('compGovConstructionPrimaryNo').value.trim();
+        const govConstructionName = document.getElementById('compGovConstructionName').value.trim();
+        const govConstructionType = document.getElementById('compGovConstructionType').value.trim();
+        const govConstructionRatio = document.getElementById('compGovConstructionRatio').value ? parseFloat(document.getElementById('compGovConstructionRatio').value) : null;
+        const govConstructionAmount = document.getElementById('compGovConstructionAmount').value ? parseFloat(document.getElementById('compGovConstructionAmount').value) : null;
+        const victimRrn = document.getElementById('compVictimRrn').value.trim();
+        const victimPhone = document.getElementById('compVictimPhone').value.trim();
+        const victimAddress = document.getElementById('compVictimAddress').value.trim();
+        const victimNationality = document.getElementById('compVictimNationality').value.trim();
+        const victimVisa = document.getElementById('compVictimVisa').value.trim();
+        const victimOccupation = document.getElementById('compVictimOccupation').value.trim();
+        const victimEntryDate = document.getElementById('compVictimEntryDate').value || null;
+        const victimSameWorkDuration = document.getElementById('compVictimSameWorkDuration').value.trim();
+        const victimEmploymentType = document.getElementById('compVictimEmploymentType').value;
+        const victimWorkShift = document.getElementById('compVictimWorkShift').value;
+        const injuryType = document.getElementById('compInjuryType').value.trim();
+        const govAbsenceDays = document.getElementById('compGovAbsenceDays').value ? parseInt(document.getElementById('compGovAbsenceDays').value, 10) : null;
+        const govIsFatal = document.getElementById('compGovIsFatal').checked;
+        const accidentDateTime = document.getElementById('compAccidentDateTime').value || null;
+        const accidentLocation = document.getElementById('compAccidentLocation').value.trim();
+        const accidentWorkType = document.getElementById('compAccidentWorkType').value.trim();
+        const accidentSituation = document.getElementById('compAccidentSituation').value.trim();
+        const accidentCause = document.getElementById('compAccidentCause').value.trim();
+        const preventPlan = document.getElementById('compPreventPlan').value.trim();
+        const govRequestTechSupport = document.getElementById('compGovRequestTechSupport').checked;
+        const govAgreePrivacy = document.getElementById('compGovAgreePrivacy').checked;
+        const govWriterName = document.getElementById('compGovWriterName').value.trim();
+        const govWriterPhone = document.getElementById('compGovWriterPhone').value.trim();
+        const govWriteDate = document.getElementById('compGovWriteDate').value || null;
+
+        // Tab 3: Accident Report specific fields
+        const reportProduct = document.getElementById('compReportProduct').value.trim();
+        const reportDeptProcess = document.getElementById('compReportDeptProcess').value.trim();
+        const reportCasualtyFatal = document.getElementById('compReportCasualtyFatal').value ? parseInt(document.getElementById('compReportCasualtyFatal').value, 10) : 0;
+        const reportCasualtyInjured = document.getElementById('compReportCasualtyInjured').value ? parseInt(document.getElementById('compReportCasualtyInjured').value, 10) : 0;
+        const reportWorkShiftType = document.getElementById('compReportWorkShiftType').value;
+        const reportWorkShiftCount = document.getElementById('compReportWorkShiftCount').value ? parseInt(document.getElementById('compReportWorkShiftCount').value, 10) : null;
+        const reportAccidentType = document.getElementById('compReportAccidentType').value.trim();
+        const reportCauseObject = document.getElementById('compReportCauseObject').value.trim();
+        const hexaWho = document.getElementById('compHexaWho').value.trim();
+        const hexaWhen = document.getElementById('compHexaWhen').value.trim();
+        const hexaWhere = document.getElementById('compHexaWhere').value.trim();
+        const hexaWhat = document.getElementById('compHexaWhat').value.trim();
+        const hexaHow = document.getElementById('compHexaHow').value.trim();
+        const hexaWhy = document.getElementById('compHexaWhy').value.trim();
+        const reportOccurTimeType = document.getElementById('compReportOccurTimeType').value;
+        const reportLaborLossType = document.getElementById('compReportLaborLossType').value;
+        const reportRestrictedWorkDays = document.getElementById('compReportRestrictedWorkDays').value ? parseInt(document.getElementById('compReportRestrictedWorkDays').value, 10) : 0;
+        const reportVictimPosition = document.getElementById('compReportVictimPosition').value.trim();
+        const reportHarmObject = document.getElementById('compReportHarmObject').value.trim();
+        const reportRegularWork = document.getElementById('compReportRegularWork').value.trim();
+        const reportAccidentWork = document.getElementById('compReportAccidentWork').value.trim();
+        const reportInvestigationDate = document.getElementById('compReportInvestigationDate').value || null;
+        const reportSupervisor = document.getElementById('compReportSupervisor').value.trim();
+        const reportPreventionPlan = document.getElementById('compReportPreventionPlan').value.trim();
+
         // Determine status flags
         const laborMinistryStatus = laborMinistryReportDate ? 'REPORTED' : 'NOT_REPORTED';
         const comWelApprovalStatus = comWelAccidentNo ? 'APPROVED' : 'NOT_SUBMITTED';
@@ -1535,7 +2121,6 @@
           improveManager,
           improveDueDate,
           improveCompleteDate,
-          improveFilePath: govDocAttachmentPath,
           govReportTarget,
           govReportStatus,
           govAgency,
@@ -1546,7 +2131,75 @@
           govIsSevere,
           govImmediateDate,
           govImmediateReceiver,
-          userId: managerName
+          userId: managerName,
+
+          // Tab 2 parameters
+          govCompanyNo,
+          govBizNo,
+          govEmpCount,
+          govIndustryType,
+          govLocation,
+          govSubcontractorName,
+          govSubcontractorNo,
+          govDispatcherName,
+          govDispatcherNo,
+          govConstructionClient,
+          govConstructionPrimaryName,
+          govConstructionPrimaryNo,
+          govConstructionName,
+          govConstructionType,
+          govConstructionRatio,
+          govConstructionAmount,
+          victimRrn,
+          victimPhone,
+          victimAddress,
+          victimNationality,
+          victimVisa,
+          victimOccupation,
+          victimEntryDate,
+          victimSameWorkDuration,
+          victimEmploymentType,
+          victimWorkShift,
+          injuryType,
+          govAbsenceDays,
+          govIsFatal,
+          accidentDateTime,
+          accidentLocation,
+          accidentWorkType,
+          accidentSituation,
+          accidentCause,
+          preventPlan,
+          govRequestTechSupport,
+          govAgreePrivacy,
+          govWriterName,
+          govWriterPhone,
+          govWriteDate,
+
+          // Tab 3 parameters
+          reportProduct,
+          reportDeptProcess,
+          reportCasualtyFatal,
+          reportCasualtyInjured,
+          reportWorkShiftType,
+          reportWorkShiftCount,
+          reportAccidentType,
+          reportCauseObject,
+          hexaWho,
+          hexaWhen,
+          hexaWhere,
+          hexaWhat,
+          hexaHow,
+          hexaWhy,
+          reportOccurTimeType,
+          reportLaborLossType,
+          reportRestrictedWorkDays,
+          reportVictimPosition,
+          reportHarmObject,
+          reportRegularWork,
+          reportAccidentWork,
+          reportInvestigationDate,
+          reportSupervisor,
+          reportPreventionPlan
         };
 
         try {
