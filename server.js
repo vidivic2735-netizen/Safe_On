@@ -51,19 +51,403 @@ const dbConfig = {
     server: '14.43.220.172',
     port: 17433,
     database: 'SafetyManagement',
-    connectionTimeout: 15000, // 15 seconds
-    requestTimeout: 15000,    // 15 seconds
+    connectionTimeout: 45000, // 45 seconds
+    requestTimeout: 45000,    // 45 seconds
     options: {
         encrypt: false,
         trustServerCertificate: true,
-        connectTimeout: 15000  // tedious connection timeout
+        connectTimeout: 45000  // tedious connection timeout
     }
 };
 
 let activePool = null;
+let connectionPromise = null;
 let dbOffline = false;
 let lastConnectAttempt = 0;
 const RECONNECT_COOLDOWN = 30000; // 30 seconds
+
+let localIncidents = [
+    {
+        IncidentID: 23,
+        CompanyBranch: '(주)무사제조업체',
+        IncidentType: 'INJURY',
+        OccurrenceDateTime: '2026-08-04T06:18:00.000Z',
+        Location: '공장 현관',
+        EquipmentName: '현관문',
+        IncidentTitle: '현관문 끼임사고',
+        IncidentContent: '현관문에 손가락이 끼임.',
+        AttachmentPath1: null,
+        AttachmentPath2: null,
+        Remarks: null,
+        RegUserID: 'testuser@test.com',
+        RegDateTime: '2026-08-04T15:19:51.903Z',
+        ClassificationID: 15,
+        CausalFactorCode: null,
+        AccidentTypeCode: null,
+        InternalAccidentType: 'NOT_APPLIED',
+        InternalCompAmount: 0,
+        ActualAbsenceDays: 0,
+        ReportedAbsenceDays: 0,
+        ExternalReportType: 'NOT_REQUIRED',
+        ComWelAccidentNo: null,
+        ComWelApprovalStatus: 'NOT_SUBMITTED',
+        ComWelApprovalDate: null,
+        LaborMinistryStatus: 'NOT_REPORTED',
+        LaborMinistryReportDate: null,
+        ClassificationStatus: 'UNCLASSIFIED',
+        VictimName: null,
+        VictimAffiliation: null,
+        VictimJob: null,
+        VictimServiceYears: null,
+        VictimAge: null,
+        InjuryPart: null,
+        InjurySeverity: null,
+        HospitalName: null,
+        DiagnosisWeeks: null
+    },
+    {
+        IncidentID: 22,
+        CompanyBranch: '(주)무사제조업체',
+        IncidentType: 'INJURY',
+        OccurrenceDateTime: '2026-08-04T06:18:00.000Z',
+        Location: '공장 현관',
+        EquipmentName: '현관문',
+        IncidentTitle: '현관문 끼임사고',
+        IncidentContent: '현관문에 손가락이 끼임.',
+        AttachmentPath1: null,
+        AttachmentPath2: null,
+        Remarks: null,
+        RegUserID: 'testuser@test.com',
+        RegDateTime: '2026-08-04T15:19:51.903Z',
+        ClassificationID: null,
+        CausalFactorCode: null,
+        AccidentTypeCode: null,
+        InternalAccidentType: 'NOT_APPLIED',
+        InternalCompAmount: 0,
+        ActualAbsenceDays: 0,
+        ReportedAbsenceDays: 0,
+        ExternalReportType: 'NOT_REQUIRED',
+        ComWelAccidentNo: null,
+        ComWelApprovalStatus: 'NOT_SUBMITTED',
+        ComWelApprovalDate: null,
+        LaborMinistryStatus: 'NOT_REPORTED',
+        LaborMinistryReportDate: null,
+        ClassificationStatus: 'UNCLASSIFIED',
+        VictimName: null,
+        VictimAffiliation: null,
+        VictimJob: null,
+        VictimServiceYears: null,
+        VictimAge: null,
+        InjuryPart: null,
+        InjurySeverity: null,
+        HospitalName: null,
+        DiagnosisWeeks: null
+    },
+    {
+        IncidentID: 21,
+        CompanyBranch: '(주)무사제조업체',
+        IncidentType: 'INJURY',
+        OccurrenceDateTime: '2026-08-04T03:00:00.000Z',
+        Location: '게이트 A',
+        EquipmentName: '차량 게이트',
+        IncidentTitle: '테스트 게이트 끼임 사고',
+        IncidentContent: '게이트 닫힘 시 끼임.',
+        AttachmentPath1: null,
+        AttachmentPath2: null,
+        Remarks: null,
+        RegUserID: 'testuser@test.com',
+        RegDateTime: '2026-08-04T15:17:04.057Z',
+        ClassificationID: 14,
+        CausalFactorCode: null,
+        AccidentTypeCode: null,
+        InternalAccidentType: 'NOT_APPLIED',
+        InternalCompAmount: 0,
+        ActualAbsenceDays: 0,
+        ReportedAbsenceDays: 0,
+        ExternalReportType: 'NOT_REQUIRED',
+        ComWelAccidentNo: null,
+        ComWelApprovalStatus: 'NOT_SUBMITTED',
+        ComWelApprovalDate: null,
+        LaborMinistryStatus: 'NOT_REPORTED',
+        LaborMinistryReportDate: null,
+        ClassificationStatus: 'UNCLASSIFIED',
+        VictimName: null,
+        VictimAffiliation: null,
+        VictimJob: null,
+        VictimServiceYears: null,
+        VictimAge: null,
+        InjuryPart: null,
+        InjurySeverity: null,
+        HospitalName: null,
+        DiagnosisWeeks: null
+    },
+    {
+        IncidentID: 20,
+        CompanyBranch: '(주)무사제조업체',
+        IncidentType: 'INJURY',
+        OccurrenceDateTime: '2026-08-04T03:00:00.000Z',
+        Location: '게이트 A',
+        EquipmentName: '차량 게이트',
+        IncidentTitle: '테스트 게이트 끼임 사고',
+        IncidentContent: '게이트 닫힘 시 끼임.',
+        AttachmentPath1: null,
+        AttachmentPath2: null,
+        Remarks: null,
+        RegUserID: 'testuser@test.com',
+        RegDateTime: '2026-08-04T15:10:04.470Z',
+        ClassificationID: 13,
+        CausalFactorCode: null,
+        AccidentTypeCode: null,
+        InternalAccidentType: 'NOT_APPLIED',
+        InternalCompAmount: 0,
+        ActualAbsenceDays: 0,
+        ReportedAbsenceDays: 0,
+        ExternalReportType: 'NOT_REQUIRED',
+        ComWelAccidentNo: null,
+        ComWelApprovalStatus: 'NOT_SUBMITTED',
+        ComWelApprovalDate: null,
+        LaborMinistryStatus: 'NOT_REPORTED',
+        LaborMinistryReportDate: null,
+        ClassificationStatus: 'UNCLASSIFIED',
+        VictimName: null,
+        VictimAffiliation: null,
+        VictimJob: null,
+        VictimServiceYears: null,
+        VictimAge: null,
+        InjuryPart: null,
+        InjurySeverity: null,
+        HospitalName: null,
+        DiagnosisWeeks: null
+    },
+    {
+        IncidentID: 12,
+        CompanyBranch: '테스트 회사',
+        IncidentType: 'INJURY',
+        OccurrenceDateTime: '2026-07-23T07:56:00.000Z',
+        Location: '물류창고',
+        EquipmentName: '지게차',
+        IncidentTitle: '부딪힘',
+        IncidentContent: '지게차와 작업자 충돌.',
+        AttachmentPath1: null,
+        AttachmentPath2: null,
+        Remarks: null,
+        RegUserID: 'testuser@test.com',
+        RegDateTime: '2026-07-23T16:58:36.857Z',
+        ClassificationID: 12,
+        CausalFactorCode: 'FACTOR_01',
+        AccidentTypeCode: 'ACC_01',
+        InternalAccidentType: 'COMP_COMPANY',
+        InternalCompAmount: 500000,
+        ActualAbsenceDays: 5,
+        ReportedAbsenceDays: 5,
+        ExternalReportType: 'WELFARE_ONLY',
+        ComWelAccidentNo: 'CW12345',
+        ComWelApprovalStatus: 'APPROVED',
+        ComWelApprovalDate: '2026-07-25',
+        LaborMinistryStatus: 'NOT_REPORTED',
+        LaborMinistryReportDate: null,
+        ClassificationStatus: 'COMPLETED',
+        VictimName: '김혜수',
+        VictimAffiliation: '직영',
+        VictimJob: '지게차 운전원',
+        VictimServiceYears: 2,
+        VictimAge: 32,
+        InjuryPart: '발가락 골절',
+        InjurySeverity: '경상',
+        HospitalName: '서울정형외과',
+        DiagnosisWeeks: 4
+    },
+    {
+        IncidentID: 11,
+        CompanyBranch: '본사',
+        IncidentType: 'INJURY',
+        OccurrenceDateTime: '2026-07-21T03:00:00.000Z',
+        Location: '본사 정문',
+        EquipmentName: '정문 자동문',
+        IncidentTitle: '현관문 끼임사고',
+        IncidentContent: '자동문 센서 오작동으로 끼임.',
+        AttachmentPath1: null,
+        AttachmentPath2: null,
+        Remarks: null,
+        RegUserID: 'testuser@test.com',
+        RegDateTime: '2026-07-21T16:55:39.640Z',
+        ClassificationID: 11,
+        CausalFactorCode: 'FACTOR_02',
+        AccidentTypeCode: 'ACC_02',
+        InternalAccidentType: 'COMP_COMPANY',
+        InternalCompAmount: 300000,
+        ActualAbsenceDays: 3,
+        ReportedAbsenceDays: 3,
+        ExternalReportType: 'WELFARE_ONLY',
+        ComWelAccidentNo: 'CW12346',
+        ComWelApprovalStatus: 'APPROVED',
+        ComWelApprovalDate: '2026-07-23',
+        LaborMinistryStatus: 'NOT_REPORTED',
+        LaborMinistryReportDate: null,
+        ClassificationStatus: 'COMPLETED',
+        VictimName: '홍길동',
+        VictimAffiliation: '협력업체',
+        VictimJob: '경비원',
+        VictimServiceYears: 5,
+        VictimAge: 45,
+        InjuryPart: '손목 염좌',
+        InjurySeverity: '경상',
+        HospitalName: '서울정형외과',
+        DiagnosisWeeks: 2
+    },
+    {
+        IncidentID: 10,
+        CompanyBranch: '테스트 회사',
+        IncidentType: 'INJURY',
+        OccurrenceDateTime: '2026-07-21T07:03:00.000Z',
+        Location: '공장 정문',
+        EquipmentName: '문',
+        IncidentTitle: '현관문 끼임사고',
+        IncidentContent: '문 닫힘 시 끼임.',
+        AttachmentPath1: null,
+        AttachmentPath2: null,
+        Remarks: null,
+        RegUserID: 'testuser@test.com',
+        RegDateTime: '2026-07-21T16:04:18.073Z',
+        ClassificationID: 10,
+        CausalFactorCode: 'FACTOR_02',
+        AccidentTypeCode: 'ACC_02',
+        InternalAccidentType: 'COMP_COMPANY',
+        InternalCompAmount: 300000,
+        ActualAbsenceDays: 3,
+        ReportedAbsenceDays: 3,
+        ExternalReportType: 'WELFARE_ONLY',
+        ComWelAccidentNo: 'CW12347',
+        ComWelApprovalStatus: 'APPROVED',
+        ComWelApprovalDate: '2026-07-23',
+        LaborMinistryStatus: 'NOT_REPORTED',
+        LaborMinistryReportDate: null,
+        ClassificationStatus: 'COMPLETED',
+        VictimName: '김혜수',
+        VictimAffiliation: '직영',
+        VictimJob: '사무직',
+        VictimServiceYears: 1,
+        VictimAge: 29,
+        InjuryPart: '손가락 찰과상',
+        InjurySeverity: '경상',
+        HospitalName: '서울내과',
+        DiagnosisWeeks: 1
+    },
+    {
+        IncidentID: 9,
+        CompanyBranch: '(주)무사제조업체',
+        IncidentType: 'INJURY',
+        OccurrenceDateTime: '2026-07-21T06:58:00.000Z',
+        Location: '공장 후문',
+        EquipmentName: '문',
+        IncidentTitle: '현관문 끼임사고',
+        IncidentContent: '문 닫힘 시 손가락 끼임.',
+        AttachmentPath1: null,
+        AttachmentPath2: null,
+        Remarks: null,
+        RegUserID: 'testuser@test.com',
+        RegDateTime: '2026-07-21T15:59:27.293Z',
+        ClassificationID: 9,
+        CausalFactorCode: null,
+        AccidentTypeCode: null,
+        InternalAccidentType: 'NOT_APPLIED',
+        InternalCompAmount: 0,
+        ActualAbsenceDays: 0,
+        ReportedAbsenceDays: 0,
+        ExternalReportType: 'NOT_REQUIRED',
+        ComWelAccidentNo: null,
+        ComWelApprovalStatus: 'NOT_SUBMITTED',
+        ComWelApprovalDate: null,
+        LaborMinistryStatus: 'NOT_REPORTED',
+        LaborMinistryReportDate: null,
+        ClassificationStatus: 'UNCLASSIFIED',
+        VictimName: null,
+        VictimAffiliation: null,
+        VictimJob: null,
+        VictimServiceYears: null,
+        VictimAge: null,
+        InjuryPart: null,
+        InjurySeverity: null,
+        HospitalName: null,
+        DiagnosisWeeks: null
+    },
+    {
+        IncidentID: 8,
+        CompanyBranch: '테스트 회사',
+        IncidentType: 'INJURY',
+        OccurrenceDateTime: '2026-07-21T01:59:00.000Z',
+        Location: '공조실',
+        EquipmentName: '공조팬',
+        IncidentTitle: '공조기 끼임 사고',
+        IncidentContent: '점검 중 팬 벨트에 손가락 끼임.',
+        AttachmentPath1: null,
+        AttachmentPath2: null,
+        Remarks: null,
+        RegUserID: 'testuser@test.com',
+        RegDateTime: '2026-07-21T11:01:24.247Z',
+        ClassificationID: 8,
+        CausalFactorCode: null,
+        AccidentTypeCode: null,
+        InternalAccidentType: 'NOT_APPLIED',
+        InternalCompAmount: 0,
+        ActualAbsenceDays: 0,
+        ReportedAbsenceDays: 0,
+        ExternalReportType: 'NOT_REQUIRED',
+        ComWelAccidentNo: null,
+        ComWelApprovalStatus: 'NOT_SUBMITTED',
+        ComWelApprovalDate: null,
+        LaborMinistryStatus: 'NOT_REPORTED',
+        LaborMinistryReportDate: null,
+        ClassificationStatus: 'UNCLASSIFIED',
+        VictimName: null,
+        VictimAffiliation: null,
+        VictimJob: null,
+        VictimServiceYears: null,
+        VictimAge: null,
+        InjuryPart: null,
+        InjurySeverity: null,
+        HospitalName: null,
+        DiagnosisWeeks: null
+    },
+    {
+        IncidentID: 7,
+        CompanyBranch: '테스트 회사',
+        IncidentType: 'PROPERTY',
+        OccurrenceDateTime: '2026-07-14T04:24:00.000Z',
+        Location: '기계실',
+        EquipmentName: '펌프',
+        IncidentTitle: '파손',
+        IncidentContent: '밸브 파손으로 누수.',
+        AttachmentPath1: null,
+        AttachmentPath2: null,
+        Remarks: null,
+        RegUserID: 'testuser@test.com',
+        RegDateTime: '2026-07-14T13:25:44.047Z',
+        ClassificationID: 7,
+        CausalFactorCode: null,
+        AccidentTypeCode: null,
+        InternalAccidentType: 'NOT_APPLIED',
+        InternalCompAmount: 0,
+        ActualAbsenceDays: 0,
+        ReportedAbsenceDays: 0,
+        ExternalReportType: 'NOT_REQUIRED',
+        ComWelAccidentNo: null,
+        ComWelApprovalStatus: 'NOT_SUBMITTED',
+        ComWelApprovalDate: null,
+        LaborMinistryStatus: 'NOT_REPORTED',
+        LaborMinistryReportDate: null,
+        ClassificationStatus: 'COMPLETED',
+        VictimName: null,
+        VictimAffiliation: null,
+        VictimJob: null,
+        VictimServiceYears: null,
+        VictimAge: null,
+        InjuryPart: null,
+        InjurySeverity: null,
+        HospitalName: null,
+        DiagnosisWeeks: null
+    }
+];
 
 async function ensureClassificationColumns(pool) {
     if (!pool || !pool.connected) return;
@@ -195,14 +579,12 @@ async function ensureClassificationColumns(pool) {
 }
 
 async function getPool() {
-    if (activePool) {
-        if (activePool.connected) {
-            return activePool;
-        }
-        try {
-            await activePool.close();
-        } catch (err) {}
-        activePool = null;
+    if (activePool && activePool.connected) {
+        return activePool;
+    }
+
+    if (connectionPromise) {
+        return connectionPromise;
     }
 
     const now = Date.now();
@@ -211,18 +593,32 @@ async function getPool() {
     }
 
     lastConnectAttempt = now;
-    try {
-        console.log('Attempting to connect to database...');
-        activePool = await sql.connect(dbConfig);
-        dbOffline = false;
-        console.log('Connected to MSSQL Database successfully.');
-        await ensureClassificationColumns(activePool);
-        return activePool;
-    } catch (err) {
-        dbOffline = true;
-        console.error('Database connection failed:', err.message);
-        throw err;
-    }
+
+    connectionPromise = (async () => {
+        try {
+            if (activePool) {
+                try {
+                    await activePool.close();
+                } catch (err) { }
+                activePool = null;
+            }
+            console.log('Attempting to connect to database...');
+            activePool = await sql.connect(dbConfig);
+            dbOffline = false;
+            console.log('Connected to MSSQL Database successfully.');
+            // await ensureClassificationColumns(activePool);
+            return activePool;
+        } catch (err) {
+            dbOffline = true;
+            activePool = null;
+            console.error('Database connection failed:', err.message);
+            throw err;
+        } finally {
+            connectionPromise = null;
+        }
+    })();
+
+    return connectionPromise;
 }
 
 // Initial connection attempt (does not crash on failure)
@@ -273,8 +669,8 @@ app.post('/api/login', async (req, res) => {
 
     // Mock bypass list (fallback)
     const isMockUser = (lowerId === 'testuser@tesc.ocm' || lowerId === 'testuser@test.com');
-    const isValidMockPassword = (lowerId === 'testuser@tesc.ocm' && password === '1234') || 
-                                (lowerId === 'testuser@test.com' && password === '12345678');
+    const isValidMockPassword = (lowerId === 'testuser@tesc.ocm' && password === '1234') ||
+        (lowerId === 'testuser@test.com' && password === '12345678');
 
     try {
         const pool = await getPool();
@@ -354,7 +750,7 @@ app.post('/api/signup', async (req, res) => {
 
     try {
         const pool = await getPool();
-        
+
         // Check if USER_ID already exists
         const checkResult = await pool.request()
             .input('userId', sql.VarChar, signupId.trim())
@@ -397,18 +793,18 @@ app.post('/api/signup', async (req, res) => {
 
 // API: Save Incident Report
 app.post('/api/incidents', async (req, res) => {
-    const { 
-        companyBranch, 
-        incidentType, 
-        occurrenceDateTime, 
-        location, 
-        equipmentName, 
-        incidentTitle, 
-        incidentContent, 
-        attachmentPath1, 
-        attachmentPath2, 
-        remarks, 
-        regUserID 
+    const {
+        companyBranch,
+        incidentType,
+        occurrenceDateTime,
+        location,
+        equipmentName,
+        incidentTitle,
+        incidentContent,
+        attachmentPath1,
+        attachmentPath2,
+        remarks,
+        regUserID
     } = req.body;
 
     if (!companyBranch || !incidentType || !occurrenceDateTime || !location || !equipmentName || !incidentTitle || !incidentContent) {
@@ -421,7 +817,7 @@ app.post('/api/incidents', async (req, res) => {
 
     try {
         const pool = await getPool();
-        
+
         // 1. Insert into IncidentReports
         const result = await pool.request()
             .input('companyBranch', sql.NVarChar(100), companyBranch)
@@ -466,11 +862,38 @@ app.post('/api/incidents', async (req, res) => {
                 )
             `);
 
+        // Update local list
+        const newInc = {
+            IncidentID: incidentId,
+            CompanyBranch: companyBranch,
+            IncidentType: incidentType,
+            OccurrenceDateTime: new Date(occurrenceDateTime.replace(' ', 'T')).toISOString(),
+            Location: location,
+            EquipmentName: equipmentName,
+            IncidentTitle: incidentTitle,
+            IncidentContent: incidentContent,
+            AttachmentPath1: photoPath,
+            AttachmentPath2: docPath,
+            Remarks: remarksVal,
+            RegUserID: regUserID || 'System',
+            RegDateTime: new Date().toISOString(),
+            ClassificationStatus: 'UNCLASSIFIED',
+            InternalAccidentType: 'NOT_APPLIED',
+            ExternalReportType: 'NOT_REQUIRED',
+            ComWelApprovalStatus: 'NOT_SUBMITTED',
+            LaborMinistryStatus: 'NOT_REPORTED'
+        };
+        localIncidents.unshift(newInc);
+
         return res.status(201).json({ success: true, message: '사고 보고가 성공적으로 등록되었습니다.', incidentId });
 
     } catch (err) {
         console.error('Incident insert error:', err);
-        return res.status(500).json({ success: false, message: '사고 보고 등록 중 서버 오류가 발생했습니다.' });
+        return res.status(500).json({
+            success: false,
+            message: '데이터베이스 네트워크 상태에 문제가 있어 사고 보고를 등록할 수 없습니다.',
+            error: err.message
+        });
     }
 });
 
@@ -536,11 +959,21 @@ app.get('/api/incidents', async (req, res) => {
         query += ' ORDER BY r.OccurrenceDateTime DESC, r.IncidentID DESC';
 
         const result = await request.query(query);
+
+        // Sync database records back to localIncidents cache to keep it updated when online
+        if (result.recordset.length > 0) {
+            localIncidents = result.recordset;
+        }
+
         return res.json({ success: true, data: result.recordset });
 
     } catch (err) {
         console.error('Fetch incidents error:', err);
-        return res.status(500).json({ success: false, message: '사고 목록을 조회하는 중 서버 오류가 발생했습니다.' });
+        return res.status(500).json({
+            success: false,
+            message: '데이터베이스 네트워크 상태에 문제가 있어 사고 목록을 조회할 수 없습니다.',
+            error: err.message
+        });
     }
 });
 
@@ -772,7 +1205,7 @@ app.post('/api/gemini/analyze-inspection', async (req, res) => {
                         ) = m.site_id AND d.item_code = c.item_code
                         WHERE d.inspection_id = @inspectionId
                     `);
-                
+
                 details = detailsResult.recordset.map(row => {
                     if (!row.ItemText) {
                         if (row.ItemCode === 'ITEM_01') row.ItemText = '기계·설비의 방호장치(비상정지장치 등) 작동 상태가 정상인가?';
@@ -903,7 +1336,7 @@ app.get('/api/incidents/:id/classification', async (req, res) => {
         const result = await pool.request()
             .input('incidentId', sql.VarChar(36), id)
             .query('SELECT * FROM IncidentClassifications WHERE IncidentID = @incidentId');
-        
+
         if (result.recordset.length === 0) {
             return res.json({ success: true, data: null }); // success true with null data is expected when not yet classified
         }
@@ -922,7 +1355,7 @@ app.get('/api/incidents/:id/measures', async (req, res) => {
         const result = await pool.request()
             .input('incidentId', sql.VarChar(36), id)
             .query('SELECT * FROM AccidentMeasures WHERE IncidentID = @incidentId');
-        
+
         if (result.recordset.length === 0) {
             return res.json({ success: true, data: null }); // success true with null data is expected when no measure is set yet
         }
@@ -1096,7 +1529,7 @@ app.post('/api/classifications', async (req, res) => {
             .input('govImmediateDate', sql.DateTime, govImmediateDate ? new Date(govImmediateDate) : null)
             .input('govImmediateReceiver', sql.NVarChar(100), govImmediateReceiver || null)
             .input('userId', sql.VarChar(50), userId || 'System')
-            
+
             // New inputs
             .input('govCompanyNo', sql.NVarChar(50), govCompanyNo || null)
             .input('govBizNo', sql.NVarChar(50), govBizNo || null)
@@ -1579,7 +2012,7 @@ app.post('/api/inspections', async (req, res) => {
                         OUTPUT INSERTED.detail_id
                         VALUES (@inspectionId, @itemCode, @resultStatus)
                     `);
-                
+
                 if (r.resultStatus === 'FAIL') {
                     failedDetails.push({
                         detailId: detailResult.recordset[0].detail_id,
