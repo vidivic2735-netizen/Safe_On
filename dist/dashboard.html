@@ -178,21 +178,9 @@
                     <span id="dDayBadge" class="status-badge" style="background-color: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; font-size: 11px;">산재조사표 D-Day</span>
                   </h4>
 
-                <div class="compliance-detail-card" style="padding: 18px; margin-top: 8px; max-height: 650px; overflow-y: auto;">
-                  <h4 style="margin: 0 0 14px 0; font-size: 15px; font-weight: 700; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                    <span>📋 산재 및 대관 상세 관리 시스템</span>
-                    <span id="dDayBadge" class="status-badge" style="background-color: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; font-size: 11px;">산재조사표 D-Day</span>
-                  </h4>
 
-                  <!-- Tab Navigation -->
-                  <div class="compliance-tabs" style="display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px;">
-                    <button type="button" class="comp-tab-btn active" data-tab="general" style="flex: 1; padding: 10px; border: none; background: none; border-bottom: 3px solid #2563eb; font-weight: 700; font-size: 12px; color: #1e3a8a; cursor: pointer; transition: all 0.2s;">일반 및 대관 기본</button>
-                    <button type="button" class="comp-tab-btn" data-tab="gov" style="flex: 1; padding: 10px; border: none; background: none; border-bottom: 3px solid transparent; font-weight: 500; font-size: 12px; color: #64748b; cursor: pointer; transition: all 0.2s;">산업재해조사표</button>
-                    <button type="button" class="comp-tab-btn" data-tab="report" style="flex: 1; padding: 10px; border: none; background: none; border-bottom: 3px solid transparent; font-weight: 500; font-size: 12px; color: #64748b; cursor: pointer; transition: all 0.2s;">사고경위보고서</button>
-                  </div>
 
-                  <!-- Tab 1: General & Reporting Base -->
-                  <div id="compTabGeneral" class="comp-tab-pane">
+                  <div id="compTabGeneral">
                     <div class="form-group" style="margin-bottom: 12px;">
                       <label class="form-label-desc">재해형태 입력 (기속요인/발생형태)</label>
                       <input type="text" id="compAccidentTypeCode" class="form-input-custom" placeholder="예: 끼임·감김, 부딪힘, 넘어짐">
@@ -675,11 +663,27 @@
                   </div>
 
                   <!-- Tab 3: Accident Report (사고경위보고서) -->
-                  <div id="compTabReport" class="comp-tab-pane" style="display: none;">
+                  <div id="compTabReport">
+                    <!-- Hidden fields to maintain API compatibility -->
+                    <input type="hidden" id="compReportDeptProcess">
+                    <input type="hidden" id="compReportCasualtyFatal">
+                    <input type="hidden" id="compReportCasualtyInjured">
+                    <input type="hidden" id="compReportAccidentType">
+                    <input type="hidden" id="compReportLaborLossType">
+                    <input type="hidden" id="compReportHarmObject">
+                    <input type="hidden" id="compReportAccidentWork">
+                    <input type="hidden" id="compReportPreventionPlan">
+                    <input type="hidden" id="compHexaWho">
+                    <input type="hidden" id="compHexaWhen">
+                    <input type="hidden" id="compHexaWhere">
+                    <input type="hidden" id="compHexaWhat">
+                    <input type="hidden" id="compHexaHow">
+                    <input type="hidden" id="compHexaWhy">
+
                     <!-- I. 일반 경위 및 인적 피해 -->
                     <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
                       <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px;">
-                        <span>📋</span> Ⅰ. 일반 경위 및 인적 피해
+                        <span>📋</span> Ⅰ. 일반 경위 및 사고 유형 (사고경위보고서)
                       </h5>
                       <div class="compliance-grid-2col">
                         <div class="form-group">
@@ -687,18 +691,8 @@
                           <input type="text" id="compReportProduct" class="form-input-custom" placeholder="예: ECOTHANE HT-85A-16 생산">
                         </div>
                         <div class="form-group">
-                          <label class="form-label-desc">발생 (부서/공정)</label>
-                          <input type="text" id="compReportDeptProcess" class="form-input-custom" placeholder="예: 생산 1팀 (TPU 생산)">
-                        </div>
-                      </div>
-                      <div class="compliance-grid-2col" style="margin-top: 8px;">
-                        <div class="form-group">
-                          <label class="form-label-desc">인적피해 사망자 수</label>
-                          <input type="number" id="compReportCasualtyFatal" class="form-input-custom" min="0" value="0">
-                        </div>
-                        <div class="form-group">
-                          <label class="form-label-desc">인적피해 부상자 수</label>
-                          <input type="number" id="compReportCasualtyInjured" class="form-input-custom" min="0" value="0">
+                          <label class="form-label-desc">기인물(원인물)</label>
+                          <input type="text" id="compReportCauseObject" class="form-input-custom" placeholder="예: 커터칼, 사출기 금형">
                         </div>
                       </div>
                       <div class="compliance-grid-2col" style="margin-top: 8px;">
@@ -714,57 +708,12 @@
                           <input type="number" id="compReportWorkShiftCount" class="form-input-custom" min="0" placeholder="명">
                         </div>
                       </div>
-                      <div class="compliance-grid-2col" style="margin-top: 8px;">
-                        <div class="form-group">
-                          <label class="form-label-desc">발생형태</label>
-                          <input type="text" id="compReportAccidentType" class="form-input-custom" placeholder="예: 베임 사고, 끼임 사고">
-                        </div>
-                        <div class="form-group">
-                          <label class="form-label-desc">기인물(원인물)</label>
-                          <input type="text" id="compReportCauseObject" class="form-input-custom" placeholder="예: 커터칼, 사출기 금형">
-                        </div>
-                      </div>
                     </div>
 
-                    <!-- II. 재해발생과정 육하원칙 -->
+                    <!-- II. 재해자 및 조치 상세 -->
                     <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
                       <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px;">
-                        <span>🔍</span> Ⅱ. 재해발생과정 및 원인 (육하원칙)
-                      </h5>
-                      <div class="compliance-grid-2col">
-                        <div class="form-group">
-                          <label class="form-label-desc">누가</label>
-                          <input type="text" id="compHexaWho" class="form-input-custom" placeholder="예: TPU 생산지원 일용직 이삭이">
-                        </div>
-                        <div class="form-group">
-                          <label class="form-label-desc">언제</label>
-                          <input type="text" id="compHexaWhen" class="form-input-custom" placeholder="예: 2019년 02월 23일 오전 08시 40분 경">
-                        </div>
-                      </div>
-                      <div class="compliance-grid-2col" style="margin-top: 8px;">
-                        <div class="form-group">
-                          <label class="form-label-desc">어디서</label>
-                          <input type="text" id="compHexaWhere" class="form-input-custom" placeholder="예: TPU 생산 제품 포장 중에">
-                        </div>
-                        <div class="form-group">
-                          <label class="form-label-desc">무엇을</label>
-                          <input type="text" id="compHexaWhat" class="form-input-custom" placeholder="예: 제품 포장 지대 밀봉 박음질 작업 중에">
-                        </div>
-                      </div>
-                      <div class="form-group" style="margin-top: 8px;">
-                        <label class="form-label-desc">어떻게</label>
-                        <textarea id="compHexaHow" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 지대 컷팅을 위하여 커터 칼로 작업하다 칼이 미끄러져 왼쪽 팔 안쪽 부위를 베임"></textarea>
-                      </div>
-                      <div class="form-group" style="margin-top: 8px;">
-                        <label class="form-label-desc">왜</label>
-                        <textarea id="compHexaWhy" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 지대 미봉합 부위가 잘 잘리지 않자 힘을 주어 컷팅하다가 균형을 잃음"></textarea>
-                      </div>
-                    </div>
-
-                    <!-- III. 재해자 및 조치 상세 -->
-                    <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
-                      <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px;">
-                        <span>🛡️</span> Ⅲ. 재해자 및 조치 상세
+                        <span>🛡️</span> Ⅱ. 재해자 및 조치 상세 (사고경위보고서)
                       </h5>
                       <div class="compliance-grid-2col">
                         <div class="form-group">
@@ -780,25 +729,6 @@
                           </select>
                         </div>
                         <div class="form-group">
-                          <label class="form-label-desc">근로손실 구분</label>
-                          <select id="compReportLaborLossType" class="form-input-custom">
-                            <option value="부상">부상</option>
-                            <option value="사망">사망</option>
-                            <option value="재해당일 계속작업">재해당일 계속작업</option>
-                            <option value="재해당일 작업불가">재해당일 작업불가</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div class="compliance-grid-3col" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;">
-                        <div class="form-group">
-                          <label class="form-label-desc">직위</label>
-                          <input type="text" id="compReportVictimPosition" class="form-input-custom" placeholder="예: 사원, 주임, 대리">
-                        </div>
-                        <div class="form-group">
-                          <label class="form-label-desc">가해물</label>
-                          <input type="text" id="compReportHarmObject" class="form-input-custom" placeholder="예: 커터칼">
-                        </div>
-                        <div class="form-group">
                           <label class="form-label-desc">제한을 받은 일수</label>
                           <input type="number" id="compReportRestrictedWorkDays" class="form-input-custom" min="0" value="0">
                         </div>
@@ -807,13 +737,9 @@
                         <label class="form-label-desc">평상시 수행 작업공정 내용</label>
                         <textarea id="compReportRegularWork" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 포장 작업, 지대 적재"></textarea>
                       </div>
-                      <div class="form-group" style="margin-top: 8px;">
-                        <label class="form-label-desc">재해당시 수행 작업공정 내용</label>
-                        <textarea id="compReportAccidentWork" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 포장 지대 컷팅 작업"></textarea>
-                      </div>
                       
                       <div style="margin-top: 10px; border-top: 1px dashed #fef3c7; padding-top: 8px;">
-                        <label class="form-label-desc" style="font-weight: 700; color: #92400e;">✍️ 조사 감독자 및 보고서용 대책</label>
+                        <label class="form-label-desc" style="font-weight: 700; color: #92400e;">✍️ 조사 감독자</label>
                         <div class="compliance-grid-2col" style="margin-top: 6px;">
                           <div class="form-group">
                             <label class="form-label-desc">조사일시</label>
@@ -823,10 +749,6 @@
                             <label class="form-label-desc">관리감독자(사고조사자)</label>
                             <input type="text" id="compReportSupervisor" class="form-input-custom" placeholder="조사자 성명">
                           </div>
-                        </div>
-                        <div class="form-group" style="margin-top: 6px;">
-                          <label class="form-label-desc">재발방지대책 (경위서용)</label>
-                          <textarea id="compReportPreventionPlan" class="form-textarea-custom" style="height: 60px; min-height: 60px;" placeholder="예: 컷팅 전용 안전 칼 사용 준수, 칼 사용 시 보호장갑(방검장갑) 의무 착용"></textarea>
                         </div>
                       </div>
                     </div>
@@ -1425,6 +1347,160 @@
       
       document.getElementById('dbManagerName').textContent = managerName;
       document.getElementById('dbCompanyName').textContent = companyName;
+
+      // Real-time compliance form field synchronization
+      function setupUnifiedFormSynchronization() {
+        const compAccidentLocation = document.getElementById('compAccidentLocation');
+        const compReportDeptProcess = document.getElementById('compReportDeptProcess');
+        const compHexaWhere = document.getElementById('compHexaWhere');
+
+        const compAccidentDateTime = document.getElementById('compAccidentDateTime');
+        const compHexaWhen = document.getElementById('compHexaWhen');
+
+        const compAccidentWorkType = document.getElementById('compAccidentWorkType');
+        const compHexaWhat = document.getElementById('compHexaWhat');
+        const compReportAccidentWork = document.getElementById('compReportAccidentWork');
+
+        const compAccidentSituation = document.getElementById('compAccidentSituation');
+        const compHexaHow = document.getElementById('compHexaHow');
+
+        const compAccidentCause = document.getElementById('compAccidentCause');
+        const compHexaWhy = document.getElementById('compHexaWhy');
+
+        const compPreventPlan = document.getElementById('compPreventPlan');
+        const compReportPreventionPlan = document.getElementById('compReportPreventionPlan');
+
+        const compAccidentTypeCode = document.getElementById('compAccidentTypeCode');
+        const compReportAccidentType = document.getElementById('compReportAccidentType');
+
+        const compReportCauseObject = document.getElementById('compReportCauseObject');
+        const compReportHarmObject = document.getElementById('compReportHarmObject');
+
+        const compGovIsFatal = document.getElementById('compGovIsFatal');
+        const compReportCasualtyFatal = document.getElementById('compReportCasualtyFatal');
+        const compReportCasualtyInjured = document.getElementById('compReportCasualtyInjured');
+        const compReportLaborLossType = document.getElementById('compReportLaborLossType');
+        const compInjurySeverity = document.getElementById('compInjurySeverity');
+
+        const compVictimName = document.getElementById('compVictimName');
+        const compVictimAffiliation = document.getElementById('compVictimAffiliation');
+        const compVictimJob = document.getElementById('compVictimJob');
+        const compHexaWho = document.getElementById('compHexaWho');
+
+        const formatDateTimeKo = (dtVal) => {
+          if (!dtVal) return '';
+          try {
+            const d = new Date(dtVal);
+            if (isNaN(d.getTime())) return dtVal;
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const h = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            return `${y}년 ${m}월 ${day}일 ${h}시 ${min}분 경`;
+          } catch(e) {
+            return dtVal;
+          }
+        };
+
+        if (compAccidentLocation) {
+          compAccidentLocation.addEventListener('input', () => {
+            if (compReportDeptProcess) compReportDeptProcess.value = compAccidentLocation.value;
+            if (compHexaWhere) compHexaWhere.value = compAccidentLocation.value;
+          });
+        }
+
+        if (compAccidentDateTime) {
+          compAccidentDateTime.addEventListener('input', () => {
+            if (compHexaWhen) compHexaWhen.value = formatDateTimeKo(compAccidentDateTime.value);
+          });
+        }
+
+        if (compAccidentWorkType) {
+          compAccidentWorkType.addEventListener('input', () => {
+            if (compHexaWhat) compHexaWhat.value = compAccidentWorkType.value;
+            if (compReportAccidentWork) compReportAccidentWork.value = compAccidentWorkType.value;
+          });
+        }
+
+        if (compAccidentSituation) {
+          compAccidentSituation.addEventListener('input', () => {
+            if (compHexaHow) compHexaHow.value = compAccidentSituation.value;
+          });
+        }
+
+        if (compAccidentCause) {
+          compAccidentCause.addEventListener('input', () => {
+            if (compHexaWhy) compHexaWhy.value = compAccidentCause.value;
+          });
+        }
+
+        if (compPreventPlan) {
+          compPreventPlan.addEventListener('input', () => {
+            if (compReportPreventionPlan) compReportPreventionPlan.value = compPreventPlan.value;
+          });
+        }
+
+        if (compAccidentTypeCode) {
+          compAccidentTypeCode.addEventListener('input', () => {
+            if (compReportAccidentType) compReportAccidentType.value = compAccidentTypeCode.value;
+          });
+        }
+
+        if (compReportCauseObject) {
+          compReportCauseObject.addEventListener('input', () => {
+            if (compReportHarmObject) compReportHarmObject.value = compReportCauseObject.value;
+          });
+        }
+
+        const updateFatalStatus = (isFatal) => {
+          if (compGovIsFatal) compGovIsFatal.checked = isFatal;
+          if (compReportCasualtyFatal) compReportCasualtyFatal.value = isFatal ? 1 : 0;
+          if (compReportCasualtyInjured) compReportCasualtyInjured.value = isFatal ? 0 : 1;
+          if (compReportLaborLossType) compReportLaborLossType.value = isFatal ? '사망' : '부상';
+          if (compInjurySeverity) {
+            if (isFatal && compInjurySeverity.value !== '사망') {
+              compInjurySeverity.value = '사망';
+            } else if (!isFatal && compInjurySeverity.value === '사망') {
+              compInjurySeverity.value = '경상';
+            }
+          }
+        };
+
+        if (compGovIsFatal) {
+          compGovIsFatal.addEventListener('change', () => {
+            updateFatalStatus(compGovIsFatal.checked);
+          });
+        }
+
+        if (compInjurySeverity) {
+          compInjurySeverity.addEventListener('change', () => {
+            if (compInjurySeverity.value === '사망') {
+              updateFatalStatus(true);
+            } else {
+              updateFatalStatus(false);
+            }
+          });
+        }
+
+        const updateHexaWho = () => {
+          if (compHexaWho && compVictimName) {
+            const name = compVictimName.value.trim();
+            const aff = compVictimAffiliation ? compVictimAffiliation.value : '직영';
+            const job = compVictimJob ? compVictimJob.value.trim() : '';
+            if (name) {
+              compHexaWho.value = `${aff} ${name}${job ? ' (' + job + ')' : ''}`;
+            } else {
+              compHexaWho.value = '';
+            }
+          }
+        };
+
+        if (compVictimName) compVictimName.addEventListener('input', updateHexaWho);
+        if (compVictimAffiliation) compVictimAffiliation.addEventListener('change', updateHexaWho);
+        if (compVictimJob) compVictimJob.addEventListener('input', updateHexaWho);
+      }
+      setupUnifiedFormSynchronization();
 
       // Set Date Text
       const dateText = document.getElementById('currentDateText');
