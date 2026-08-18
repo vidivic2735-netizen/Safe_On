@@ -25,13 +25,13 @@
       </div>
 
       <nav class="sidebar-nav">
-        <a href="#" class="nav-item" data-tab="inspection">
-          <span class="nav-icon">📋</span>
-          <span>일일 안전점검 등록</span>
-        </a>
         <a href="#" class="nav-item" data-tab="inspectionList">
           <span class="nav-icon">📂</span>
           <span>안전점검현황</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="inspection">
+          <span class="nav-icon">📋</span>
+          <span>일일 안전점검 등록</span>
         </a>
         <a href="#" class="nav-item active" data-tab="classify">
           <span class="nav-icon">📊</span>
@@ -644,7 +644,7 @@
                       </div>
                       <div style="margin-top: 10px; border-top: 1px dashed #bbf7d0; padding-top: 8px;">
                         <label class="form-label-desc" style="font-weight: 700; color: #166534;">✍️ 보고서 서명 및 작성 메타데이터</label>
-                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px;">
                           <div class="form-group">
                             <label class="form-label-desc">작성자 성명</label>
                             <input type="text" id="compGovWriterName" class="form-input-custom" placeholder="성명">
@@ -653,10 +653,10 @@
                             <label class="form-label-desc">작성자 전화번호</label>
                             <input type="text" id="compGovWriterPhone" class="form-input-custom" placeholder="전화번호">
                           </div>
-                        </div>
-                        <div class="form-group" style="margin-top: 6px;">
-                          <label class="form-label-desc">작성일자</label>
-                          <input type="date" id="compGovWriteDate" class="form-input-custom">
+                          <div class="form-group">
+                            <label class="form-label-desc">작성일자</label>
+                            <input type="date" id="compGovWriteDate" class="form-input-custom">
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -680,12 +680,12 @@
                     <input type="hidden" id="compHexaHow">
                     <input type="hidden" id="compHexaWhy">
 
-                    <!-- I. 일반 경위 및 인적 피해 -->
+                     <!-- I. 일반 경위 및 인적 피해 -->
                     <div style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
                       <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px;">
                         <span>📋</span> Ⅰ. 일반 경위 및 사고 유형 (사고경위보고서)
                       </h5>
-                      <div class="compliance-grid-2col">
+                      <div class="compliance-grid-2col" style="margin-top: 6px;">
                         <div class="form-group">
                           <label class="form-label-desc">생산품</label>
                           <input type="text" id="compReportProduct" class="form-input-custom" placeholder="예: ECOTHANE HT-85A-16 생산">
@@ -695,7 +695,7 @@
                           <input type="text" id="compReportCauseObject" class="form-input-custom" placeholder="예: 커터칼, 사출기 금형">
                         </div>
                       </div>
-                      <div class="compliance-grid-2col" style="margin-top: 8px;">
+                      <div class="compliance-grid-2col" style="margin-top: 4px;">
                         <div class="form-group">
                           <label class="form-label-desc">작업형태</label>
                           <select id="compReportWorkShiftType" class="form-input-custom">
@@ -715,7 +715,7 @@
                       <h5 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #92400e; display: flex; align-items: center; gap: 6px;">
                         <span>🛡️</span> Ⅱ. 재해자 및 조치 상세 (사고경위보고서)
                       </h5>
-                      <div class="compliance-grid-2col">
+                      <div class="compliance-grid-2col" style="margin-top: 6px;">
                         <div class="form-group">
                           <label class="form-label-desc">발생시점</label>
                           <select id="compReportOccurTimeType" class="form-input-custom">
@@ -733,14 +733,14 @@
                           <input type="number" id="compReportRestrictedWorkDays" class="form-input-custom" min="0" value="0">
                         </div>
                       </div>
-                      <div class="form-group" style="margin-top: 8px;">
+                      <div class="form-group" style="margin-top: 4px;">
                         <label class="form-label-desc">평상시 수행 작업공정 내용</label>
                         <textarea id="compReportRegularWork" class="form-textarea-custom" style="height: 50px; min-height: 50px;" placeholder="예: 포장 작업, 지대 적재"></textarea>
                       </div>
                       
-                      <div style="margin-top: 10px; border-top: 1px dashed #fef3c7; padding-top: 8px;">
+                      <div style="margin-top: 5px; border-top: 1px dashed #fef3c7; padding-top: 4px;">
                         <label class="form-label-desc" style="font-weight: 700; color: #92400e;">✍️ 조사 감독자</label>
-                        <div class="compliance-grid-2col" style="margin-top: 6px;">
+                        <div class="compliance-grid-2col" style="margin-top: 3px;">
                           <div class="form-group">
                             <label class="form-label-desc">조사일시</label>
                             <input type="date" id="compReportInvestigationDate" class="form-input-custom">
@@ -756,6 +756,9 @@
 
                   <button class="btn-compliance-save" id="btnSaveClassification" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, #1e293b, #334155); color: #fff; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     💾 산재 및 대관 상세 정보 통합 저장
+                  </button>
+                  <button class="btn-compliance-delete" id="btnDeleteIncident" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    🗑️ 선택된 사고건 삭제
                   </button>
                 </div>
                 </div>
@@ -1137,7 +1140,7 @@
             </button>
           </div>
 
-          <div class="db-grid-layout" style="grid-template-columns: 1.2fr 1fr; gap: 20px;">
+          <div class="db-grid-layout" style="grid-template-columns: 1fr; gap: 20px;">
             <!-- Left Side: Inspection Table -->
             <div class="db-card-panel" style="padding: 20px;">
               <div class="panel-header" style="margin-bottom: 12px; padding-bottom: 8px;">
@@ -2305,6 +2308,38 @@
           alert("저장 중 서버와의 통신 에러가 발생했습니다.");
         }
       });
+
+      // Delete selected incident
+      const btnDeleteIncident = document.getElementById('btnDeleteIncident');
+      if (btnDeleteIncident) {
+        btnDeleteIncident.addEventListener('click', async () => {
+          if (!selectedIncident) return;
+          
+          if (!confirm(`선택된 사고건(No.${selectedIncident.IncidentID})을 정말로 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.`)) {
+            return;
+          }
+          
+          try {
+            const res = await fetch(API_BASE + `/api/incidents/${selectedIncident.IncidentID}`, {
+              method: 'DELETE'
+            });
+            const result = await res.json();
+            if (result.success) {
+              showAlert("삭제 완료", "사고 기록이 성공적으로 삭제되었습니다.", () => {
+                selectedIncident = null;
+                document.getElementById('complianceFormPanel').style.display = 'none';
+                document.getElementById('complianceEmptyState').style.display = 'flex';
+                loadIncidents();
+              });
+            } else {
+              alert("삭제 실패: " + result.message);
+            }
+          } catch (err) {
+            console.error(err);
+            alert("삭제 중 서버와의 통신 에러가 발생했습니다.");
+          }
+        });
+      }
 
       // Ask Gemini advice
       document.getElementById('btnAskGemini').addEventListener('click', async () => {

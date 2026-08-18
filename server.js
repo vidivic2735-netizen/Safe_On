@@ -2229,6 +2229,41 @@ app.delete('/api/equipments/:id', async (req, res) => {
     }
 });
 
+// API: Delete Incident (Screen 2)
+app.delete('/api/incidents/:id', async (req, res) => {
+    const incidentId = parseInt(req.params.id, 10);
+    if (isNaN(incidentId)) {
+        return res.status(400).json({ success: false, message: '유효한 사고 ID가 아닙니다.' });
+    }
+
+    try {
+        const pool = await getPool();
+        
+        // 1. Delete from AccidentMeasures
+        await pool.request()
+            .input('incidentId', sql.Int, incidentId)
+            .query('DELETE FROM AccidentMeasures WHERE IncidentID = @incidentId');
+
+        // 2. Delete from IncidentClassifications
+        await pool.request()
+            .input('incidentId', sql.Int, incidentId)
+            .query('DELETE FROM IncidentClassifications WHERE IncidentID = @incidentId');
+
+        // 3. Delete from IncidentReports
+        await pool.request()
+            .input('incidentId', sql.Int, incidentId)
+            .query('DELETE FROM IncidentReports WHERE IncidentID = @incidentId');
+
+        // 4. Update local list
+        localIncidents = localIncidents.filter(inc => inc.IncidentID !== incidentId);
+
+        return res.json({ success: true, message: '사고 기록이 성공적으로 삭제되었습니다.' });
+    } catch (err) {
+        console.error('Incident delete error:', err);
+        return res.status(500).json({ success: false, message: '사고 기록 삭제 중 서버 오류가 발생했습니다.', error: err.message });
+    }
+});
+
 // API: Get Checklist Items
 app.get('/api/checklist-items', async (req, res) => {
     const { companyBranch } = req.query;
