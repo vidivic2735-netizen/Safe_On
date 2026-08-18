@@ -1505,6 +1505,13 @@
       }
       setupUnifiedFormSynchronization();
 
+      // Helper: get local ISO Date string (YYYY-MM-DD)
+      const toLocalDateString = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+      };
+
       // Set Date Text
       const dateText = document.getElementById('currentDateText');
       const now = new Date();
@@ -1513,11 +1520,11 @@
 
       // Pre-fill filter dates in Screen 2
       const yearStart = new Date(now.getFullYear(), 0, 1);
-      document.getElementById('filterStartDate').value = yearStart.toISOString().split('T')[0];
-      document.getElementById('filterEndDate').value = now.toISOString().split('T')[0];
+      document.getElementById('filterStartDate').value = toLocalDateString(yearStart);
+      document.getElementById('filterEndDate').value = toLocalDateString(now);
 
       // Pre-fill registration date in Screen 1
-      document.getElementById('regOccurrenceDate').value = now.toISOString().split('T')[0];
+      document.getElementById('regOccurrenceDate').value = toLocalDateString(now);
       document.getElementById('regOccurrenceHour').value = now.getHours();
       document.getElementById('regOccurrenceMin').value = now.getMinutes();
 
@@ -2002,7 +2009,7 @@
         let occurDate = inc.OccurrenceDateTime ? new Date(inc.OccurrenceDateTime) : new Date();
         let dueDateObj = new Date(occurDate);
         dueDateObj.setMonth(dueDateObj.getMonth() + 1);
-        let dueDateStr = dueDateObj.toISOString().split('T')[0];
+        let dueDateStr = toLocalDateString(dueDateObj);
         document.getElementById('compGovKOSHADueDate').value = inc.GovKOSHADueDate ? inc.GovKOSHADueDate.split('T')[0] : dueDateStr;
 
         // D-day Calculation
@@ -2189,7 +2196,7 @@
           externalReportType: govReportTarget,
           comWelAccidentNo,
           comWelApprovalStatus,
-          comWelApprovalDate: comWelAccidentNo ? new Date().toISOString().split('T')[0] : null,
+          comWelApprovalDate: comWelAccidentNo ? toLocalDateString(new Date()) : null,
           laborMinistryStatus,
           laborMinistryReportDate,
           victimName,
@@ -2752,7 +2759,7 @@
       };
       initBranchSelects();
 
-      document.getElementById('inspDate').value = now.toISOString().split('T')[0];
+      document.getElementById('inspDate').value = toLocalDateString(now);
       document.getElementById('inspInspector').value = managerName;
 
       let currentChecklistItems = [];
@@ -3111,8 +3118,8 @@
 
       // 7.6. [화면 5] 안전점검현황 스크립트
       // 필터 날짜 기본값 세팅
-      document.getElementById('filterInspStartDate').value = yearStart.toISOString().split('T')[0];
-      document.getElementById('filterInspEndDate').value = now.toISOString().split('T')[0];
+      document.getElementById('filterInspStartDate').value = toLocalDateString(yearStart);
+      document.getElementById('filterInspEndDate').value = toLocalDateString(now);
 
       let loadedInspections = [];
       let selectedInspection = null;
