@@ -15,7 +15,7 @@ function printAccidentReport(selectedIncident, companyName) {
     return;
   }
 
-  const branch = companyName;
+  const branch = selectedIncident.CompanyBranch || companyName;
   const location = getVal('compAccidentLocation', selectedIncident.Location || '');
   const dateTime = getVal('compAccidentDateTime', selectedIncident.OccurrenceDateTime || '');
   const product = getVal('compReportProduct', selectedIncident.ReportProduct || '');
@@ -267,26 +267,29 @@ function printAccidentReport(selectedIncident, companyName) {
     <body>
       <!-- Page 1 -->
       <div class="page">
-        <div class="header-section">
-          <div style="width: 250px;"></div>
-          <h1>사 고 경 위 보 고 서<br><span style="font-size:15px; font-weight:500;">(인사사고관련)</span></h1>
-          <table class="approval-table">
-            <tr>
-              <th rowspan="2" style="width:20px; writing-mode: vertical-rl; text-orientation: upright; padding: 5px 2px;">결재</th>
-              <th>담당</th>
-              <th>검토</th>
-              <th>검토</th>
-              <th>대리</th>
-              <th>사장</th>
-            </tr>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-          </table>
+        <div class="header-section" style="display: block; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+            <table class="approval-table">
+              <tr>
+                <th rowspan="2" style="width:20px; writing-mode: vertical-rl; text-orientation: upright; padding: 5px 2px;">결재</th>
+                <th>담당</th>
+                <th>검토</th>
+                <th>검토</th>
+                <th>대리</th>
+                <th>사장</th>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </table>
+          </div>
+          <h1 style="text-align: center; font-size: 28px; font-weight: 700; letter-spacing: 2px; text-decoration: underline; text-underline-offset: 6px; margin: 10px 0;">
+            사 고 경 위 보 고 서 <span style="font-size:16px; font-weight:500;">(인사사고관련)</span>
+          </h1>
         </div>
 
         <table class="form-table">
@@ -451,7 +454,7 @@ function printAccidentReport(selectedIncident, companyName) {
           </ul>
         </div>
 
-        <div class="footer-logo" style="margin-top: 250px;">
+        <div class="footer-logo" style="margin-top: 50px;">
           <span style="font-size: 16px; color:#1e3a8a;">🏢</span>
           <span>${branch}</span>
         </div>
