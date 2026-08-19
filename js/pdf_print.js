@@ -147,11 +147,11 @@ function printAccidentReport(selectedIncident, companyName) {
         table.form-table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 15px;
+          margin-bottom: 10px;
         }
         table.form-table th, table.form-table td {
           border: 1px solid #000;
-          padding: 8px 10px;
+          padding: 4px 6px;
           text-align: left;
           vertical-align: middle;
         }
@@ -167,7 +167,7 @@ function printAccidentReport(selectedIncident, companyName) {
         .section-title {
           font-size: 14px;
           font-weight: 700;
-          margin: 15px 0 8px 0;
+          margin: 8px 0 4px 0;
           display: flex;
           align-items: center;
           gap: 6px;
@@ -199,7 +199,7 @@ function printAccidentReport(selectedIncident, companyName) {
           background-color: #f8fafc;
           font-weight: 600;
           text-align: center;
-          padding: 8px;
+          padding: 4px 6px;
           border-bottom: 1px solid #000;
           border-right: 1px solid #000;
           display: flex;
@@ -207,7 +207,7 @@ function printAccidentReport(selectedIncident, companyName) {
           justify-content: center;
         }
         .hexa-value {
-          padding: 8px 12px;
+          padding: 4px 6px;
           border-bottom: 1px solid #000;
           line-height: 1.5;
         }
@@ -408,7 +408,7 @@ function printAccidentReport(selectedIncident, companyName) {
           </tr>
         </table>
 
-        <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #ccc; padding-top: 15px;">
+        <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #ccc; padding-top: 8px;">
           <div>조사일시 : ${formatDate(investigationDate) || formatDate(new Date())}</div>
           <div>관리감독자(사고경위조사자) : ${supervisor || '김안전'} (인)</div>
         </div>
