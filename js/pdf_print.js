@@ -20,22 +20,22 @@ function printAccidentReport(selectedIncident, companyName) {
   const dateTime = getVal('compAccidentDateTime', selectedIncident.OccurrenceDateTime || '');
   const product = getVal('compReportProduct', selectedIncident.ReportProduct || '');
   const process = getVal('compReportDeptProcess', selectedIncident.ReportDeptProcess || '');
-  
+
   const fatalCount = getVal('compReportCasualtyFatal', selectedIncident.ReportCasualtyFatal || '0');
   const injuredCount = getVal('compReportCasualtyInjured', selectedIncident.ReportCasualtyInjured || '0');
   const workType = getVal('compReportWorkShiftType', selectedIncident.ReportWorkShiftType || '단독');
   const workCount = getVal('compReportWorkShiftCount', selectedIncident.ReportWorkShiftCount || '');
-  
+
   const typeCode = getVal('compAccidentTypeCode', selectedIncident.AccidentTypeCode || '');
   const causeObject = getVal('compReportCauseObject', selectedIncident.ReportCauseObject || '');
-  
+
   const who = getVal('compHexaWho', selectedIncident.HexaWho || '');
   const when = getVal('compHexaWhen', selectedIncident.HexaWhen || '');
   const where = getVal('compHexaWhere', selectedIncident.HexaWhere || '');
   const what = getVal('compHexaWhat', selectedIncident.HexaWhat || '');
   const how = getVal('compHexaHow', selectedIncident.HexaHow || '');
   const why = getVal('compHexaWhy', selectedIncident.HexaWhy || '');
-  
+
   const name = getVal('compVictimName', selectedIncident.VictimName || '');
   const rrn = getVal('compVictimRrn', selectedIncident.VictimRrn || '');
   const entryDate = getVal('compVictimEntryDate', selectedIncident.VictimEntryDate || '');
@@ -44,18 +44,18 @@ function printAccidentReport(selectedIncident, companyName) {
   const occurTimeType = getVal('compReportOccurTimeType', selectedIncident.ReportOccurTimeType || '정규작업');
   const workShift = getVal('compVictimWorkShift', selectedIncident.VictimWorkShift || '정상');
   const laborLossType = getVal('compReportLaborLossType', selectedIncident.ReportLaborLossType || '부상');
-  
+
   const absenceDays = getVal('compAbsenceDays', selectedIncident.ActualAbsenceDays || '0');
   const restrictedDays = getVal('compReportRestrictedWorkDays', selectedIncident.ReportRestrictedWorkDays || '0');
   const position = getVal('compReportVictimPosition', selectedIncident.ReportVictimPosition || '');
-  
+
   const injuryType = getVal('compInjuryType', selectedIncident.InjuryType || '');
   const injuryPart = getVal('compInjuryPart', selectedIncident.InjuryPart || '');
   const harmObject = getVal('compReportHarmObject', selectedIncident.ReportHarmObject || '');
-  
+
   const regularWork = getVal('compReportRegularWork', selectedIncident.ReportRegularWork || '');
   const accidentWork = getVal('compReportAccidentWork', selectedIncident.ReportAccidentWork || '');
-  
+
   const investigationDate = getVal('compReportInvestigationDate', selectedIncident.ReportInvestigationDate || '');
   const supervisor = getVal('compReportSupervisor', selectedIncident.ReportSupervisor || '');
   const preventPlan = getVal('compPreventPlan', selectedIncident.PreventPlan || '');
@@ -73,12 +73,12 @@ function printAccidentReport(selectedIncident, companyName) {
 
   const formattedDateTime = dateTime ? dateTime.replace('T', ' ') : '';
 
-  const listItemsHtml = preventPlan 
-    ? preventPlan.split('\n').map(line => '<li>' + line + '</li>').join('') 
+  const listItemsHtml = preventPlan
+    ? preventPlan.split('\n').map(line => '<li>' + line + '</li>').join('')
     : '<li>LOTO(Lock Out Tag Out) 미실시 방지 조치 및 안전 센서 인터록 관리 철저</li><li>신규 근로자 및 일용직 대상 작업 시작 전 TBM 시 위해요인 교육 의무화</li>';
 
-  const photoHtml = photo1 
-    ? `<img src="${photo1}" class="photo-img" />` 
+  const photoHtml = photo1
+    ? `<img src="${photo1}" class="photo-img" />`
     : '<div style="height: 180px; display:flex; align-items:center; justify-content:center; border: 1px dashed #ccc; margin-bottom:8px; color:#aaa;">현장 사진 없음</div>';
 
   const reportWindow = window.open('', '_blank', 'width=900,height=950');
@@ -484,12 +484,12 @@ function printGovReport(selectedIncident, companyName) {
   const empCount = getVal('compGovEmpCount', selectedIncident.GovEmpCount || '');
   const industryType = getVal('compGovIndustryType', selectedIncident.GovIndustryType || '');
   const location = getVal('compGovLocation', selectedIncident.GovLocation || '');
-  
+
   const subName = getVal('compGovSubcontractorName', selectedIncident.GovSubcontractorName || '');
   const subNo = getVal('compGovSubcontractorNo', selectedIncident.GovSubcontractorNo || '');
   const dispName = getVal('compGovDispatcherName', selectedIncident.GovDispatcherName || '');
   const dispNo = getVal('compGovDispatcherNo', selectedIncident.GovDispatcherNo || '');
-  
+
   const client = getVal('compGovConstructionClient', selectedIncident.GovConstructionClient || '');
   const priName = getVal('compGovConstructionPrimaryName', selectedIncident.GovConstructionPrimaryName || '');
   const priNo = getVal('compGovConstructionPrimaryNo', selectedIncident.GovConstructionPrimaryNo || '');
@@ -507,7 +507,7 @@ function printGovReport(selectedIncident, companyName) {
   const occupation = getVal('compVictimOccupation', selectedIncident.VictimOccupation || '');
   const entryDate = getVal('compVictimEntryDate', selectedIncident.VictimEntryDate || '');
   const workDuration = getVal('compVictimSameWorkDuration', selectedIncident.VictimSameWorkDuration || '');
-  
+
   const empType = getVal('compVictimEmploymentType', selectedIncident.VictimEmploymentType || '상용');
   const workShift = getVal('compVictimWorkShift', selectedIncident.VictimWorkShift || '정상');
   const injuryType = getVal('compInjuryType', selectedIncident.InjuryType || '');
