@@ -1,5 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:3000' : '';
+  const TUNNEL_DEFAULT = 'https://compare-typical-rank-collector.trycloudflare.com';
+  const isLocal = window.location.protocol === 'file:' || 
+                  window.location.hostname === 'localhost' || 
+                  window.location.hostname === '127.0.0.1';
+  let API_BASE = isLocal 
+    ? 'http://localhost:3000' 
+    : (localStorage.getItem('bizpro_api_base') || TUNNEL_DEFAULT);
+
+  // Server indicator & switcher
+  const serverDisplay = document.getElementById('currentApiServer');
+  const btnChangeServer = document.getElementById('btnChangeApiServer');
+  if (serverDisplay) {
+    serverDisplay.textContent = isLocal ? '로컬 (localhost:3000)' : API_BASE.replace(/^https?:\/\//, '');
+  }
+  if (btnChangeServer) {
+    btnChangeServer.addEventListener('click', (e) => {
+      e.preventDefault();
+      const current = localStorage.getItem('bizpro_api_base') || API_BASE;
+      const newUrl = prompt('API 서버 연결 주소를 입력해 주세요:\n(예: https://compare-typical-rank-collector.trycloudflare.com 또는 http://localhost:3000)', current);
+      if (newUrl !== null && newUrl.trim() !== '') {
+        const cleaned = newUrl.trim().replace(/\/+$/, '');
+        localStorage.setItem('bizpro_api_base', cleaned);
+        alert('API 서버 주소가 저장되었습니다:\n' + cleaned);
+        window.location.reload();
+      }
+    });
+  }
+
   // ==========================================
   // 1. Tab Switching Control
   // ==========================================
@@ -188,7 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.querySelector('span:first-child').textContent = originalText;
         if (spinner) spinner.style.display = 'none';
         console.error(err);
-        showModal('error', '로그인 오류', '서버와 통신할 수 없습니다.');
+        showModal(
+          'error',
+          '로그인 오류',
+          `서버와 통신할 수 없습니다.<br><div style="font-size: 11px; color: #64748b; margin-top: 8px; line-height: 1.4; background: #f8fafc; padding: 8px; border-radius: 4px; border: 1px solid #e2e8f0;">접속 주소: <span style="font-family: monospace; color: #0284c7;">${API_BASE}</span><br>PC에서 start.bat 및 start_tunnel.bat이 실행 중인지 확인해 주세요.</div>`
+        );
       });
     });
   }
