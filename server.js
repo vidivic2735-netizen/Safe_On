@@ -1843,6 +1843,16 @@ app.post('/api/measures', async (req, res) => {
             `);
         }
 
+        // Sync to IncidentClassifications.PreventPlan for accident report printing parity
+        try {
+            await pool.request()
+                .input('incidentId', sql.Int, incidentId)
+                .input('preventPlan', sql.NVarChar(sql.MAX), proposedMeasure)
+                .query('UPDATE IncidentClassifications SET PreventPlan = @preventPlan WHERE IncidentID = @incidentId');
+        } catch (syncErr) {
+            console.warn('Sync preventPlan warning:', syncErr.message);
+        }
+
         return res.json({ success: true, message: '안전 대책 및 이행 조치가 정상 등록되었습니다.' });
 
     } catch (err) {

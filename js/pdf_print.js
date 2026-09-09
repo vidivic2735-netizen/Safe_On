@@ -73,13 +73,66 @@ function printAccidentReport(selectedIncident, companyName) {
 
   const formattedDateTime = dateTime ? dateTime.replace('T', ' ') : '';
 
-  const listItemsHtml = preventPlan
-    ? preventPlan.split('\n').map(line => '<li>' + line + '</li>').join('')
-    : '<li>LOTO(Lock Out Tag Out) 미실시 방지 조치 및 안전 센서 인터록 관리 철저</li><li>신규 근로자 및 일용직 대상 작업 시작 전 TBM 시 위해요인 교육 의무화</li>';
+  const defaultPreventMeasures = [
+    { category: '즉시조치', measure: '사고 구역 작업 중지, 해당 자재대차 사용 금지표시, 사고 지점 출입통제 및 전 공장 유사 협착구간 긴급점검', manager: '생산팀장', dueDate: '즉시', verification: '작업중지 기록 및 현장사진' },
+    { category: '공학적 개선', measure: '바닥 단차 제거 및 통로 평탄화. 적치대 위치를 조정하여 대차와 구조물 사이 최소 안전간격 확보', manager: '시설담당', dueDate: '7일 이내', verification: '보수 전·후사진 및 실측기록' },
+    { category: '공학적 개선', measure: '모든 자재대차에 전용 밀기 손잡이와 손 보호용 측면 가드 설치. 바퀴·브레이크·직진성 점검표 운영', manager: '설비담당', dueDate: '14일 이내', verification: '개조완료 확인서 및 점검표' },
+    { category: '작업방법 개선', measure: '대차 측면을 손으로 잡고 정렬하는 행위 금지. 중량·시야제한·협소구간은 2인 작업 또는 유도자 배치', manager: '생산팀장', dueDate: '3일 이내', verification: '개정 작업표준서 및 작업관찰' },
+    { category: '표시·구획', measure: '협착 위험구역 바닥표시, 대차 정지선, 적치 한계선 및 손 끼임 주의 표지 설치', manager: '안전담당', dueDate: '5일 이내', verification: '현장 설치사진' },
+    { category: '교육', measure: '전 작업자를 대상으로 사고사례, 올바른 손 위치, 손잡이 사용, 이상 시 작업중지 절차 교육 및 실습', manager: '안전담당', dueDate: '7일 이내', verification: '교육자료·참석부·이해도 확인' },
+    { category: '관리체계', measure: '자재 운반작업 위험성평가 재실시. 대차·통로·적치대 협착 위험을 정기점검 항목에 추가', manager: '안전보건관리책임자', dueDate: '14일 이내', verification: '위험성평가표 및 개선조치 확인' },
+    { category: '효과검증', measure: '개선 1개월 후 불시 작업관찰 3회 실시. 측면 잡기, 정지선 준수, 2인 작업 기준 이행 여부 확인', manager: '안전담당', dueDate: '1개월 후', verification: '관찰기록 및 미흡사항 재조치' }
+  ];
 
-  const photoHtml = photo1
-    ? `<img src="${photo1}" class="photo-img" />`
-    : '<div style="height: 180px; display:flex; align-items:center; justify-content:center; border: 1px dashed #ccc; margin-bottom:8px; color:#aaa;">현장 사진 없음</div>';
+  let measuresList = defaultPreventMeasures;
+  if (preventPlan) {
+    try {
+      const parsed = JSON.parse(preventPlan);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        measuresList = parsed;
+      }
+    } catch (e) {
+      const lines = preventPlan.split('\n').filter(l => l.trim());
+      if (lines.length > 0) {
+        measuresList = lines.map(line => ({
+          category: '개선대책',
+          measure: line.replace(/^[0-9\.\-\*]\s*/, ''),
+          manager: '안전담당',
+          dueDate: '조치 이행',
+          verification: '현장 확인'
+        }));
+      }
+    }
+  }
+
+  const preventMeasuresTableHtml = `
+    <table class="prevent-plan-table" style="width: 100%; border-collapse: collapse; font-size: 9.5px; margin-top: 4px;">
+      <thead>
+        <tr style="background-color: #1e3a8a; color: #ffffff;">
+          <th style="border: 1px solid #0f172a; padding: 4px 3px; width: 70px; text-align: center; font-weight: 600;">구분</th>
+          <th style="border: 1px solid #0f172a; padding: 4px 6px; text-align: center; font-weight: 600;">개선대책</th>
+          <th style="border: 1px solid #0f172a; padding: 4px 3px; width: 75px; text-align: center; font-weight: 600;">담당</th>
+          <th style="border: 1px solid #0f172a; padding: 4px 3px; width: 60px; text-align: center; font-weight: 600;">완료기한</th>
+          <th style="border: 1px solid #0f172a; padding: 4px 6px; width: 110px; text-align: center; font-weight: 600;">확인방법</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${measuresList.map(item => `
+          <tr>
+            <td style="border: 1px solid #cbd5e1; padding: 3px 4px; text-align: center; font-weight: 600; background-color: #f8fafc;">${item.category || '-'}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 3px 6px; text-align: left; line-height: 1.3;">${item.measure || '-'}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 3px 4px; text-align: center;">${item.manager || '-'}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 3px 4px; text-align: center;">${item.dueDate || '-'}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 3px 6px; text-align: left; line-height: 1.3;">${item.verification || '-'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+  const photoHtml = photo1 
+    ? `<img src="${photo1}" class="photo-img" style="max-height: 120px;" />` 
+    : '<div style="height: 120px; display:flex; align-items:center; justify-content:center; border: 1px dashed #ccc; margin-bottom:8px; color:#aaa;">현장 사진 없음</div>';
 
   const reportWindow = window.open('', '_blank', 'width=900,height=950');
   reportWindow.document.write(`
@@ -430,7 +483,7 @@ function printAccidentReport(selectedIncident, companyName) {
           </div>
           <div class="photo-box">
             <div style="font-weight: 600; margin-bottom: 8px;">&lt;상세 작업 상황 도해/사진&gt;</div>
-            <div style="height: 180px; display:flex; align-items:center; justify-content:center; border: 1px dashed #ccc; margin-bottom:8px; color:#aaa;">상세 사진 없음</div>
+            <div style="height: 120px; display:flex; align-items:center; justify-content:center; border: 1px dashed #ccc; margin-bottom:8px; color:#aaa;">상세 사진 없음</div>
             <div style="font-size:11px; color:#666;">작업 시 위해 요인 및 불안전 행동 지점</div>
           </div>
         </div>
@@ -447,14 +500,10 @@ function printAccidentReport(selectedIncident, companyName) {
           </tr>
         </table>
 
-        <div class="section-title" style="font-size:16px;">재발방지대책 (근원적인 대책)</div>
-        <div style="border: 1px solid #000; padding: 15px 20px; min-height: 150px; background:#fff;">
-          <ul class="bullet-list" style="color: #c2410c; font-weight: 600;">
-            ${listItemsHtml}
-          </ul>
-        </div>
+        <div class="section-title" style="font-size:14px; margin: 10px 0 4px 0;">5. 재발방지 대책</div>
+        ${preventMeasuresTableHtml}
 
-        <div class="footer-logo" style="margin-top: 50px;">
+        <div class="footer-logo">
           <span style="font-size: 16px; color:#1e3a8a;">🏢</span>
           <span>${branch}</span>
         </div>

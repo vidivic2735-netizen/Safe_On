@@ -2624,35 +2624,159 @@
             `;
           }
 
+          // 8대 표준 재발방지대책 기본 템플릿
+          const DEFAULT_PREVENT_PLANS = [
+            { category: '즉시조치', measure: '사고 구역 작업 중지, 해당 자재대차 사용 금지표시, 사고 지점 출입통제 및 전 공장 유사 협착구간 긴급점검', manager: '생산팀장', dueDate: '즉시', verification: '작업중지 기록 및 현장사진' },
+            { category: '공학적 개선', measure: '바닥 단차 제거 및 통로 평탄화. 적치대 위치를 조정하여 대차와 구조물 사이 최소 안전간격 확보', manager: '시설담당', dueDate: '7일 이내', verification: '보수 전·후사진 및 실측기록' },
+            { category: '공학적 개선', measure: '모든 자재대차에 전용 밀기 손잡이와 손 보호용 측면 가드 설치. 바퀴·브레이크·직진성 점검표 운영', manager: '설비담당', dueDate: '14일 이내', verification: '개조완료 확인서 및 점검표' },
+            { category: '작업방법 개선', measure: '대차 측면을 손으로 잡고 정렬하는 행위 금지. 중량·시야제한·협소구간은 2인 작업 또는 유도자 배치', manager: '생산팀장', dueDate: '3일 이내', verification: '개정 작업표준서 및 작업관찰' },
+            { category: '표시·구획', measure: '협착 위험구역 바닥표시, 대차 정지선, 적치 한계선 및 손 끼임 주의 표지 설치', manager: '안전담당', dueDate: '5일 이내', verification: '현장 설치사진' },
+            { category: '교육', measure: '전 작업자를 대상으로 사고사례, 올바른 손 위치, 손잡이 사용, 이상 시 작업중지 절차 교육 및 실습', manager: '안전담당', dueDate: '7일 이내', verification: '교육자료·참석부·이해도 확인' },
+            { category: '관리체계', measure: '자재 운반작업 위험성평가 재실시. 대차·통로·적치대 협착 위험을 정기점검 항목에 추가', manager: '안전보건관리책임자', dueDate: '14일 이내', verification: '위험성평가표 및 개선조치 확인' },
+            { category: '효과검증', measure: '개선 1개월 후 불시 작업관찰 3회 실시. 측면 잡기, 정지선 준수, 2인 작업 기준 이행 여부 확인', manager: '안전담당', dueDate: '1개월 후', verification: '관찰기록 및 미흡사항 재조치' }
+          ];
+
+          const renderPreventPlanEditorRows = (items) => {
+            return items.map((item, idx) => `
+              <tr class="prevent-plan-row" data-idx="${idx}">
+                <td style="padding: 6px; border: 1px solid #cbd5e1; vertical-align: middle;">
+                  <input type="text" class="form-input-custom plan-category" value="${item.category || ''}" placeholder="구분" style="padding: 6px 4px; font-size: 12px; font-weight: 600; text-align: center;" required>
+                </td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; vertical-align: top;">
+                  <textarea class="form-textarea-custom plan-measure" placeholder="개선대책 상세 기재" style="padding: 6px; font-size: 12px; height: 56px; min-height: 56px; resize: vertical;" required>${item.measure || ''}</textarea>
+                </td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; vertical-align: middle;">
+                  <input type="text" class="form-input-custom plan-manager" value="${item.manager || ''}" placeholder="담당자" style="padding: 6px 4px; font-size: 12px; text-align: center;" required>
+                </td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; vertical-align: middle;">
+                  <input type="text" class="form-input-custom plan-duedate" value="${item.dueDate || ''}" placeholder="기한" style="padding: 6px 4px; font-size: 12px; text-align: center;" required>
+                </td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; vertical-align: top;">
+                  <textarea class="form-textarea-custom plan-verification" placeholder="확인방법 기재" style="padding: 6px; font-size: 12px; height: 56px; min-height: 56px; resize: vertical;">${item.verification || ''}</textarea>
+                </td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; text-align: center; vertical-align: middle;">
+                  <button type="button" class="btn-delete-plan-row" style="background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; cursor: pointer; border-radius: 4px; padding: 4px 6px; font-size: 12px;" title="행 삭제">❌</button>
+                </td>
+              </tr>
+            `).join('');
+          };
+
+          const renderPreventPlanReadonlyTable = (planData) => {
+            let list = [];
+            if (typeof planData === 'string') {
+              try {
+                const parsed = JSON.parse(planData);
+                if (Array.isArray(parsed) && parsed.length > 0) list = parsed;
+              } catch(e) {}
+            } else if (Array.isArray(planData)) {
+              list = planData;
+            }
+
+            if (list.length === 0) {
+              return `<div style="padding: 10px; background: #fff; border: 1px solid #fed7d7; border-radius: 4px; white-space: pre-wrap;">${planData || '등록된 대책 내용이 없습니다.'}</div>`;
+            }
+
+            return `
+              <div style="overflow-x: auto; margin-top: 8px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border: 1px solid #cbd5e1;">
+                  <thead>
+                    <tr style="background-color: #1e3a8a; color: #ffffff;">
+                      <th style="border: 1px solid #0f172a; padding: 8px 6px; width: 85px; text-align: center;">구분</th>
+                      <th style="border: 1px solid #0f172a; padding: 8px 10px; text-align: center;">개선대책</th>
+                      <th style="border: 1px solid #0f172a; padding: 8px 6px; width: 90px; text-align: center;">담당</th>
+                      <th style="border: 1px solid #0f172a; padding: 8px 6px; width: 75px; text-align: center;">완료기한</th>
+                      <th style="border: 1px solid #0f172a; padding: 8px 10px; width: 130px; text-align: center;">확인방법</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${list.map(item => `
+                      <tr>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: center; font-weight: 600; background: #f8fafc;">${item.category || '-'}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px 10px; line-height: 1.4;">${item.measure || '-'}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: center;">${item.manager || '-'}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px 8px; text-align: center;">${item.dueDate || '-'}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px 10px; line-height: 1.4;">${item.verification || '-'}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `;
+          };
+
           let measureHtml = '';
-          if (!measureData.success || !measureData.data) {
-            // Render Measure Form
+          if (!measureData.success || !measureData.data || window._forceEditMeasure) {
+            window._forceEditMeasure = false;
+            // Existing or default measures
+            let initialMeasures = DEFAULT_PREVENT_PLANS;
+            if (measureData.data && measureData.data.ProposedMeasure) {
+              try {
+                const parsed = JSON.parse(measureData.data.ProposedMeasure);
+                if (Array.isArray(parsed) && parsed.length > 0) initialMeasures = parsed;
+              } catch(e) {}
+            }
+
             measureHtml = `
-              <form id="formMeasure" style="background:#fcf8f2; border: 1px dashed #fbd38d; border-radius:6px; padding:16px;">
-                <h4 style="margin:0 0 12px 0; font-size:14px; font-weight:700; color:#c05621;">🛡️ 2단계: 안전 보건 감소대책 수립</h4>
-                <div class="form-group" style="margin-bottom:12px;">
+              <form id="formMeasure" style="background:#fcf8f2; border: 1px dashed #fbd38d; border-radius:6px; padding:18px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                  <h4 style="margin:0; font-size:15px; font-weight:700; color:#c05621; display:flex; align-items:center; gap:6px;">
+                    <span>🛡️</span> 2단계: 안전 보건 감소대책 수립 (5. 재발방지 대책)
+                  </h4>
+                  <div style="display: flex; gap: 8px;">
+                    <button type="button" id="btnLoadDefaultPlans" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #1e293b; padding: 5px 10px; font-size: 11.5px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                      📋 표준 8대 대책 다시 불러오기
+                    </button>
+                    <button type="button" id="btnAddPlanRow" class="btn" style="background: #2563eb; color: #fff; border: none; padding: 5px 10px; font-size: 11.5px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                      ➕ 대책 행 추가
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:14px;">
                   <label class="form-label-desc">* 사고 발생 유해위험요인 (Hazard Factors)</label>
-                  <textarea id="txtHazardFactors" class="form-textarea-custom" placeholder="지게차 후진 시 후방 시야 사각지대 미확보 및 속도 과속 작동" required></textarea>
+                  <textarea id="txtHazardFactors" class="form-textarea-custom" placeholder="지게차 후진 시 후방 시야 사각지대 미확보 및 속도 과속 작동" required style="min-height: 50px;">${measureData.data ? (measureData.data.HazardFactors || '') : ''}</textarea>
                 </div>
-                <div class="form-group" style="margin-bottom:12px;">
-                  <label class="form-label-desc">* 개선 감소 대책 (Proposed Measure)</label>
-                  <textarea id="txtProposedMeasure" class="form-textarea-custom" placeholder="지게차 후방 카메라 및 스마트 근접 경보 센서 센싱 보강 설치 지시" required></textarea>
+
+                <div class="form-group" style="margin-bottom:14px;">
+                  <label class="form-label-desc" style="font-weight: 700; color: #1e3a8a; display: block; margin-bottom: 6px;">
+                    * 5. 재발방지 대책 (표준 항목 등록 및 편집)
+                  </label>
+                  <div style="overflow-x: auto; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                      <thead>
+                        <tr style="background-color: #1e3a8a; color: #ffffff;">
+                          <th style="border: 1px solid #0f172a; padding: 8px 4px; width: 85px; text-align: center;">구분</th>
+                          <th style="border: 1px solid #0f172a; padding: 8px 6px; text-align: center;">개선대책</th>
+                          <th style="border: 1px solid #0f172a; padding: 8px 4px; width: 85px; text-align: center;">담당</th>
+                          <th style="border: 1px solid #0f172a; padding: 8px 4px; width: 75px; text-align: center;">완료기한</th>
+                          <th style="border: 1px solid #0f172a; padding: 8px 6px; width: 120px; text-align: center;">확인방법</th>
+                          <th style="border: 1px solid #0f172a; padding: 8px 4px; width: 45px; text-align: center;">관리</th>
+                        </tr>
+                      </thead>
+                      <tbody id="preventPlanTableBody">
+                        ${renderPreventPlanEditorRows(initialMeasures)}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <div class="db-grid-layout" style="grid-template-columns:1fr 1fr; gap:16px; margin-bottom:12px;">
+
+                <div class="db-grid-layout" style="grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
                   <div class="form-group">
-                    <label class="form-label-desc">* 개선 조치 담당자</label>
+                    <label class="form-label-desc">* 종합 조치 총괄 담당자</label>
                     <select id="selManagerID" class="form-select-custom" required>
-                      <option value="김철수 대리 (생산2팀)" selected>김철수 대리 (생산2팀)</option>
-                      <option value="박영희 과장 (설비공정팀)">박영희 과장 (설비공정팀)</option>
-                      <option value="이민우 사원 (안전관리부)">이민우 사원 (안전관리부)</option>
+                      <option value="생산팀장 (총괄)" selected>생산팀장 (총괄)</option>
+                      <option value="안전담당 (안전관리부)">안전담당 (안전관리부)</option>
+                      <option value="시설담당 (시설관리팀)">시설담당 (시설관리팀)</option>
+                      <option value="설비담당 (설비공정팀)">설비담당 (설비공정팀)</option>
+                      <option value="안전보건관리책임자">안전보건관리책임자</option>
                     </select>
                   </div>
                   <div class="form-group">
-                    <label class="form-label-desc">* 이행 기한 (Due Date)</label>
-                    <input type="date" id="dateDueDate" class="form-input-custom" required />
+                    <label class="form-label-desc">* 최종 완료 기한 (최대 기한)</label>
+                    <input type="date" id="dateDueDate" class="form-input-custom" value="${new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0]}" required />
                   </div>
                 </div>
-                <button type="submit" class="btn style-danger" style="width:100%; padding:10px; background-color:#dd6b20; border-color:#dd6b20; color:#fff;">감소대책 확정</button>
+                <button type="submit" class="btn style-danger" style="width:100%; padding:12px; font-size: 14px; font-weight: 700; background-color:#dd6b20; border-color:#dd6b20; color:#fff; border-radius: 6px; cursor: pointer;">💾 5. 재발방지 대책 최종 확정 및 저장</button>
               </form>
             `;
           } else {
@@ -2700,15 +2824,18 @@
             measureHtml = `
               <div style="background:#fffaf0; border: 1px solid #fbd38d; border-radius:6px; padding:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #fee2e2; padding-bottom:6px;">
-                  <h4 style="margin:0; font-size:14px; font-weight:700; color:#c05621;">✓ 감소대책 및 이행 이력</h4>
-                  <span class="status-badge ${badgeColor}" style="margin:0;">${statusLabels[m.MeasureStatus] || m.MeasureStatus}</span>
+                  <h4 style="margin:0; font-size:14px; font-weight:700; color:#c05621;">✓ 5. 재발방지 대책 수립 및 이행 이력</h4>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="status-badge ${badgeColor}" style="margin:0;">${statusLabels[m.MeasureStatus] || m.MeasureStatus}</span>
+                    <button type="button" id="btnEditMeasure" style="background:#fff; border:1px solid #fbd38d; color:#c05621; padding:3px 8px; font-size:11px; border-radius:4px; cursor:pointer; font-weight:600;">✏️ 대책 재수정</button>
+                  </div>
                 </div>
                 <div style="font-size:12.5px; display:flex; flex-direction:column; gap:8px;">
                   <div><strong>유해위험요인:</strong><div style="padding:6px; background:#fff; border:1px solid #fed7d7; border-radius:4px; margin-top:2px;">${m.HazardFactors}</div></div>
-                  <div><strong>감소대책 제안:</strong><div style="padding:6px; background:#fff; border:1px solid #fed7d7; border-radius:4px; margin-top:2px;">${m.ProposedMeasure}</div></div>
-                  <div style="display:flex; gap:16px;">
-                    <div><strong>조치담당:</strong> ${m.ManagerID}</div>
-                    <div><strong>조치기한:</strong> ${m.DueDate}</div>
+                  <div><strong>5. 재발방지 대책 표:</strong>${renderPreventPlanReadonlyTable(m.ProposedMeasure)}</div>
+                  <div style="display:flex; gap:16px; margin-top: 4px;">
+                    <div><strong>총괄담당:</strong> ${m.ManagerID}</div>
+                    <div><strong>완료기한:</strong> ${m.DueDate}</div>
                   </div>
                 </div>
                 ${actionHtml}
@@ -2726,6 +2853,53 @@
           `;
 
           // Bind Listeners
+          const btnEditMeasure = document.getElementById('btnEditMeasure');
+          if (btnEditMeasure) {
+            btnEditMeasure.addEventListener('click', () => {
+              window._forceEditMeasure = true;
+              renderMeasurePanel();
+            });
+          }
+
+          const btnLoadDefaultPlans = document.getElementById('btnLoadDefaultPlans');
+          if (btnLoadDefaultPlans) {
+            btnLoadDefaultPlans.addEventListener('click', () => {
+              if (confirm("8대 표준 재발방지대책 기본 템플릿으로 표를 다시 채우시겠습니까?")) {
+                const tbody = document.getElementById('preventPlanTableBody');
+                if (tbody) tbody.innerHTML = renderPreventPlanEditorRows(DEFAULT_PREVENT_PLANS);
+              }
+            });
+          }
+
+          const btnAddPlanRow = document.getElementById('btnAddPlanRow');
+          if (btnAddPlanRow) {
+            btnAddPlanRow.addEventListener('click', () => {
+              const tbody = document.getElementById('preventPlanTableBody');
+              if (tbody) {
+                const newRowHtml = renderPreventPlanEditorRows([{ category: '개선대책', measure: '', manager: '담당자', dueDate: '기한', verification: '' }]);
+                tbody.insertAdjacentHTML('beforeend', newRowHtml);
+              }
+            });
+          }
+
+          // Row delete event delegation
+          const preventPlanTableBody = document.getElementById('preventPlanTableBody');
+          if (preventPlanTableBody) {
+            preventPlanTableBody.addEventListener('click', (e) => {
+              if (e.target.classList.contains('btn-delete-plan-row')) {
+                const row = e.target.closest('tr');
+                if (row) {
+                  const rows = preventPlanTableBody.querySelectorAll('tr');
+                  if (rows.length <= 1) {
+                    alert("최소 한 개 이상의 대책 행이 유지되어야 합니다.");
+                    return;
+                  }
+                  row.remove();
+                }
+              }
+            });
+          }
+
           const formClassify = document.getElementById('formClassify');
           if (formClassify) {
             formClassify.addEventListener('submit', async (e) => {
@@ -2764,13 +2938,33 @@
           if (formMeasure) {
             formMeasure.addEventListener('submit', async (e) => {
               e.preventDefault();
+
+              // Collect table rows
+              const rows = document.querySelectorAll('.prevent-plan-row');
+              const plans = [];
+              rows.forEach(row => {
+                const category = row.querySelector('.plan-category').value.trim();
+                const measure = row.querySelector('.plan-measure').value.trim();
+                const manager = row.querySelector('.plan-manager').value.trim();
+                const dueDate = row.querySelector('.plan-duedate').value.trim();
+                const verification = row.querySelector('.plan-verification').value.trim();
+                if (category || measure) {
+                  plans.push({ category, measure, manager, dueDate, verification });
+                }
+              });
+
+              if (plans.length === 0) {
+                alert("재발방지 대책을 최소 1건 이상 입력해 주세요.");
+                return;
+              }
+
               const payload = {
                 incidentId: selectedIncident.IncidentID,
                 hazardFactors: document.getElementById('txtHazardFactors').value.trim(),
-                proposedMeasure: document.getElementById('txtProposedMeasure').value.trim(),
+                proposedMeasure: JSON.stringify(plans),
                 managerId: document.getElementById('selManagerID').value,
                 dueDate: document.getElementById('dateDueDate').value,
-                beforePhotoPath: selectedIncident.PhotoPath
+                beforePhotoPath: selectedIncident.PhotoPath || selectedIncident.AttachmentPath1
               };
 
               try {
@@ -2781,7 +2975,7 @@
                 });
                 const r = await response.json();
                 if (r.success) {
-                  showAlert("대책 완료", "안전감소대책이 성공적으로 수립되었습니다.");
+                  showAlert("대책 확정 완료", "5. 재발방지 대책이 성공적으로 수립 및 등록되었습니다.");
                   loadIncidents();
                   renderMeasurePanel();
                 } else {
@@ -2789,6 +2983,7 @@
                 }
               } catch (err) {
                 console.error(err);
+                alert("대책 저장 중 오류가 발생했습니다.");
               }
             });
           }
