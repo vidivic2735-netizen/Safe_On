@@ -500,7 +500,7 @@ function printAccidentReport(selectedIncident, companyName) {
           </tr>
         </table>
 
-        <div class="section-title" style="font-size:14px; margin: 10px 0 4px 0;">5. 재발방지 대책</div>
+        <div class="section-title" style="font-size:14px; margin: 10px 0 4px 0;">재발방지 대책</div>
         ${preventMeasuresTableHtml}
 
         <div class="footer-logo">
