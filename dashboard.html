@@ -2624,11 +2624,10 @@
             `;
           }
 
-          // 8대 표준 재발방지대책 기본 템플릿
+          // 표준 재발방지대책 기본 템플릿
           const DEFAULT_PREVENT_PLANS = [
             { category: '즉시조치', measure: '사고 구역 작업 중지, 해당 자재대차 사용 금지표시, 사고 지점 출입통제 및 전 공장 유사 협착구간 긴급점검', manager: '생산팀장', dueDate: '즉시', verification: '작업중지 기록 및 현장사진' },
             { category: '공학적 개선', measure: '바닥 단차 제거 및 통로 평탄화. 적치대 위치를 조정하여 대차와 구조물 사이 최소 안전간격 확보', manager: '시설담당', dueDate: '7일 이내', verification: '보수 전·후사진 및 실측기록' },
-            { category: '공학적 개선', measure: '모든 자재대차에 전용 밀기 손잡이와 손 보호용 측면 가드 설치. 바퀴·브레이크·직진성 점검표 운영', manager: '설비담당', dueDate: '14일 이내', verification: '개조완료 확인서 및 점검표' },
             { category: '작업방법 개선', measure: '대차 측면을 손으로 잡고 정렬하는 행위 금지. 중량·시야제한·협소구간은 2인 작업 또는 유도자 배치', manager: '생산팀장', dueDate: '3일 이내', verification: '개정 작업표준서 및 작업관찰' },
             { category: '표시·구획', measure: '협착 위험구역 바닥표시, 대차 정지선, 적치 한계선 및 손 끼임 주의 표지 설치', manager: '안전담당', dueDate: '5일 이내', verification: '현장 설치사진' },
             { category: '교육', measure: '전 작업자를 대상으로 사고사례, 올바른 손 위치, 손잡이 사용, 이상 시 작업중지 절차 교육 및 실습', manager: '안전담당', dueDate: '7일 이내', verification: '교육자료·참석부·이해도 확인' },
@@ -2724,7 +2723,7 @@
                   </h4>
                   <div style="display: flex; gap: 8px;">
                     <button type="button" id="btnLoadDefaultPlans" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #1e293b; padding: 5px 10px; font-size: 11.5px; border-radius: 4px; cursor: pointer; font-weight: 600;">
-                      📋 표준 8대 대책 다시 불러오기
+                      📋 표준 대책 다시 불러오기
                     </button>
                     <button type="button" id="btnAddPlanRow" class="btn" style="background: #2563eb; color: #fff; border: none; padding: 5px 10px; font-size: 11.5px; border-radius: 4px; cursor: pointer; font-weight: 600;">
                       ➕ 대책 행 추가
@@ -2864,7 +2863,7 @@
           const btnLoadDefaultPlans = document.getElementById('btnLoadDefaultPlans');
           if (btnLoadDefaultPlans) {
             btnLoadDefaultPlans.addEventListener('click', () => {
-              if (confirm("8대 표준 재발방지대책 기본 템플릿으로 표를 다시 채우시겠습니까?")) {
+              if (confirm("표준 재발방지대책 기본 템플릿으로 표를 다시 채우시겠습니까?")) {
                 const tbody = document.getElementById('preventPlanTableBody');
                 if (tbody) tbody.innerHTML = renderPreventPlanEditorRows(DEFAULT_PREVENT_PLANS);
               }
