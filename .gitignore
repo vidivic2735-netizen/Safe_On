@@ -6,4 +6,5 @@ scratch/
 .env
 env
 cloudflared.exe
+*.zip
 
