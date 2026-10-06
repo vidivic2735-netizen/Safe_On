@@ -1,11 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const TUNNEL_DEFAULT = 'https://compare-typical-rank-collector.trycloudflare.com';
+  const TUNNEL_DEFAULT = 'https://finger-circles-responsibility-madonna.trycloudflare.com';
   const isLocal = window.location.protocol === 'file:' || 
                   window.location.hostname === 'localhost' || 
                   window.location.hostname === '127.0.0.1';
+  const isTunnelHost = window.location.hostname.endsWith('trycloudflare.com');
   let API_BASE = isLocal 
     ? 'http://localhost:3000' 
-    : (localStorage.getItem('bizpro_api_base') || TUNNEL_DEFAULT);
+    : (isTunnelHost 
+        ? window.location.origin 
+        : (localStorage.getItem('bizpro_api_base') || TUNNEL_DEFAULT));
 
   // Server indicator & switcher
   const serverDisplay = document.getElementById('currentApiServer');

@@ -1367,13 +1367,16 @@
   <script src="js/pdf_print.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const TUNNEL_DEFAULT = 'https://compare-typical-rank-collector.trycloudflare.com';
+      const TUNNEL_DEFAULT = 'https://finger-circles-responsibility-madonna.trycloudflare.com';
       const isLocal = window.location.protocol === 'file:' || 
                       window.location.hostname === 'localhost' || 
                       window.location.hostname === '127.0.0.1';
+      const isTunnelHost = window.location.hostname.endsWith('trycloudflare.com');
       const API_BASE = isLocal 
         ? 'http://localhost:3000' 
-        : (localStorage.getItem('bizpro_api_base') || TUNNEL_DEFAULT);
+        : (isTunnelHost 
+            ? window.location.origin 
+            : (localStorage.getItem('bizpro_api_base') || TUNNEL_DEFAULT));
       // 1. Session context info
       const managerName = sessionStorage.getItem('bizpro_manager_name') || '김안전 관리자';
       const companyName = sessionStorage.getItem('bizpro_company_name') || '(주)무사제조업체';
