@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const TUNNEL_DEFAULT = 'https://finger-circles-responsibility-madonna.trycloudflare.com';
+  const TUNNEL_DEFAULT = 'https://tiles-asp-writings-pdas.trycloudflare.com';
   const isLocal = window.location.protocol === 'file:' || 
                   window.location.hostname === 'localhost' || 
                   window.location.hostname === '127.0.0.1';

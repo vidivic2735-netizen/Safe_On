@@ -1,0 +1,693 @@
+/* ==========================================================================
+   Safe_On: 유해화학물질 취급 공장별 현장점검 평가시트 스타일시트
+   ========================================================================== */
+
+/* Top Sub Navigation Bar */
+.chem-subnav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: #ffffff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.chem-mode-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.chem-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chem-mode-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+.chem-mode-btn.active {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+.chem-quick-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* KPI Score Summary Bar */
+.chem-kpi-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.chem-kpi-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chem-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.chem-kpi-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.chem-kpi-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.chem-kpi-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.chem-kpi-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.chem-kpi-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* Header Form Box */
+.chem-header-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.chem-header-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 992px) {
+  .chem-header-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .chem-header-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chem-field-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.chem-field-input,
+.chem-field-select {
+  width: 100%;
+  height: 40px;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: #1e293b;
+  background-color: #fff;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.chem-field-input:focus,
+.chem-field-select:focus {
+  outline: none;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+/* Category Filter Tabs */
+.chem-cat-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.chem-cat-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.chem-cat-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.chem-cat-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.chem-cat-count {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.chem-cat-btn.active .chem-cat-count {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Checklist Table Styles */
+.chem-table-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  margin-bottom: 24px;
+}
+
+.chem-table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.chem-search-wrap {
+  position: relative;
+  min-width: 260px;
+}
+
+.chem-search-input {
+  width: 100%;
+  height: 38px;
+  padding: 6px 12px 6px 36px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.chem-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.chem-table-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chem-btn-action {
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+}
+
+.chem-btn-action:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.chem-btn-action-primary {
+  background: #0284c7;
+  color: #fff;
+  border-color: #0284c7;
+}
+
+.chem-btn-action-primary:hover {
+  background: #0369a1;
+}
+
+/* Evaluation Table */
+.chem-eval-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.chem-eval-table th {
+  background-color: #f8fafc;
+  color: #334155;
+  font-weight: 700;
+  padding: 10px 12px;
+  text-align: center;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 2px solid #cbd5e1;
+  border-right: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.chem-eval-table th:first-child {
+  border-left: 1px solid #e2e8f0;
+}
+
+.chem-eval-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  vertical-align: middle;
+  color: #1e293b;
+  line-height: 1.45;
+}
+
+.chem-eval-table td:first-child {
+  border-left: 1px solid #e2e8f0;
+}
+
+.chem-eval-table tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Target Plant Badge */
+.chem-target-badge {
+  display: inline-block;
+  font-size: 10.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.chem-target-badge.not-target {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+/* Check Method Badge */
+.chem-method-badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Segmented Evaluation Radio Group */
+.chem-eval-options {
+  display: flex;
+  gap: 4px;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 6px;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.chem-eval-opt {
+  cursor: pointer;
+  margin: 0;
+}
+
+.chem-eval-opt input {
+  display: none;
+}
+
+.chem-eval-opt span {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 4px;
+  color: #64748b;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.chem-eval-opt input:checked + span.opt-pass {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
+}
+
+.chem-eval-opt input:checked + span.opt-fail {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
+}
+
+.chem-eval-opt input:checked + span.opt-na {
+  background: #64748b;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(100, 116, 139, 0.3);
+}
+
+/* Score Input & Remarks */
+.chem-score-input {
+  width: 44px;
+  height: 30px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  color: #0f172a;
+}
+
+.chem-score-input:focus {
+  outline: none;
+  border-color: #0284c7;
+}
+
+.chem-remarks-input {
+  width: 100%;
+  height: 30px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.chem-remarks-input:focus {
+  outline: none;
+  border-color: #0284c7;
+  background-color: #fff;
+}
+
+/* Non-applicable row dimming */
+.chem-row-inapplicable {
+  opacity: 0.55;
+  background-color: #fcfcfd;
+}
+
+/* Footer Section: Summary & Signature */
+.chem-footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .chem-footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chem-notes-textarea {
+  width: 100%;
+  height: 120px;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.chem-notes-textarea:focus {
+  outline: none;
+  border-color: #0284c7;
+}
+
+.chem-sig-box {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fafafa;
+  height: 110px;
+  position: relative;
+  overflow: hidden;
+}
+
+.chem-sig-canvas {
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.chem-sig-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.chem-btn-clear-sig {
+  font-size: 11px;
+  color: #64748b;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Bottom Action Buttons */
+.chem-bottom-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  margin-bottom: 40px;
+}
+
+.chem-btn-lg {
+  padding: 12px 28px;
+  font-size: 14.5px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  border: none;
+}
+
+.chem-btn-primary {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+
+.chem-btn-primary:hover {
+  background: linear-gradient(135deg, #0369a1, #075985);
+  transform: translateY(-1px);
+}
+
+.chem-btn-secondary {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.chem-btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+.chem-btn-ai {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.3);
+}
+
+.chem-btn-ai:hover {
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  transform: translateY(-1px);
+}
+
+/* Inspection History Table */
+.chem-history-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.chem-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.chem-history-table th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  padding: 12px;
+  border-bottom: 2px solid #cbd5e1;
+  text-align: center;
+}
+
+.chem-history-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+  text-align: center;
+}
+
+.chem-history-table tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Print View Modal Styles */
+.chem-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.chem-modal-overlay.active {
+  display: flex;
+}
+
+.chem-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 1000px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.chem-modal-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+}
+
+.chem-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.chem-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #f8fafc;
+}
+
+/* ==========================================================================
+   Print / PDF Styles (4-page matching format)
+   ========================================================================== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #chemPrintSheetContainer,
+  #chemPrintSheetContainer * {
+    visibility: visible;
+  }
+  #chemPrintSheetContainer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 10mm;
+    box-shadow: none;
+    background: #fff;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+}
